@@ -57,18 +57,52 @@ Open `http://localhost:8501` in your browser and grant webcam permissions when p
 
 ## ☁️ Zero-Cost Hugging Face Spaces Deployment
 
-This repository is pre-configured for free deployment on **Hugging Face Spaces**:
-1. Go to [Hugging Face](https://huggingface.co/spaces) and click **"Create New Space"**.
-2. Space Name: `kerala-biometric-meme-engine`
-3. SDK: Select **Streamlit**.
-4. Hardware: Choose **Free CPU Tier (2 vCPU · 16 GB RAM)**.
-5. Push repository files:
-   - `app.py`
-   - `biometric_memes.parquet` (or run `generate_v2_corpus.py` & `spark_processor.py`)
-   - `assets/`
-   - `requirements.txt`
-   - `README.md`
-6. Hugging Face will automatically detect the YAML frontmatter and boot the application. The frontend uses `pandas` and `pyarrow` to read the pre-computed Parquet data plane with zero Java/PySpark cluster dependencies at runtime.
+This repository supports both **Streamlit SDK** and the recommended **Docker SDK** for Hugging Face Spaces:
+
+### Option A: Standard Streamlit SDK
+1. Create a Space on [Hugging Face](https://huggingface.co/spaces), select **Streamlit** SDK, and choose **Free CPU Tier (2 vCPU · 16 GB RAM)**.
+2. In `README.md`, ensure the header is:
+   ```yaml
+   ---
+   title: Kerala Biometric Meme Engine
+   emoji: 🌴
+   colorFrom: red
+   colorTo: yellow
+   sdk: streamlit
+   sdk_version: "1.63.0"
+   app_file: app.py
+   pinned: false
+   ---
+   ```
+
+### Option B: Containerized Docker SDK (Recommended Fallback)
+Hugging Face recently transitioned Spaces toward the Docker runtime. A production-ready `Dockerfile` is provided in the repository root:
+1. When creating or configuring the Space, select **Docker** as the SDK.
+2. Update the `README.md` YAML header to:
+   ```yaml
+   ---
+   title: Kerala Biometric Meme Engine
+   emoji: 🌴
+   colorFrom: red
+   colorTo: yellow
+   sdk: docker
+   pinned: false
+   ---
+   ```
+3. The container automatically installs OpenCV system libraries, pre-caches `facial_expression_model_weights.h5` during build, and binds Streamlit to port `7860`.
+
+---
+
+## 🛠️ Pre-Demo Verification Suite
+
+Run the diagnostic tool before live presentations:
+```powershell
+.venv\Scripts\python.exe verify_environment.py
+```
+Checks:
+- **Weight Cache Integrity**: Confirms `facial_expression_model_weights.h5` (~5.97 MB) is present in `~/.deepface/weights/`.
+- **STUN Connectivity**: Tests UDP ping to `stun.l.google.com:19302` to ensure venue firewalls allow WebRTC handshakes.
+- **Hardware Camera**: Confirms device index 0 is open and accessible.
 
 ---
 
