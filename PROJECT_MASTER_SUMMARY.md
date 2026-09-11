@@ -431,6 +431,17 @@ mallu-memes/
   - Verified `python -m py_compile app.py` exits 0.
   - Confirmed live Streamlit server responds with HTTP 200.
 
+### Milestone 29: Cloud OpenCV Cascade & Pre-Cached Weights Resolution (`mallusai.streamlit.app`)
+- **Diagnosed Streamlit Cloud Headless Cascade Failure**:
+  - In headless Debian cloud containers (`mallusai.streamlit.app`), Linux binary wheels of `opencv-python` can omit default Haar cascade XML models from `/site-packages/cv2/data/`.
+  - When `DeepFace.analyze(..., detector_backend='opencv')` was invoked, DeepFace's `OpenCvClient` threw `ValueError: Confirm that opencv is installed on your environment! Expected path /home/adminuser/venv/lib/python3.11/site-packages/cv2/data/haarcascade_frontalface_default.xml violated.`.
+- **Engineered Multi-Tier Cloud Resilience Architecture**:
+  1. *Bundled XML Haar Cascades*: Added `assets/cascades/haarcascade_frontalface_default.xml` (0.93 MB) into git. On startup, `ensure_cv_environment()` copies it directly into `cv2.data.haarcascades`, permanently satisfying OpenCV's path validation.
+  2. *Bundled Pre-Cached Neural Weights*: Added `assets/weights/facial_expression_model_weights.h5` (5.97 MB) into git. `ensure_cv_environment()` copies it into `~/.deepface/weights/` on boot, eliminating GitHub release download latency and cold-start network timeouts.
+  3. *Zero-Dependency Dual-Backend Fallback*: Wrapped `DeepFace.analyze` in a dynamic try/except that seamlessly switches from `detector_backend='opencv'` to `detector_backend='skip'` if any cascade or detector exception occurs, processing frames directly via the FER model without external file dependencies.
+  4. *Dict-to-List Output Normalization*: Standardized DeepFace analysis outputs so single-face dictionaries (`{'emotion': ...}`) and multi-face lists (`[{'emotion': ...}]`) are parsed uniformly without exceptions.
+  5. *Clean Telemetry Feedback*: Replaced raw Python exception tracebacks with informative guidance encouraging users to use quick emotion overrides or the "Teach AI" module.
+
 ---
 
 ## 5. PROPRIETARY SCORING ALGORITHMS & MATHEMATICAL FORMULATIONS
