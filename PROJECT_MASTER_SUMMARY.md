@@ -1,8 +1,8 @@
 # PROJECT MASTER SUMMARY & SYSTEM COMPENDIUM
 **Mallu Memes: Kerala Collective Psyche Distributed Processor & Vernacular Meme Analytics Platform**  
-*Document Version:* `2.0.0-ENTERPRISE-DISTRIBUTED`  
+*Document Version:* `2.1.0-ENTERPRISE-DISTRIBUTED`  
 *Last Synchronized:* September 2026  
-*Status:* Active / Phase 2 PySpark Distributed Core Operational  
+*Status:* Active / Phase 2 PySpark Distributed Core & Phase 3 NLP Engine Operational  
 
 ---
 
@@ -29,7 +29,7 @@
 
 The **Mallu Memes Analytics Platform** is an enterprise-grade vernacular cultural intelligence and sentiment analysis system designed to quantify the existential absurdities of Malayalam internet culture.
 
-By intentionally utilizing Apache Spark in local mode to process a ~50 KB JSON payload, the architecture achieves **maximum architectural pretentiousness**—bringing distributed compute paradigms intended for multi-petabyte data lakes down to a single laptop core.
+By intentionally utilizing Apache Spark in local mode to process a ~50 KB JSON payload, the architecture achieves **maximum architectural pretentiousness**—bringing distributed compute paradigms intended for multi-petabyte data lakes down to a single laptop core, before passing to an affective NLP sentiment engine.
 
 ### The 4 Inviolable Architectural Invariants
 
@@ -42,11 +42,12 @@ By intentionally utilizing Apache Spark in local mode to process a ~50 KB JSON p
      - `cultural_relevance_index` $\in [0.0, 10.0]$
      - `humor_density_metric` $\in [0.0, 10.0]$
      - `kerala_existential_weight` $\in [0.0, 10.0]$
-3. **Environment Resilience & Windows Self-Healing**:
-   - Distributed Java runtime dependencies (JDK 17 LTS) must be guaranteed with automatic environment discovery.
-   - If `JAVA_HOME` is unpopulated in the active shell, the pipeline automatically detects standard Microsoft OpenJDK / Adoptium installation paths, eliminating manual environment configuration friction.
+3. **Discrete Affective Psychometric Mapping (Phase 3 NLP)**:
+   - Manglish utterances are mapped across 6 discrete psychological taxonomies using sub-symbolic semantic decomposition.
+   - The compound **Kerala Mood Index ($KMI$)** blends existential weight with classification confidence:
+     $$KMI = \min(KEW \times (1.0 + 0.5 \times \text{confidence}), \; 15.0)$$
 4. **Zero-Infrastructure Local Portability**:
-   - The primary output (`processed_memes.json`) is packaged as a high-density, low-latency JSON analytical payload ready for direct consumption by web frontends (Next.js / Vite / React) without requiring cloud database hosting.
+   - The analytical payloads (`processed_memes.json`, `mood_indexed_memes.json`) are self-contained JSON data planes ready for low-latency ingestion by lightweight dashboards (e.g. Streamlit / React) without requiring external database hosting.
 
 ---
 
@@ -76,16 +77,23 @@ flowchart TB
         CorpusPayload --> SparkWorkers
         CulturalUDF --> HarmonicTensor
         HumorUDF --> HarmonicTensor
-    end
-
-    subgraph StoragePhase["Phase 2 Output: Analytical Data Plane"]
         ProcessedPayload[("processed_memes.json\n(Enriched Analytical Payload)")]
-        HarmonicTensor -->|Collect Partitions & JSON Dump| ProcessedPayload
+        HarmonicTensor -->|Collect Partitions & Dump| ProcessedPayload
     end
 
-    subgraph Phase3["Phase 3: Visual Presentation & Analytics (Downstream)"]
-        WebUI["Zero-Infrastructure Frontend\n(Interactive Dashboard / Leaderboard)"]
-        ProcessedPayload --> WebUI
+    subgraph Phase3["Phase 3: Vernacular NLP Sentiment & Mood Engine"]
+        NLPEngine["VernacularPsycheNLPEngine\n(phase3_sentiment_model.py)"]
+        Taxonomies["6 Cultural Taxonomies\n(KTU, Shokam, Poru, Theppu, Nirvana, Nihilism)"]
+        MoodPayload[("mood_indexed_memes.json\n(Sentiment Vectors & KMI Indexed)")]
+
+        ProcessedPayload --> NLPEngine
+        Taxonomies --> NLPEngine
+        NLPEngine --> MoodPayload
+    end
+
+    subgraph Phase4["Phase 4: Presentation Plane (Downstream)"]
+        Dashboard["Streamlit Kerala Mood Index Dashboard\n(Real-Time Gauges, Mood Matrix, Leaderboards)"]
+        MoodPayload --> Dashboard
     end
 ```
 
@@ -104,10 +112,12 @@ mallu-memes/
 ├── README.md                               # Project intro & vernacular manifest
 ├── generate_corpus.py                      # Synthetic corpus synthesizer (~50 KB test payload)
 ├── meme_corpus.json                        # Phase 1 output / Phase 2 distributed input corpus
+├── mood_indexed_memes.json                 # Phase 3 output analytical payload with sentiment vectors & KMI
 ├── phase2_pyspark_pipeline.py              # Phase 2 Distributed PySpark Compute Engine
+├── phase3_sentiment_model.py               # Phase 3 Vernacular NLP Sentiment & Mood Engine
 ├── processed_memes.json                    # Phase 2 output analytical payload with metrics
 ├── PROJECT_MASTER_SUMMARY.md               # [THIS FILE] Single Source of Truth Compendium
-└── requirements.txt                        # Pinned dependencies (pyspark, py4j)
+└── requirements.txt                        # Pinned dependencies (pyspark, py4j, nltk)
 ```
 
 ### Detailed Component Inventory
@@ -115,10 +125,12 @@ mallu-memes/
 | File / Component | Primary Technology | Purpose & Responsibility |
 | :--- | :--- | :--- |
 | `phase2_pyspark_pipeline.py` | Python 3.11, PySpark 4.2.0 | Core distributed compute engine (`KeralaDistributedMemeComputeEngine`). Builds SparkSession in `local[*]`, registers custom UDFs, transforms dataframe, and outputs `processed_memes.json`. |
+| `phase3_sentiment_model.py` | Python 3.11, NLTK | Vernacular sentiment classifier (`VernacularPsycheNLPEngine`). Tokenizes Manglish text, evaluates sentiment across 6 affective taxonomies, computes `kerala_mood_index`, and outputs `mood_indexed_memes.json`. |
 | `generate_corpus.py` | Python 3.11, `json`, `random` | Generates 85+ authentic vernacular meme records (~50 KB) featuring iconic Malayalam tropes, dialogue excerpts, engagement metrics, and distributed shard IDs. |
 | `meme_corpus.json` | JSON Schema | Ingestion corpus containing raw meme titles, OCR texts, categories, characters, movies, and distributed shard metadata. |
-| `processed_memes.json` | JSON Schema | Enriched output containing all original metadata plus computed `cultural_relevance_index`, `humor_density_metric`, and `kerala_existential_weight`. |
-| `requirements.txt` | Pip | Reproducible Python environment pinning (`pyspark==4.2.0`, `py4j==0.10.9.9`). |
+| `processed_memes.json` | JSON Schema | Enriched Spark output containing original metadata plus `cultural_relevance_index`, `humor_density_metric`, and `kerala_existential_weight`. |
+| `mood_indexed_memes.json` | JSON Schema | Fully classified Phase 3 payload with `dominant_mood`, `sentiment_vector`, `mood_confidence`, and `kerala_mood_index`. |
+| `requirements.txt` | Pip | Reproducible Python environment pinning (`pyspark==4.2.0`, `py4j==0.10.9.9`, `nltk==3.10.3`, etc.). |
 | `.agents/rules/sync-master-summary.md` | Agentic Workflow Rule | Enforces that any modification or feature addition to the repository immediately updates this compendium. |
 
 ---
@@ -142,12 +154,17 @@ mallu-memes/
 - **End-to-End Spark Execution**: Executed `phase2_pyspark_pipeline.py` successfully on local Spark cluster. Persisted 85 scored records to `processed_memes.json`.
 - **Git Version Control**: Committed and pushed all Phase 2 assets to `origin/main` (`commit 92fb7fc`).
 
+### Milestone 4: Phase 3 Vernacular NLP Engine Implementation (September 2026)
+- **Script Creation (`phase3_sentiment_model.py`)**: Built `VernacularPsycheNLPEngine` to tokenize Manglish text and evaluate affective distributions across 6 cultural dimensions (*KTU Exam Trauma, Monday Work Shokam, Political Poru, Theppu, Nirvana, Existential Nihilism*).
+- **Metric Formulation**: Synthesized `kerala_mood_index` ($KMI = \min(KEW \times (1.0 + 0.5 \times \text{conf}), 15.0)$).
+- **Payload Generation**: Processed `processed_memes.json` into `mood_indexed_memes.json`. Classified 85 records into collective matrix (*Nirvana: 60, Political Poru: 16, KTU Trauma: 9*).
+
 ---
 
 ## 5. PROPRIETARY SCORING ALGORITHMS & MATHEMATICAL FORMULATIONS
 
 ### 1. Cultural Relevance Index ($CRI$)
-Quantifies the cultural resonance of the meme against the shared consciousness of Kerala cinema, political discourse, and regional academic struggles.
+Quantifies cultural resonance against the shared consciousness of Kerala cinema, political discourse, and regional academic struggles:
 
 $$\text{CRI}(\text{text}) = \min\left( \sum_{k \in \mathcal{A}} w_k \cdot \mathbb{I}(k \in \text{lower}(\text{text})), \; 10.0 \right)$$
 
@@ -183,18 +200,14 @@ Where $\mathcal{A}$ is the Sacred Anchor Vocabulary:
 ---
 
 ### 2. Humor Density Metric ($HDM$)
-Quantifies the chaotic comedic energy through non-linear heuristics evaluating punctuational distress, phonetic Manglish laughter, and capitalization rage.
+Quantifies chaotic comedic energy through non-linear heuristics:
 
 $$\text{HDM}(\text{text}) = \min\left( 1.0 + \Delta_{\text{punc}} + \Delta_{\text{laughter}} + \Delta_{\text{caps}}, \; 10.0 \right)$$
 
 Where:
-- **Punctuation Hysteria ($\Delta_{\text{punc}}$)**:
-  $$\Delta_{\text{punc}} = \min\left( N_{[!?.]} \times 0.4, \; 3.0 \right)$$
-- **Phonetic Laughter Patterns ($\Delta_{\text{laughter}}$)**:
-  Detects regex matches for `(haha|hehe|chiri|eda|entho|ayyo|enthina)`:
-  $$\Delta_{\text{laughter}} = \min\left( N_{\text{patterns}} \times 1.5, \; 4.0 \right)$$
-- **All-Caps Shout Energy ($\Delta_{\text{caps}}$)**:
-  $$\Delta_{\text{caps}} = \begin{cases} 2.0 & \text{if } \frac{N_{\text{uppercase}}}{L_{\text{text}}} > 0.3 \\ 0.0 & \text{otherwise} \end{cases}$$
+- **Punctuation Hysteria ($\Delta_{\text{punc}}$)**: $\Delta_{\text{punc}} = \min(N_{[!?.]} \times 0.4, \; 3.0)$
+- **Phonetic Laughter Patterns ($\Delta_{\text{laughter}}$)**: Regex `(haha|hehe|chiri|eda|entho|ayyo|enthina)`: $\Delta_{\text{laughter}} = \min(N_{\text{patterns}} \times 1.5, \; 4.0)$
+- **All-Caps Shout Energy ($\Delta_{\text{caps}}$)**: $2.0$ if $\frac{N_{\text{uppercase}}}{L_{\text{text}}} > 0.3$, else $0.0$.
 
 ---
 
@@ -202,6 +215,21 @@ Where:
 Harmonic weighted synthesis fusing cultural depth ($60\%$) with raw comedic hysteria ($40\%$):
 
 $$\text{KEW} = 0.6 \times \text{CRI} + 0.4 \times \text{HDM}$$
+
+---
+
+### 4. Kerala Mood Index ($KMI$)
+Harmonic interplay between Spark Existential Weight ($KEW$) and Phase 3 NLP Classification Confidence ($\text{conf}$):
+
+$$\text{KMI} = \min\left( \text{KEW} \times (1.0 + 0.5 \times \text{conf}), \; 15.0 \right)$$
+
+#### The 6 Semantic Anchor Taxonomies
+1. **KTU Exam Trauma**: `ktu`, `supply`, `exam`, `tholi`, `fail`, `paditham`, `btech`, `assignment`, `series`, `arrear`, `internal`
+2. **Monday Work Shokam**: `monday`, `work`, `office`, `manager`, `urakkam`, `leave`, `madi`, `pani`, `salary`, `appraisal`, `login`
+3. **Political Poru & Hartal**: `pinarayi`, `bjp`, `congress`, `cpim`, `hartal`, `kodi`, `strike`, `nethavu`, `sarkar`, `election`, `charcha`
+4. **Theppu & Romantic Melodrama**: `theppu`, `snehichu`, `kaamuki`, `kamukan`, `breakup`, `sad`, `thech`, `kalyanam`, `single`, `crush`
+5. **Nirvana (Thattukada & Vibe)**: `porotta`, `beef`, `chaya`, `adipoli`, `vibe`, `scene`, `kidu`, `set`, `food`, `koottukaran`
+6. **Existential Nihilism**: `shokam`, `veruppikkaal`, `daridryam`, `oola`, `myr`, `enthina`, `jeevitham`, `bore`, `nashttam`, `chalu`
 
 ---
 
@@ -226,7 +254,7 @@ $$\text{KEW} = 0.6 \times \text{CRI} + 0.4 \times \text{HDM}$$
 ]
 ```
 
-### Analytical Contract: `processed_memes.json`
+### Spark Analytical Contract: `processed_memes.json`
 ```json
 [
   {
@@ -248,11 +276,44 @@ $$\text{KEW} = 0.6 \times \text{CRI} + 0.4 \times \text{HDM}$$
 ]
 ```
 
+### Phase 3 Mood Indexed Contract: `mood_indexed_memes.json`
+```json
+[
+  {
+    "meme_id": "MEME_001",
+    "title": "Dashamoolam Damu Police Station Breakdown",
+    "character": "Dashamoolam Damu",
+    "movie": "Chattambinadu",
+    "raw_ocr_text": "Dashamoolam Damu: Athu pinne sir... njan oru simple quotation eduthatha! Sadhanam kayyilundo mwone?! HAHAHA AYYO SCENE! Salim Kumar reaction epic!",
+    "year": 2009,
+    "category": "Classic Quotation",
+    "engagement_score": 32667.61,
+    "shares_count": 967,
+    "troll_page_handle": "@troll_malayalam_node_0",
+    "cloud_distributed_shard_id": "shard_asia_south_kerala_0",
+    "cultural_relevance_index": 10.0,
+    "humor_density_metric": 7.0,
+    "kerala_existential_weight": 8.8,
+    "dominant_mood": "Nirvana (Thattukada & Vibe)",
+    "sentiment_vector": {
+        "KTU Exam Trauma": 0,
+        "Monday Work Shokam": 0,
+        "Political Poru & Hartal": 0,
+        "Theppu & Romantic Melodrama": 0,
+        "Nirvana (Thattukada & Vibe)": 1,
+        "Existential Nihilism": 0
+    },
+    "mood_confidence": 1.0,
+    "kerala_mood_index": 13.2
+  }
+]
+```
+
 ---
 
 ## 7. INFRASTRUCTURE & DISTRIBUTED RUNTIME SPECIFICATIONS
 
-### Distributed Runtime Prerequisites
+### Distributed & NLP Runtime Prerequisites
 - **Java Virtual Machine**: OpenJDK 17 LTS (Microsoft Build `17.0.20.1+1-LTS` x64).
   - Registry / Install Directory: `C:\Program Files\Microsoft\jdk-17.0.20.101-hotspot`
   - Required Environment Variable: `JAVA_HOME` pointing to base directory.
@@ -260,6 +321,8 @@ $$\text{KEW} = 0.6 \times \text{CRI} + 0.4 \times \text{HDM}$$
 - **Core Libraries**:
   - `pyspark==4.2.0`
   - `py4j==0.10.9.9`
+  - `nltk==3.10.3`
+  - `regex==2026.9.10`
 
 ### Spark Cluster Configuration Parameters
 ```python
@@ -300,6 +363,21 @@ SparkSession.builder \
 [SUCCESS] Distributed computation resolved. Persisted 85 transformed records to processed_memes.json.
 ```
 
+### 4. Executing the Phase 3 NLP Sentiment Pipeline
+```powershell
+.venv\Scripts\python.exe phase3_sentiment_model.py
+```
+**Expected Console Telemetry:**
+```text
+[HH:MM:SS] Ingesting PySpark analytical matrix: processed_memes.json
+[SUCCESS] Classified 85 vernacular items. Output persisted to mood_indexed_memes.json
+
+=== KERALA COLLECTIVE MOOD MATRIX ===
+  * Nirvana (Thattukada & Vibe)      : 60 memes
+  * Political Poru & Hartal          : 16 memes
+  * KTU Exam Trauma                  : 9 memes
+```
+
 ---
 
 ## 9. DOWNSTREAM ROADMAP & FUTURE PHASES
@@ -307,9 +385,8 @@ SparkSession.builder \
 1. **Phase 1 Pipeline Formalization (OCR & Crawler)**:
    - Integrate Tesseract OCR & OpenCV for direct image-to-text extraction from Malayalam meme JPEG/PNG files.
    - Manglish tokenization using Malayalam phonetic transliteration lexicons.
-2. **Phase 3: High-Aesthetic Vernacular Web Dashboard**:
-   - Build an interactive web frontend (Vite + React / TailwindCSS) with dark mode, glassmorphism cards, and live filtering.
-   - Leaderboards for "Most Existentially Heavy Memes" ($KEW \ge 9.0$).
-   - Interactive radar charts comparing Cultural Relevance vs. Humor Density across different cinematic characters (Damu vs. Manavalan vs. Jagathy).
-3. **Phase 4: Real-Time Streaming Ingestion**:
+2. **Phase 4: Streamlit Kerala Mood Index Dashboard**:
+   - Build a real-time reactive Streamlit dashboard visualizing the collective Kerala psyche.
+   - Live mood distribution donut charts, character breakdowns, and interactive KMI leaderboards.
+3. **Phase 5: Real-Time Streaming Ingestion**:
    - Spark Structured Streaming integration to score live social media posts in real-time.
