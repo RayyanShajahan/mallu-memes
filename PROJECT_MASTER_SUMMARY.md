@@ -180,7 +180,7 @@ mallu-memes/
 
 | File / Component | Primary Technology | Purpose & Responsibility |
 | :--- | :--- | :--- |
-| `app.py` | Python 3.11, Streamlit 1.63, `streamlit-webrtc` 0.77, `av` 17.1, DeepFace 0.0.100, OpenCV 4.14, Pillow 12.3, Plotly 7.0 | Phase 5 Live Continuous Biometric Meme Engine frontend. Features 3 tabs: Global Telemetry gauge, Live WebRTC continuous video face scanner with DeepFace emotion inference and HUD overlay, and lazy-loaded WebP feed with Pillow compression. |
+| `app.py` | Python 3.11, Streamlit 1.63, `streamlit-webrtc` 0.77, `av` 17.1, DeepFace 0.0.100, OpenCV 4.14, Pillow 12.3, Plotly 7.0 | Resilient Phase 5 Live Continuous Biometric Meme Engine frontend. Features 3 tabs: Global Telemetry gauge, Biometric Scanner with drop-proof WebRTC video streaming, Instant Snapshot Frame (Pillow RGB decoded), Emotion Simulator matrix, and side-by-side true JPEG meme artifact rendering from `assets/memes/`, and Vernacular Data Lake explorer. |
 | `spark_processor.py` | Python 3.11, PySpark 4.2.0, PyArrow 25.0 | Distributed ETL processor (`KeralaBiometricMemeProcessor`). Ingests `raw_meme_corpus.parquet`, applies vectorized Spark Catalyst expressions for CRI, HDM, and DeepFace emotion classification, and writes `biometric_memes.parquet`. |
 | `generate_v2_corpus.py` | Python 3.11, PyArrow 25.0 | Streaming synthesizer that generates 250,000 authentic vernacular meme records (187.97 MB Parquet) across 55 cinematic characters and 35 cultural scenarios. |
 | `verify_environment.py` | Python 3.11, `socket`, `cv2` | Pre-demo verification diagnostic suite. Validates DeepFace weight cache integrity, Google STUN UDP connectivity, and hardware camera device access. |
@@ -243,6 +243,15 @@ mallu-memes/
 - **Containerized Docker SDK Runtime**: Authored a production-grade `Dockerfile` using `python:3.11-slim`, non-root user `user` (UID `1000`), port `7860`, system OpenCV/FFmpeg libraries, and build-time model weight injection.
 - **Diagnostics Automation (`verify_environment.py`)**: Built an automated hardware and network pre-flight verification script checking model weight integrity, Google STUN UDP reachability, and hardware camera device access.
 - **Full Verification Green**: Executed `verify_environment.py`—all checks passed (5.97 MB weight cache verified, STUN handshake resolved to 74.125.250.129:19302, and device 0 frame capture confirmed).
+
+### Milestone 11: WebRTC Stability Hardening, Zero-Crash Fallback & True Image Rendering
+- **WebRTC Stream Drop Recovery**: Implemented error-resilient exception handling around `streamlit-webrtc` streamer initialization, ensuring that dropped browser video streams or unhandled exceptions do not crash the Streamlit session.
+- **Triple-Mode Biometric Fallback**: Enabled instant switching between:
+  1. *Continuous Live Stream (WebRTC)*: Real-time STUN-routed webcam streaming with HUD psyche overlay.
+  2. *Instant Snapshot Frame (Camera Input)*: Static hardware capture for low-bandwidth environments, hardened with Pillow RGB array decoding (`np.array(Image.open(io.BytesIO(bytes_data)).convert('RGB'))`) to eliminate DeepFace `DataTypeError`.
+  3. *Emotion Simulator (Test Matrix)*: Zero-hardware manual micro-expression selector (`sad`, `angry`, `happy`, `neutral`, `fear`, `surprise`) guaranteeing 100% demo uptime under strict presentation conditions.
+- **True Image Asset Rendering**: Resolved the issue where the meme container only displayed raw text dialogue. Configured Tab 2 to dynamically inspect `assets/memes/` for high-resolution `.jpg` assets, intelligently matching character archetypes (Damu, Manavalan, Gafoor, Pappu, etc.) and rendering the physical image via `st.image(chosen_asset, caption=..., width='stretch')` directly adjacent to the dialogue transcript.
+- **Streamlit 1.63 Layout Compatibility**: Standardized layout parameters using modern `width='stretch'` and `use_container_width=True` across Plotly indicators, meme image frames, and vernacular data lake explorers.
 
 ---
 
