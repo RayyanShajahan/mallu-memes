@@ -40,6 +40,20 @@ def ensure_cv_environment():
 
 ensure_cv_environment()
 
+def crop_to_aspect_ratio(pil_img, target_ratio=16/10, output_size=(600, 375)):
+    """Center-crops and scales any image to a crisp, uniform 16:10 cinematic aspect ratio."""
+    w, h = pil_img.size
+    current_ratio = w / h
+    if current_ratio > target_ratio:
+        new_w = int(h * target_ratio)
+        left = (w - new_w) // 2
+        pil_img = pil_img.crop((left, 0, left + new_w, h))
+    elif current_ratio < target_ratio:
+        new_h = int(w / target_ratio)
+        top = max(0, int((h - new_h) * 0.25))
+        pil_img = pil_img.crop((0, top, w, min(h, top + new_h)))
+    return pil_img.resize(output_size, Image.Resampling.LANCZOS)
+
 st.set_page_config(page_title="Kerala Biometric Meme Engine", layout="wide", page_icon="🌴")
 
 # Load Parquet Database
@@ -760,18 +774,11 @@ with tabs[1]:
 
                 try:
                     pil_img = Image.open(chosen_img)
-                    # Proportional scaling to prevent super-tall vertical multi-panel memes from blowing up the column
-                    max_display_h = 420
-                    w, h = pil_img.size
-                    if h > max_display_h:
-                        new_w = int(w * (max_display_h / h))
-                        display_img = pil_img.resize((new_w, max_display_h), Image.Resampling.LANCZOS)
-                    else:
-                        display_img = pil_img
-                    st.image(display_img, caption=f"Meme Archetype: {archetype} | KEW: {kew_score}/10")
+                    display_img = crop_to_aspect_ratio(pil_img, target_ratio=16/10, output_size=(600, 375))
+                    st.image(display_img, caption=f"Meme Archetype: {archetype} | KEW: {kew_score}/10", use_container_width=True)
                     rendered_successfully = True
                 except Exception:
-                    st.image(chosen_img, caption=f"Meme Archetype: {archetype} | KEW: {kew_score}/10")
+                    st.image(chosen_img, caption=f"Meme Archetype: {archetype} | KEW: {kew_score}/10", use_container_width=True)
                     rendered_successfully = True
 
         if not rendered_successfully:
@@ -876,18 +883,6 @@ with tabs[2]:
         },
         {
             "id": 4,
-            "title": "Monday Standup Response",
-            "dialogue": "Ippo shariyaakki tharaam!",
-            "translation": "I will fix it right now!",
-            "movie": "Vellanakalude Nadu (1988)",
-            "character": "Kuthiravattam Pappu",
-            "archetype": "Chronic Fixer",
-            "mood": "Chaos",
-            "kew": 8.14,
-            "image": "assets/memes/pappu_shariyaakkam.jpg"
-        },
-        {
-            "id": 5,
             "title": "Salary Day + 1 Existential Void",
             "dialogue": "Angane Pavanayi shavamaayi!",
             "translation": "And so Pavanayi turned into a corpse!",
@@ -896,34 +891,10 @@ with tabs[2]:
             "archetype": "Professional Casualty",
             "mood": "Despair",
             "kew": 9.71,
-            "image": "assets/memes/happy_pavanayi_shavamaayi.jpg"
+            "image": "assets/memes/happy/angane-pavanayi-shavamaayi.jpg"
         },
         {
-            "id": 6,
-            "title": "Street Respect Protocol",
-            "dialogue": "Njaan aaraannu ariyilla le?",
-            "translation": "You do not know who I am, do you?",
-            "movie": "Chattambinadu (2009)",
-            "character": "Dashamoolam Damu",
-            "archetype": "Underestimated Brawler",
-            "mood": "Rage",
-            "kew": 8.95,
-            "image": "assets/memes/damu_choodu.jpg"
-        },
-        {
-            "id": 7,
-            "title": "Gulf Return Expatriate Swagger",
-            "dialogue": "Njan aara mon! Dubai Manavalan!",
-            "translation": "Who do you think I am, kid! Dubai Manavalan!",
-            "movie": "Pulival Kalyanam (2003)",
-            "character": "Manavalan",
-            "archetype": "Expatriate Aristocrat",
-            "mood": "Hope",
-            "kew": 7.94,
-            "image": "assets/memes/manavalan_royal.jpg"
-        },
-        {
-            "id": 8,
+            "id": 5,
             "title": "Late-Night Hostel Energy Catalyst",
             "dialogue": "Eda mone! All the best da!",
             "translation": "Hey brother! All the best da!",
@@ -932,10 +903,22 @@ with tabs[2]:
             "archetype": "Uninhibited Godfather",
             "mood": "Chaos",
             "kew": 9.12,
-            "image": "assets/memes/happy_ranga_annan_aavesham.jpg"
+            "image": "assets/memes/happy/all-the-best-da.jpg"
         },
         {
-            "id": 9,
+            "id": 6,
+            "title": "Starvation & Biryani Yearning",
+            "dialogue": "Annu undaakkiya biriyaani okke enth cheytho aavo!",
+            "translation": "Wonder what happened to all that biryani made that day!",
+            "movie": "Punjabi House (1998)",
+            "character": "Ramanan",
+            "archetype": "Culinary Martyr",
+            "mood": "Hope",
+            "kew": 8.65,
+            "image": "assets/memes/happy/annu-undaakkiya-biriyaani-okke-enth-cheytho-aavo.jpg"
+        },
+        {
+            "id": 7,
             "title": "Unreciprocated Melodramatic Grief",
             "dialogue": "Achuvettaa... I love you!",
             "translation": "Achuvetta... I love you!",
@@ -944,10 +927,10 @@ with tabs[2]:
             "archetype": "Tragicomic Romantic",
             "mood": "Despair",
             "kew": 9.56,
-            "image": "assets/memes/sad_salim_kumar_crying.jpg"
+            "image": "assets/memes/sad/achuvettaa-i-love-you.jpg"
         },
         {
-            "id": 10,
+            "id": 8,
             "title": "Modernity Assertion Protocol",
             "dialogue": "Actually njaan modern aanu!",
             "translation": "Actually, I am modern!",
@@ -956,10 +939,22 @@ with tabs[2]:
             "archetype": "Eccentric Sidekick",
             "mood": "Hope",
             "kew": 7.45,
-            "image": "assets/memes/neutral_actually_modern.jpg"
+            "image": "assets/memes/neutral/actually-njaan-modern-aanu.jpg"
         },
         {
-            "id": 11,
+            "id": 9,
+            "title": "Corporate Resignation Defiance",
+            "dialogue": "Allenkilum ee thallipoli companiyile joli njangalkk prashnamalla!",
+            "translation": "Anyway, losing this useless company job is not a big deal for us!",
+            "movie": "Nadodikkattu (1987)",
+            "character": "Vijayan & Dasan",
+            "archetype": "Defiant Underdogs",
+            "mood": "Chaos",
+            "kew": 8.78,
+            "image": "assets/memes/neutral/allenkilum-ee-thallipoli-companiyile-joli-njangalkk-prashnamalla.jpg"
+        },
+        {
+            "id": 10,
             "title": "Nihilistic Task Defeatism",
             "dialogue": "Athinekkaal nallath ente shavam edukkunnathalle!",
             "translation": "Better to carry out my corpse than do that!",
@@ -968,10 +963,10 @@ with tabs[2]:
             "archetype": "Exasperated Detective",
             "mood": "Despair",
             "kew": 9.30,
-            "image": "assets/memes/sad_moosa_shavam.jpg"
+            "image": "assets/memes/sad/athinekkaal-nallath-ente-shavam-edukkunnathalle.jpg"
         },
         {
-            "id": 12,
+            "id": 11,
             "title": "Explosive Group Chaos",
             "dialogue": "Aarkkadaa bhraanth?!",
             "translation": "Who the hell is crazy?!",
@@ -980,7 +975,19 @@ with tabs[2]:
             "archetype": "Hostel Instigator",
             "mood": "Rage",
             "kew": 8.76,
-            "image": "assets/memes/angry_aarkkada_bhraanth.jpg"
+            "image": "assets/memes/angry/aarkkadaa-bhraanth.jpg"
+        },
+        {
+            "id": 12,
+            "title": "Patriarchal Cotton Rule",
+            "dialogue": "Aanede chevittil maathramalla, ninte ammede chevittilum vekkeda panji!",
+            "translation": "Put cotton not just in the elephant ear, put it in your mother's ear too!",
+            "movie": "Godfather (1991)",
+            "character": "Anjooran",
+            "archetype": "Unforgiving Patriarch",
+            "mood": "Rage",
+            "kew": 9.05,
+            "image": "assets/memes/angry/aanede-chevittil-maathramalla-ninte-ammede-chevittilum-vekkeda-panji.jpg"
         }
     ]
 
@@ -1001,8 +1008,7 @@ with tabs[2]:
 
     st.caption(f"Showing **{len(filtered_memes)}** artifacts resolved (Sorted by KEW relevance ↓)")
 
-    # 3-Column Card Grid
-    grid_cols = st.columns(3, gap="medium")
+    # 3-Column Card Grid - Rendered row-by-row for strict horizontal alignment
     mood_colors = {
         "Despair": "#3399ff",
         "Rage": "#ff4b4b",
@@ -1010,53 +1016,52 @@ with tabs[2]:
         "Chaos": "#ffaa00"
     }
 
-    for idx, item in enumerate(filtered_memes):
-        col = grid_cols[idx % 3]
-        with col:
-            mood_badge_color = mood_colors.get(item["mood"], "#00f0ff")
-            img_path = item["image"]
-            if not os.path.exists(img_path):
-                alt_path = os.path.join("assets/memes", os.path.basename(img_path))
-                if os.path.exists(alt_path):
-                    img_path = alt_path
+    for row_start in range(0, len(filtered_memes), 3):
+        row_items = filtered_memes[row_start : row_start + 3]
+        cols = st.columns(3, gap="medium")
+        for col_idx, item in enumerate(row_items):
+            with cols[col_idx]:
+                mood_badge_color = mood_colors.get(item["mood"], "#00f0ff")
+                img_path = item["image"]
+                if not os.path.exists(img_path):
+                    alt_path = os.path.join("assets/memes", os.path.basename(img_path))
+                    if os.path.exists(alt_path):
+                        img_path = alt_path
 
-            if os.path.exists(img_path):
-                try:
-                    pil_card = Image.open(img_path)
-                    max_card_h = 240
-                    cw, ch = pil_card.size
-                    if ch > max_card_h:
-                        new_cw = int(cw * (max_card_h / ch))
-                        pil_card = pil_card.resize((new_cw, max_card_h), Image.Resampling.LANCZOS)
-                    st.image(pil_card, use_container_width=True)
-                except Exception:
-                    st.image(img_path, use_container_width=True)
+                if os.path.exists(img_path):
+                    try:
+                        pil_card = Image.open(img_path)
+                        # Center-crop and scale to uniform 16:10 cinematic banner
+                        display_card = crop_to_aspect_ratio(pil_card, target_ratio=16/10, output_size=(600, 375))
+                        st.image(display_card, use_container_width=True)
+                    except Exception:
+                        st.image(img_path, use_container_width=True)
 
-            st.markdown(f"""
-            <div style="background: rgba(18, 24, 43, 0.85); border: 1px solid rgba(0, 240, 255, 0.2); border-radius: 8px; padding: 14px; margin-bottom: 18px;">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-                    <span style="background: rgba(0, 240, 255, 0.15); border: 1px solid rgba(0, 240, 255, 0.5); color: #00f0ff; font-size: 10px; font-weight: bold; padding: 2px 8px; border-radius: 3px; font-family: 'IBM Plex Mono', monospace;">
-                        KEW {item['kew']}
-                    </span>
-                    <span style="background: rgba(255, 75, 75, 0.15); border: 1px solid {mood_badge_color}; color: {mood_badge_color}; font-size: 10px; font-weight: bold; padding: 2px 8px; border-radius: 3px; font-family: 'IBM Plex Mono', monospace;">
-                        {item['mood'].upper()}
-                    </span>
+                st.markdown(f"""
+                <div style="background: rgba(18, 24, 43, 0.85); border: 1px solid rgba(0, 240, 255, 0.2); border-radius: 8px; padding: 14px; margin-bottom: 18px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                        <span style="background: rgba(0, 240, 255, 0.15); border: 1px solid rgba(0, 240, 255, 0.5); color: #00f0ff; font-size: 10px; font-weight: bold; padding: 2px 8px; border-radius: 3px; font-family: 'IBM Plex Mono', monospace;">
+                            KEW {item['kew']}
+                        </span>
+                        <span style="background: rgba(255, 75, 75, 0.15); border: 1px solid {mood_badge_color}; color: {mood_badge_color}; font-size: 10px; font-weight: bold; padding: 2px 8px; border-radius: 3px; font-family: 'IBM Plex Mono', monospace;">
+                            {item['mood'].upper()}
+                        </span>
+                    </div>
+                    <div style="font-family: 'Chakra Petch', sans-serif; font-weight: 700; font-size: 1.05rem; color: #ffffff; margin-bottom: 2px;">
+                        {item['title']}
+                    </div>
+                    <div style="font-size: 10px; text-transform: uppercase; color: #94a3b8; margin-bottom: 10px; font-family: 'IBM Plex Mono', monospace;">
+                        {item['movie']} // {item['archetype']}
+                    </div>
+                    <div style="border-left: 2px solid #00f0ff; padding-left: 10px; color: #e2e8f0; font-size: 0.95rem; font-style: italic; margin-bottom: 6px;">
+                        “{item['dialogue']}”
+                    </div>
+                    <div style="font-size: 11px; color: #94a3b8; font-family: 'IBM Plex Mono', monospace; margin-bottom: 10px;">
+                        ↳ {item['translation']}
+                    </div>
                 </div>
-                <div style="font-family: 'Chakra Petch', sans-serif; font-weight: 700; font-size: 1.05rem; color: #ffffff; margin-bottom: 2px;">
-                    {item['title']}
-                </div>
-                <div style="font-size: 10px; text-transform: uppercase; color: #94a3b8; margin-bottom: 10px; font-family: 'IBM Plex Mono', monospace;">
-                    {item['movie']} // {item['archetype']}
-                </div>
-                <div style="border-left: 2px solid #00f0ff; padding-left: 10px; color: #e2e8f0; font-size: 0.95rem; font-style: italic; margin-bottom: 6px;">
-                    “{item['dialogue']}”
-                </div>
-                <div style="font-size: 11px; color: #94a3b8; font-family: 'IBM Plex Mono', monospace; margin-bottom: 10px;">
-                    ↳ {item['translation']}
-                </div>
-            </div>
-            """, unsafe_allow_html=True)
-            st.code(item['dialogue'], language="text")
+                """, unsafe_allow_html=True)
+                st.code(item['dialogue'], language="text")
 
     # Big Data Lake Columnar Parquet Explorer
     st.divider()
