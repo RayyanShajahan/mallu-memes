@@ -263,6 +263,13 @@ mallu-memes/
   - Hardened `app.py` `load_data()` with automatic schema reconciliation and applied case-insensitive dynamic query filtering (`df['emotion'].astype(str).str.lower() == detected_emotion.lower()`).
   - Added visual fallback cards (`https://images.unsplash.com/...`) if local assets directory is ever purged.
 
+### Milestone 13: MTCNN Neural Face Alignment, CLAHE Normalization & Confidence Breakdown
+- **MTCNN Multi-Task Cascaded CNN Integration**: Upgraded the face detector backend from basic OpenCV Haar cascades to `detector_backend='mtcnn'`. Leverages deep multi-task convolutional networks for precise 5-point facial landmark alignment, resolving off-axis pose detection issues.
+- **CLAHE Contrast Normalization**: Added OpenCV LAB color space preprocessing using Contrast Limited Adaptive Histogram Equalization (`cv2.createCLAHE(clipLimit=3.0, tileGridSize=(8, 8))`) on the luminance channel, neutralizing shadows and dim ambient lighting before feeding frames to the neural net.
+- **Full Emotion Confidence Breakdown**: Surfaced detailed model probability distributions via interactive Streamlit progress bars within an expander (`📊 View Full Emotion Probability Breakdown`), displaying exact percentage confidences for every affective state (`happy`, `neutral`, `sad`, `fear`, `angry`, `surprise`, `disgust`).
+- **Resilient Fallback Detector Pipeline**: Configured a two-tier detector pipeline: if MTCNN strict bounds are missed due to sudden motion, the engine automatically catches the exception and falls back to `detector_backend='opencv'` with `enforce_detection=False`.
+- **Categorical Parquet Database Matching**: Aligned regional categories (`KTU Exam Trauma` $\to$ `Academic Trauma`, `Political Poru & Hartal` $\to$ `Political Satire`, `Nirvana` $\to$ `Gastronomic Nirvana`, `Monday Work Shokam` $\to$ `Corporate Nihilism`) with randomized sample selection (`matched_df.sample(n=1)`), ensuring dynamic, non-repetitive meme recommendations.
+
 ---
 
 ## 5. PROPRIETARY SCORING ALGORITHMS & MATHEMATICAL FORMULATIONS

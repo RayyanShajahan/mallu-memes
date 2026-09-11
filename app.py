@@ -71,70 +71,70 @@ with tabs[0]:
 
 with tabs[1]:
     st.subheader("Ocular Psyche Biometric Scanner")
-    st.write("Extracts your instantaneous facial micro-expression and projects a matched Kerala existential meme.")
+    st.write("Take a snapshot with advanced MTCNN face-alignment for hyper-accurate expression reading.")
 
     capture_mode = st.radio(
-        "Choose Biometric Capture Mode:",
-        ["Continuous Live Stream (WebRTC)", "Instant Snapshot Frame (Camera Input)", "Emotion Simulator (Test Matrix)"],
+        "Choose Mode:",
+        ["📸 Instant Snapshot (High-Accuracy AI)", "🧪 Emotion Simulator (Guaranteed Demo Mode)"],
         horizontal=True
     )
 
     detected_emotion = "neutral"
+    emotion_scores = {}
 
-    if capture_mode == "Continuous Live Stream (WebRTC)":
-        if WEBRTC_AVAILABLE:
-            RTC_CONFIGURATION = RTCConfiguration({"iceServers": [{"urls": ["stun:stun.l.google.com:19302"]}]})
-            
-            class EmotionProcessor(VideoProcessorBase):
-                def __init__(self):
-                    self.emotion = "neutral"
-                    self.frame_count = 0
-                    self.last_valid = "neutral"
-
-                def recv(self, frame):
-                    img = frame.to_ndarray(format="bgr24")
-                    self.frame_count += 1
-                    
-                    # Analyze every 10th frame for optimal balance of speed and responsiveness
-                    if self.frame_count % 10 == 0:
-                        try:
-                            # enforce_detection=False prevents crashes when face moves or lighting varies
-                            analysis = DeepFace.analyze(img, actions=['emotion'], enforce_detection=False, silent=True)
-                            if isinstance(analysis, list) and len(analysis) > 0:
-                                self.last_valid = analysis[0].get('dominant_emotion', 'neutral')
-                        except Exception:
-                            pass
-                            
-                    self.emotion = self.last_valid
-                    cv2.putText(img, f"PSYCHE: {self.emotion.upper()}", (25, 50), 
-                                cv2.FONT_HERSHEY_SIMPLEX, 1.0, (0, 255, 255), 2, cv2.LINE_AA)
-                    return av.VideoFrame.from_ndarray(img, format="bgr24")
-
-            ctx = webrtc_streamer(key="scanner", video_processor_factory=EmotionProcessor, rtc_configuration=RTC_CONFIGURATION, async_processing=True)
-            if ctx.video_processor:
-                detected_emotion = ctx.video_processor.emotion
-        else:
-            st.warning("WebRTC unavailable. Falling back to Simulator.")
-            capture_mode = "Emotion Simulator (Test Matrix)"
-
-    elif capture_mode == "Instant Snapshot Frame (Camera Input)":
-        cam_image = st.camera_input("Capture expression")
+    if capture_mode == "📸 Instant Snapshot (High-Accuracy AI)":
+        cam_image = st.camera_input("Strike a pose & capture your expression")
         if cam_image is not None:
             try:
+                import cv2
+                import numpy as np
+                
+                # Read image bytes into OpenCV format
                 bytes_data = cam_image.getvalue()
-                img_np = np.array(Image.open(io.BytesIO(bytes_data)).convert("RGB"))
-                analysis = DeepFace.analyze(img_np, actions=['emotion'], enforce_detection=False, silent=True)
+                np_arr = np.frombuffer(bytes_data, np.uint8)
+                img = cv2.imdecode(np_arr, cv2.IMREAD_COLOR)
+                
+                # Preprocessing: CLAHE Contrast Normalization for uneven lighting
+                lab = cv2.cvtColor(img, cv2.COLOR_BGR2LAB)
+                l, a, b = cv2.split(lab)
+                clahe = cv2.createCLAHE(clipLimit=3.0, tileGridSize=(8, 8))
+                cl = clahe.apply(l)
+                enhanced_img = cv2.cvtColor(cv2.merge((cl, a, b)), cv2.COLOR_LAB2BGR)
+
+                # HIGH ACCURACY FIX: Use detector_backend='mtcnn' for precise face detection and alignment
+                with st.spinner("Analyzing facial micro-expressions via MTCNN neural pipeline..."):
+                    analysis = DeepFace.analyze(
+                        enhanced_img, 
+                        actions=['emotion'], 
+                        detector_backend='mtcnn', 
+                        enforce_detection=True, 
+                        silent=True
+                    )
+                
                 if isinstance(analysis, list) and len(analysis) > 0:
                     detected_emotion = analysis[0].get('dominant_emotion', 'neutral')
-                else:
-                    detected_emotion = "neutral"
-                st.success(f"Detected Emotion: {detected_emotion.upper()}")
-            except Exception:
-                detected_emotion = "neutral"
+                    emotion_scores = analysis[0].get('emotion', {})
+                
+                st.success(f"🔍 AI Vision Detected Emotion: **{detected_emotion.upper()}**")
+                
+                # Show confidence breakdown to prove accuracy to judges
+                if emotion_scores:
+                    with st.expander("📊 View Full Emotion Probability Breakdown"):
+                        for emo, score in sorted(emotion_scores.items(), key=lambda item: item[1], reverse=True):
+                            st.progress(int(score), text=f"{emo.capitalize()}: {score:.1f}%")
 
+            except Exception as e:
+                # Fallback if MTCNN can't find a clear face bounding box
+                try:
+                    analysis = DeepFace.analyze(enhanced_img, actions=['emotion'], detector_backend='opencv', enforce_detection=False, silent=True)
+                    detected_emotion = analysis[0].get('dominant_emotion', 'neutral')
+                    st.warning(f"MTCNN strict bounds missed. Fallback OpenCV detector read: **{detected_emotion.upper()}**")
+                except:
+                    st.warning("Face detection unclear. Defaulting to Neutral.")
+                    detected_emotion = "neutral"
     else:
         detected_emotion = st.selectbox(
-            "Simulate Facial Micro-Expression (Guaranteed Demo Mode):",
+            "Select Exact Emotion (Hackathon Demo Override):",
             ["sad", "angry", "happy", "neutral", "fear", "surprise"]
         )
 
@@ -149,19 +149,21 @@ with tabs[1]:
         "neutral": "Monday Work Shokam"
     }
     target_category = emotion_map.get(detected_emotion, "Monday Work Shokam")
-    st.markdown(f"🎯 Detected Psyche: **{detected_emotion.upper()}** ➔ Routing to Category: **{target_category}**")
+    st.markdown(f"🎯 **Psyche Profile:** {detected_emotion.upper()} ➔ **Kerala Category:** {target_category}")
 
-    # Dynamic Parquet Filtering (Ensures valid matching rows)
-    matched_df = df[df["emotion"].astype(str).str.lower() == detected_emotion.lower()]
-    if matched_df.empty and "target_emotion" in df.columns:
-        matched_df = df[df["target_emotion"].astype(str).str.lower() == detected_emotion.lower()]
-    if matched_df.empty and detected_emotion.lower() == "surprise":
-        matched_df = df[df["emotion"].astype(str).str.lower() == "happy"]
+    # Dynamic Parquet Database Matching
+    category_alias_map = {
+        "KTU Exam Trauma": "Academic Trauma",
+        "Political Poru & Hartal": "Political Satire",
+        "Nirvana (Thattukada & Vibe)": "Gastronomic Nirvana",
+        "Monday Work Shokam": "Corporate Nihilism"
+    }
+    actual_cat = category_alias_map.get(target_category, target_category)
+    matched_df = df[(df["scenario_category"] == target_category) | (df["scenario_category"] == actual_cat) | (df["emotion"].astype(str).str.lower() == detected_emotion.lower())]
     if matched_df.empty:
-        matched_df = df # Fallback if specific emotion rows are sparse
+        matched_df = df
 
-    # Pick top meme based on highest KEW score
-    top_meme = matched_df.sort_values(by="kerala_existential_weight", ascending=False).iloc[0]
+    top_meme = matched_df.sample(n=1).iloc[0] if len(matched_df) > 0 else df.iloc[0]
 
     # Layout: Image Display vs Text Dialogue
     col_img, col_txt = st.columns([1, 1])
@@ -173,10 +175,9 @@ with tabs[1]:
             char_lower = str(top_meme.get("character", "")).lower()
             matched_asset = next((f for f in asset_files if any(k in f.lower() for k in char_lower.split() if len(k) > 2)), None)
             chosen_asset = os.path.join("assets/memes", matched_asset if matched_asset else random.choice(asset_files))
-            st.image(chosen_asset, caption=top_meme["scenario_title"], width='stretch')
+            st.image(chosen_asset, caption=f"{top_meme['scenario_title']} (KEW: {top_meme['kerala_existential_weight']})", width='stretch')
         else:
-            st.warning("Local assets missing. Run `create_sample_assets.py`.")
-            st.image("https://images.unsplash.com/photo-1531403009284-440f080d1e12?w=600&auto=format&fit=crop&q=60", width='stretch')
+            st.error("Missing local meme assets! Run `create_sample_assets.py` in your terminal to populate pictures.")
 
     with col_txt:
         st.markdown(f"### 🎭 {top_meme['character']} — {top_meme['movie']}")
