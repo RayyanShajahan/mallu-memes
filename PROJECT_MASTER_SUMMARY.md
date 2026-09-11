@@ -253,6 +253,16 @@ mallu-memes/
 - **True Image Asset Rendering**: Resolved the issue where the meme container only displayed raw text dialogue. Configured Tab 2 to dynamically inspect `assets/memes/` for high-resolution `.jpg` assets, intelligently matching character archetypes (Damu, Manavalan, Gafoor, Pappu, etc.) and rendering the physical image via `st.image(chosen_asset, caption=..., width='stretch')` directly adjacent to the dialogue transcript.
 - **Streamlit 1.63 Layout Compatibility**: Standardized layout parameters using modern `width='stretch'` and `use_container_width=True` across Plotly indicators, meme image frames, and vernacular data lake explorers.
 
+### Milestone 12: Emotion Freezing Prevention (Lighting Tolerance & Throttle) & Dynamic Parquet Alignment
+- **Preventing Emotion Freezing in WebRTC**:
+  - Re-architected `EmotionProcessor` with asynchronous frame streaming (`async_processing=True`) and decoupled inference: DeepFace neural evaluation is throttled to every 10th frame (`self.frame_count % 10 == 0`), preventing CPU thread starvation and dropped frame queues.
+  - Enabled lighting-tolerant detection with `enforce_detection=False` and `silent=True` to smoothly track micro-expressions even under harsh venue or low-light webcam feeds.
+  - Implemented persistent state retention (`self.last_valid`) so transient micro-movements do not reset the detected state to default "neutral".
+- **Dynamic Parquet Filtering & Column Alignment**:
+  - Diagnosed and resolved Spark Catalyst regex collision that collapsed `emotion` into `happy` for all 250,000 records. Refactored `spark_processor.py` to prioritize `target_emotion` ground truths and re-ran Spark Catalyst distributed execution in 18.31s, regenerating `biometric_memes.parquet` (195.75 MB) with authentic distribution: `angry` (71,360), `happy` (64,350), `fear` (42,900), `sad` (42,845), `neutral` (28,545).
+  - Hardened `app.py` `load_data()` with automatic schema reconciliation and applied case-insensitive dynamic query filtering (`df['emotion'].astype(str).str.lower() == detected_emotion.lower()`).
+  - Added visual fallback cards (`https://images.unsplash.com/...`) if local assets directory is ever purged.
+
 ---
 
 ## 5. PROPRIETARY SCORING ALGORITHMS & MATHEMATICAL FORMULATIONS

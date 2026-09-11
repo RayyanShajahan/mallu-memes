@@ -108,11 +108,12 @@ class KeralaBiometricMemeProcessor:
         to standard DeepFace emotions: ['happy', 'sad', 'angry', 'fear', 'neutral']
         """
         return (
-            when(lower(col("raw_ocr_text")).rlike("swargam|bliss|adipoli|porotta|beef|celebration|milk abhishekam|set vibe|vibe"), lit("happy"))
+            when(col("target_emotion").isNotNull(), lower(col("target_emotion")))
             .when(lower(col("raw_ocr_text")).rlike("theppu|sad|supply|tholi|fail|karayunnu|breakup|tears|shokam"), lit("sad"))
             .when(lower(col("raw_ocr_text")).rlike("block|traffic|fight|scuffle|overtake|shouting|pinarayi|bjp|congress|kseb|dispute"), lit("angry"))
             .when(lower(col("raw_ocr_text")).rlike("drift|danger|whistle|police|threat|kettle|inspection|raid|panic|fear"), lit("fear"))
-            .otherwise(when(col("target_emotion").isNotNull(), lower(col("target_emotion"))).otherwise(lit("neutral")))
+            .when(lower(col("raw_ocr_text")).rlike("swargam|bliss|adipoli|celebration|milk abhishekam"), lit("happy"))
+            .otherwise(lit("neutral"))
         )
 
     def run_pipeline(
