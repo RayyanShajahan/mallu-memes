@@ -302,14 +302,16 @@ mallu-memes/
 - **Unified Preview Frame & Anti-Stacking Geometry**: Set `gap="large"` on `st.columns([1, 1], gap="large")` and cleanly bound all visual artifacts and dialogue cards within `right_col`, eliminating vertical card stacking and restoring balanced horizontal symmetry.
 
 ### Milestone 19: Curated Malayalam Meme Vault & Automated Public Archive Ingestion
-- **Automated Public Archive Ingestion (`download_curated_memes.py`)**: Built an automated downloader script querying `arunpt/malayalam-plain-memes-archive` directly over HTTPS. Downloaded, verified with Pillow, and organized 21 authentic, full-resolution Malayalam movie meme frames across 4 core emotional folders:
-  - `assets/memes/sad/`: Salim Kumar weeping (`achuvettaa`), Dasan & Vijayan kattappara, CID Moosa shavam, Appukkuttan expression, Manichitrathazhu karnnore.
-  - `assets/memes/angry/`: Spadikam Kuttikkadan, Godfather Anjooran panji, Akkare Akkare Akkare Krinshnan Nair gun, Paul Barber, In Harihar Nagar bhraanth.
-  - `assets/memes/happy/`: Ramanan biriyani, Gangadharan mothalali, Sadhanam kayyilundo, Pavanayi shavamaayi, Aavesham Ranga Annan, Kilukkam Jagathy.
-  - `assets/memes/neutral/`: Dasan & Vijayan company resignation, CID Moosa dharidryam, Punjabi House alakkum nanayum, Kalyanaraman collector kutthi, Pyari actually modern.
-- **Curated Malayalam Meme Vault Frontend**: Restructured Tab 2 into the zero-friction **Curated Malayalam Meme Vault (Offline Mode)**. Presenters select psychological intent via dropdown without camera latency, Wi-Fi STUN blocks, or ambient lighting degradation.
+- **Automated Public Archive Ingestion (`download_curated_memes.py`)**: Built an automated downloader script querying `arunpt/malayalam-plain-memes-archive` directly over HTTPS. Downloaded, verified with Pillow, and organized 21 authentic, full-resolution Malayalam movie meme frames across 4 core emotional folders (`assets/memes/sad/`, `assets/memes/angry/`, `assets/memes/happy/`, `assets/memes/neutral/`).
 - **Category-Aligned Offline Image Routing**: Implemented multi-tier asset lookup checking category-specific folders first (`assets/memes/<emotion>/`), category-prefixed root assets, and falling back gracefully.
 - **Real-Time 250k Parquet Lake Alignment**: Retained dynamic aliasing (`Academic Trauma`, `Political Satire`, `Gastronomic Nirvana`, `Corporate Nihilism`) extracting authentic dialogues, character archetypes, and KEW scores with 0ms delay.
+
+### Milestone 20: Hybrid Biometric Scanner & Curated Vault Unified Architecture
+- **Restored Live AI Biometric Camera (`st.camera_input`)**: Seamlessly restored real-time facial expression scanning via DeepFace OpenCV analysis in Tab 2 while integrating the downloaded authentic 21-meme archive.
+- **Dual Mode Toggle**: Presenter can seamlessly switch between `📸 Live Face Emotion Scan (Camera)` and `🎛️ Manual Psychological Override`.
+- **Persistent Quick Override Safeguards**: Preserved `Force Happy`, `Force Sad`, `Force Angry` buttons beneath the camera input to guarantee instant recovery during live pitch lighting fluctuations.
+- **Dynamic Category Asset Binding**: Captured or selected emotions immediately trigger dynamic lookup against categorized local folders (`assets/memes/<category>/`), rendering authentic movie scenes (Kalyanaraman, Nadodikkattu, Spadikam, etc.) with responsive PIL scaling.
+- **Synchronized Dialogue Cards**: Renders dialogue quotes, character archetypes, and KEW scores queried directly from the 250k Parquet Lake.
 
 ---
 
