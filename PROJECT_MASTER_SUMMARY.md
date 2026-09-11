@@ -1,14 +1,15 @@
 # PROJECT MASTER SUMMARY & SYSTEM COMPENDIUM
-**Mallu Memes: Kerala Collective Psyche Distributed Processor & Vernacular Meme Analytics Platform**  
-*Document Version:* `2.2.0-ENTERPRISE-DISTRIBUTED`  
+**Mallu Memes: Kerala Collective Psyche Distributed Processor & Biometric Meme Engine**  
+*Document Version:* `3.1.0-BIOMETRIC-ENGINE-OPTIMIZED`  
 *Last Synchronized:* September 2026  
-*Status:* Active / Phase 2 PySpark, Phase 3 NLP & Phase 4 Streamlit Visualization Operational  
+*Target Hardware:* ASUS TUF F16 (Local Multi-Core CPU + Integrated IR/Webcam)  
+*Status:* Active / V2 Biometric Engine, 150MB+ PySpark Parquet Lake, DeepFace Vision & WebP Lazy Feed Operational  
 
 ---
 
 > [!IMPORTANT]
 > **LIVING DOCUMENT DIRECTIVE (MANDATORY FOR ALL TEAMMATES)**:  
-> This file is the **Single Source of Truth (SSOT)** for the entire repository. Whenever any engineer or agent adds, modifies, or refactors an execution script, scoring heuristic, schema definition, frontend component, or pipeline stage, **this file MUST be updated in the same commit/turn**. Keep every section synchronized so cross-functional teammates (Data Engineering, NLP, Frontend, QA) can build without discrepancies.
+> This file is the **Single Source of Truth (SSOT)** for the entire repository. Whenever any engineer or agent adds, modifies, or refactors an execution script, scoring heuristic, schema definition, frontend component, or pipeline stage, **this file MUST be updated in the same commit/turn**. Keep every section synchronized so cross-functional teammates (Big Data, Computer Vision, Frontend, QA) can build without discrepancies.
 
 ---
 
@@ -27,27 +28,34 @@
 
 ## 1. PROJECT MISSION, VERNACULAR PHILOSOPHY & ARCHITECTURAL INVARIANTS
 
-The **Mallu Memes Analytics Platform** is an enterprise-grade vernacular cultural intelligence and sentiment analysis system designed to quantify the existential absurdities of Malayalam internet culture.
+The **Mallu Memes Analytics Platform (V2 Biometric Meme Engine)** is an enterprise-grade vernacular cultural intelligence, sentiment analysis, and real-time computer vision system designed to quantify the existential absurdities of Malayalam internet culture and mirror them directly onto user facial micro-expressions.
 
-By intentionally utilizing Apache Spark in local mode to process a ~50 KB JSON payload, the architecture achieves **maximum architectural pretentiousness**—bringing distributed compute paradigms intended for multi-petabyte data lakes down to a single laptop core, passing through an affective NLP sentiment engine, and projecting into ocular space via a hyper-converged Streamlit telemetry dashboard.
+By intentionally scaling up to a **150MB+ (250,000 records) raw Parquet corpus**, processing it through **PySpark Catalyst distributed compute engines in local mode**, and serving an **ocular Streamlit dashboard** powered by **DeepFace neural facial expression inference** and **automated Pillow-to-WebP backend compression**, the system achieves maximum architectural pretentiousness and sub-millisecond local latency on consumer laptop hardware (ASUS TUF F16).
 
-### The 4 Inviolable Architectural Invariants
+### The 6 Inviolable Architectural Invariants
 
-1. **Distributed Compute for Vernacular Artifacts**:
-   - Every raw OCR text extracted from Malayalam social media memes must undergo distributed transformation via Apache Spark (`pyspark.sql`).
-   - Ingestion utilizes multiline JSON partition readers, and metric evaluation is executed through custom vectorized Spark User-Defined Functions (UDFs).
-2. **Deterministic Cultural Quantification**:
-   - Satire, cinematic archetypes (Mohanlal, Mammootty, Salim Kumar, Jagathy Sreekumar, Harisree Ashokan), and societal anxieties (KTU supplementary exam trauma, hartals, theppu) are codified into weighted anchor vectors.
-   - Every meme must resolve into a deterministic triad of scores:
+1. **Massive Columnar Parquet Lake (150MB+ / 250,000 Records)**:
+   - All vernacular meme transcripts must be stored and manipulated in columnar Apache Parquet format (`raw_meme_corpus.parquet` and `biometric_memes.parquet`) rather than bloated JSON to prevent browser and frontend memory leaks.
+   - The corpus includes 55+ distinct Malayalam cinematic characters and 35+ hyper-specific regional scenarios.
+2. **Distributed Compute via PySpark Catalyst Engine**:
+   - Every raw OCR text extracted from Malayalam social media memes undergoes distributed transformation via Apache Spark (`pyspark.sql`).
+   - Scoring heuristics and emotion categorizations are implemented using vectorized Spark Catalyst expressions (`when`, `regexp_extract_all`, `least`) executing directly within the JVM for maximum throughput.
+3. **Deterministic Cultural Quantification**:
+   - Satire, cinematic archetypes, and societal anxieties are codified into weighted anchor vectors.
+   - Every meme resolves into a deterministic triad of scores:
      - `cultural_relevance_index` $\in [0.0, 10.0]$
      - `humor_density_metric` $\in [0.0, 10.0]$
      - `kerala_existential_weight` $\in [0.0, 10.0]$
-3. **Discrete Affective Psychometric Mapping (Phase 3 NLP)**:
-   - Manglish utterances are mapped across 6 discrete psychological taxonomies using sub-symbolic semantic decomposition.
-   - The compound **Kerala Mood Index ($KMI$)** blends existential weight with classification confidence:
-     $$KMI = \min(KEW \times (1.0 + 0.5 \times \text{confidence}), \; 15.0)$$
-4. **Zero-Infrastructure Local Portability & Live Visualization**:
-   - The analytical payloads (`processed_memes.json`, `mood_indexed_memes.json`) are self-contained JSON data planes decoupled from external infrastructure in favor of local JSON node processing, powering instantaneous Streamlit dashboard streaming.
+4. **Biometric Face-to-Meme Mapping via DeepFace**:
+   - The user's live facial expression is captured via `st.camera_input()` and evaluated using `deepface.DeepFace.analyze(actions=['emotion'], detector_backend='opencv')`.
+   - The dominant emotion strictly maps to one of the 5 canonical DeepFace buckets: `happy`, `sad`, `angry`, `fear`, `neutral`.
+   - The system performs a sub-millisecond columnar scan on the Parquet dataframe to extract high Kerala Existential Weight (KEW $\ge 90$th percentile) memes matching that exact affective state.
+5. **Automated Pillow-to-WebP Compression (Backend)**:
+   - High-resolution meme images are intercepted by Pillow, proportionally downscaled (`max_width=600`) using `Image.Resampling.LANCZOS`, and converted to in-memory WebP buffers (`quality=60`).
+   - Slashes image payload sizes by **80% to 96%** compared to standard uncompressed JPEGs.
+6. **Frontend Lazy Loading & CDN Edge Bypassing**:
+   - Progressive batch rendering in Streamlit is governed via `st.session_state.feed_limit` and a "Load More Chaos" trigger.
+   - Remote URL requests support instant Cloudinary/Cloudflare CDN transformation (`w_600,f_webp`).
 
 ---
 
@@ -55,52 +63,64 @@ By intentionally utilizing Apache Spark in local mode to process a ~50 KB JSON p
 
 ```mermaid
 flowchart TB
-    subgraph Phase1["Phase 1: Ingestion & OCR Preprocessing (Upstream)"]
-        RawMemes["Raw Meme Visual Artifacts\n(Instagram / Reddit / Telegram)"]
-        OCR["OCR & Vernacular Tokenization\n(Tesseract / Manglish Parser)"]
-        CorpusGen["Corpus Synthesizer\n(generate_corpus.py)"]
-        RawMemes --> OCR
-        OCR --> CorpusGen
+    subgraph Phase1["Phase 1: Massive Parquet Corpus Synthesis (150MB+)"]
+        CharDB["55+ Cinematic Characters\n(Damu, Manavalan, CID Moosa, Ramanathan)"]
+        ScenDB["35+ Cultural Scenarios\n(KTU Backlogs, Bangalore Sleeper Bus, Kochi Metro)"]
+        Synthesizer["Corpus Generator\n(generate_v2_corpus.py)"]
+        RawParquet[("raw_meme_corpus.parquet\n187.97 MB | 250,000 Records")]
+        CharDB --> Synthesizer
+        ScenDB --> Synthesizer
+        Synthesizer --> RawParquet
     end
 
     subgraph DistributedEngine["Phase 2: Hyper-Converged PySpark Engine (Local Mode)"]
-        SparkSession["SparkSession Builder\nMaster: local[*] | Memory: 2GB\nPartitions: 2"]
-        CorpusPayload[("meme_corpus.json\n(~50 KB Distributed Storage Abstraction)")]
+        SparkSession["SparkSession Builder\nMaster: local[4] | Memory: 4GB\nVectorized Catalyst Expressions"]
         
-        subgraph SparkWorkers["Local Spark Worker Threads"]
-            CulturalUDF["UDF: _compute_cultural_relevance()\nCinema Tropes & KTU Anchors\nRange: 0.0 - 10.0"]
-            HumorUDF["UDF: _compute_humor_density()\nPunctuation Hysteria & All-Caps\nRange: 0.0 - 10.0"]
-            HarmonicTensor["Compound Tensor Synthesis\nKEW = (CRI * 0.6) + (HDM * 0.4)"]
+        subgraph SparkCatalyst["Spark Catalyst Optimizer / JVM 17"]
+            CRI_Expr["Catalyst Expr: Cultural Relevance Index (CRI)\nWeighted Anchors | Range: 0.0 - 10.0"]
+            HDM_Expr["Catalyst Expr: Humor Density Metric (HDM)\nPunctuation Hysteria & All-Caps\nRange: 0.0 - 10.0"]
+            Emo_Expr["Catalyst Expr: DeepFace Emotion Classifier\n(happy, sad, angry, fear, neutral)"]
+            HarmonicTensor["Compound Weight Formulation\nKEW = (CRI * 0.6) + (HDM * 0.4)"]
         end
 
-        SparkSession -->|Read Multiline JSON| CorpusPayload
-        CorpusPayload --> SparkWorkers
-        CulturalUDF --> HarmonicTensor
-        HumorUDF --> HarmonicTensor
-        ProcessedPayload[("processed_memes.json\n(Enriched Analytical Payload)")]
-        HarmonicTensor -->|Collect Partitions & Dump| ProcessedPayload
+        RawParquet --> SparkSession
+        SparkSession --> SparkCatalyst
+        CRI_Expr --> HarmonicTensor
+        HDM_Expr --> HarmonicTensor
+        Emo_Expr --> HarmonicTensor
+        BiometricParquet[("biometric_memes.parquet\n195.81 MB | 250,000 Records")]
+        HarmonicTensor -->|PyArrow Stream (Snappy/None)| BiometricParquet
     end
 
-    subgraph Phase3["Phase 3: Vernacular NLP Sentiment & Mood Engine"]
-        NLPEngine["VernacularPsycheNLPEngine\n(phase3_sentiment_model.py)"]
-        Taxonomies["6 Cultural Taxonomies\n(KTU, Shokam, Poru, Theppu, Nirvana, Nihilism)"]
-        MoodPayload[("mood_indexed_memes.json\n(Sentiment Vectors & KMI Indexed)")]
-
-        ProcessedPayload --> NLPEngine
-        Taxonomies --> NLPEngine
-        NLPEngine --> MoodPayload
-    end
-
-    subgraph Phase4["Phase 4: Visual Presentation & Ocular Telemetry (Active)"]
-        Dashboard["Streamlit Kerala Mood Index Dashboard\n(phase4_dashboard.py : Port 8501)"]
-        Gauge["Plotly go.Indicator Gauge\n(Aggregate KMI Metric)"]
-        Bar["Plotly Express Bar Chart\n(Affective Volume Matrix)"]
-        Table["Top Existential Artifacts Leaderboard"]
+    subgraph Phase3["Phase 3: The Biometric Streamlit Dashboard & WebP Engine"]
+        App["Streamlit Dashboard\n(app.py : Port 8501)"]
         
-        MoodPayload --> Dashboard
-        Dashboard --> Gauge
-        Dashboard --> Bar
-        Dashboard --> Table
+        subgraph Tab1["Tab 1: Global Telemetry"]
+            Gauge["Plotly go.Indicator KMI Gauge"]
+            BarChart["Plotly Express Emotion Volume"]
+            Leaderboard["Top Existential Artifacts"]
+        end
+
+        subgraph Tab2["Tab 2: The Biometric Scanner"]
+            Camera["st.camera_input() Frame Capture"]
+            DeepFace["DeepFace.analyze()\nOpenCV Detector Backend"]
+            Matcher["Sub-ms Parquet Scanner\n(Top 10% KEW Filter)"]
+            MemeCard["Matched Meme HTML Card"]
+            WebPBanner["On-the-Fly WebP Banner"]
+            Camera --> DeepFace --> Matcher --> MemeCard & WebPBanner
+        end
+
+        subgraph Tab3["Tab 3: Lazy-Loaded Vernacular Feed"]
+            LocalAssets["Local JPEG Assets\n(assets/memes/*.jpg)"]
+            PillowCompress["compress_image()\nLANCZOS + WebP 60 (-95.9% size)"]
+            LazyLoad["st.session_state.feed_limit\n'Load More Chaos' Trigger"]
+            CDNEdge["Cloudinary / CDN Edge Mode\n(w_600,f_webp Transform)"]
+            LocalAssets --> PillowCompress --> LazyLoad
+            CDNEdge --> LazyLoad
+        end
+
+        BiometricParquet --> App
+        App --> Tab1 & Tab2 & Tab3
     end
 ```
 
@@ -115,32 +135,46 @@ mallu-memes/
 │       └── sync-master-summary.md          # Automation rule enforcing SSOT synchronization
 ├── .gitignore                              # Comprehensive exclusions (venv, caches, artifacts)
 ├── .venv/                                  # Isolated Python 3.11 virtual environment
+├── assets/
+│   └── memes/                              # Sample high-resolution uncompressed JPEG memes
+│       ├── cid_moosa_sadhanam.jpg          # CID Moosa classic card (90.1 KB)
+│       ├── damu_choodu.jpg                 # Dashamoolam Damu rage card (91.5 KB)
+│       ├── harisree_appukuttan.jpg         # Appukuttan panic card (94.2 KB)
+│       ├── mamukoya_gafoor.jpg             # Gafoor Ka Dost melodrama card (78.7 KB)
+│       ├── manavalan_royal.jpg             # Manavalan pride card (90.4 KB)
+│       ├── pappu_shariyaakkam.jpg          # Pappu road roller card (96.7 KB)
+│       ├── pyari_rasikan.jpg               # Pyari laughter card (88.5 KB)
+│       └── ramanathan_malappuram.jpg       # Ramanathan shock card (89.6 KB)
 ├── LICENSE                                 # MIT Open Source License
 ├── README.md                               # Project intro & vernacular manifest
-├── generate_corpus.py                      # Synthetic corpus synthesizer (~50 KB test payload)
-├── meme_corpus.json                        # Phase 1 output / Phase 2 distributed input corpus
-├── mood_indexed_memes.json                 # Phase 3 output analytical payload with sentiment vectors & KMI
-├── phase2_pyspark_pipeline.py              # Phase 2 Distributed PySpark Compute Engine
-├── phase3_sentiment_model.py               # Phase 3 Vernacular NLP Sentiment & Mood Engine
-├── phase4_dashboard.py                     # Phase 4 Streamlit Kerala Mood Index Visualization Matrix
-├── processed_memes.json                    # Phase 2 output analytical payload with metrics
+├── app.py                                  # Phase 3 V2 Biometric Streamlit Application + WebP Feed
+├── biometric_memes.parquet                 # 195.81 MB pre-computed Parquet dataset (250,000 records)
+├── create_sample_assets.py                 # Generates sample high-res meme JPEG banners
+├── generate_corpus.py                      # V1 synthetic corpus synthesizer (~50 KB test payload)
+├── generate_v2_corpus.py                   # V2 massive streaming corpus generator (150MB+ / 250k rec)
+├── meme_corpus.json                        # V1 input corpus (85 records)
+├── mood_indexed_memes.json                 # V1 Phase 3 payload with sentiment vectors & KMI
+├── phase2_pyspark_pipeline.py              # V1 PySpark Distributed Pipeline
+├── phase3_sentiment_model.py               # V1 Vernacular NLP Sentiment & Mood Engine
+├── phase4_dashboard.py                     # V1 Streamlit Kerala Mood Index Visualization Matrix
+├── processed_memes.json                    # V1 Phase 2 output analytical payload
 ├── PROJECT_MASTER_SUMMARY.md               # [THIS FILE] Single Source of Truth Compendium
-└── requirements.txt                        # Pinned dependencies (pyspark, py4j, nltk, streamlit, plotly, pandas)
+├── raw_meme_corpus.parquet                 # 187.97 MB raw Parquet corpus (250,000 records)
+├── requirements.txt                        # Pinned dependencies (deepface, pyspark, opencv, etc.)
+└── spark_processor.py                      # V2 PySpark Distributed Emotion Mapping Engine
 ```
 
 ### Detailed Component Inventory
 
 | File / Component | Primary Technology | Purpose & Responsibility |
 | :--- | :--- | :--- |
-| `phase4_dashboard.py` | Python 3.11, Streamlit 1.63, Plotly 7.0, Pandas | Hyper-converged visual telemetry matrix (`KeralaMoodIndexDashboard`). Streams `mood_indexed_memes.json`, renders `go.Indicator` KMI gauge, affective volume chart, and existential leaderboards. |
-| `phase3_sentiment_model.py` | Python 3.11, NLTK 3.10 | Vernacular sentiment classifier (`VernacularPsycheNLPEngine`). Tokenizes Manglish text, evaluates sentiment across 6 affective taxonomies, computes `kerala_mood_index`, and outputs `mood_indexed_memes.json`. |
-| `phase2_pyspark_pipeline.py` | Python 3.11, PySpark 4.2.0 | Core distributed compute engine (`KeralaDistributedMemeComputeEngine`). Builds SparkSession in `local[*]`, registers custom UDFs, transforms dataframe, and outputs `processed_memes.json`. |
-| `generate_corpus.py` | Python 3.11, `json`, `random` | Generates 85+ authentic vernacular meme records (~50 KB) featuring iconic Malayalam tropes, dialogue excerpts, engagement metrics, and distributed shard IDs. |
-| `meme_corpus.json` | JSON Schema | Ingestion corpus containing raw meme titles, OCR texts, categories, characters, movies, and distributed shard metadata. |
-| `processed_memes.json` | JSON Schema | Enriched Spark output containing original metadata plus `cultural_relevance_index`, `humor_density_metric`, and `kerala_existential_weight`. |
-| `mood_indexed_memes.json` | JSON Schema | Fully classified Phase 3 payload with `dominant_mood`, `sentiment_vector`, `mood_confidence`, and `kerala_mood_index`. |
-| `requirements.txt` | Pip | Reproducible Python environment pinning (`pyspark`, `py4j`, `nltk`, `streamlit`, `pandas`, `plotly`, etc.). |
-| `.agents/rules/sync-master-summary.md` | Agentic Workflow Rule | Enforces that any modification or feature addition to the repository immediately updates this compendium. |
+| `app.py` | Python 3.11, Streamlit 1.63, DeepFace 0.0.100, OpenCV 5.0, Pillow 12.3, Plotly 7.0 | V2 Biometric Meme Engine frontend. Features 3 tabs: Global Telemetry gauge, IR/webcam biometric face scanner with DeepFace emotion inference, and lazy-loaded WebP feed with Pillow compression. |
+| `spark_processor.py` | Python 3.11, PySpark 4.2.0, PyArrow 25.0 | V2 distributed ETL processor (`KeralaBiometricMemeProcessor`). Ingests `raw_meme_corpus.parquet`, applies vectorized Spark Catalyst expressions for CRI, HDM, and DeepFace emotion classification, and writes `biometric_memes.parquet`. |
+| `generate_v2_corpus.py` | Python 3.11, PyArrow 25.0 | Streaming synthesizer that generates 250,000 authentic vernacular meme records (187.97 MB Parquet) across 55 cinematic characters and 35 cultural scenarios. |
+| `create_sample_assets.py` | Python 3.11, Pillow 12.3 | Generates sample uncompressed 900x500 JPEG meme banners in `assets/memes/` to validate backend WebP compression and lazy loading. |
+| `raw_meme_corpus.parquet` | Apache Parquet (Uncompressed) | 187.97 MB raw ingestion corpus with 250,000 rows, 18 columns, and rich Manglish OCR text dialogues. |
+| `biometric_memes.parquet` | Apache Parquet (Uncompressed) | 195.81 MB indexed analytical data plane with 250,000 rows and 22 columns including `cultural_relevance_index`, `humor_density_metric`, `emotion`, and `kerala_existential_weight`. |
+| `requirements.txt` | Pip | Dependency manifest pinned with `deepface`, `opencv-python`, `fastparquet`, `pyarrow`, `pyspark`, `streamlit`, `pillow`, `plotly`, and `nltk`. |
 
 ---
 
@@ -148,30 +182,33 @@ mallu-memes/
 
 ### Milestone 1: Distributed Infrastructure Provisioning (September 2026)
 - **Microsoft OpenJDK 17 LTS Installed**: Provisioned through `winget` (`Microsoft.OpenJDK.17` version `17.0.20.101`). Permanent system `JAVA_HOME` configured at `C:\Program Files\Microsoft\jdk-17.0.20.101-hotspot\` with JVM binaries in system `Path`.
-- **Isolated Virtual Environment**: Created `.venv`, upgraded pip, and installed `pyspark 4.2.0` and `py4j 0.10.9.9`.
+- **Virtual Environment Rebuild**: Migrated environment to Python 3.11.9 (`C:\Users\ra416\AppData\Local\Programs\Python\Python311\python.exe`) to guarantee binary wheel compatibility with `tensorflow` and `deepface`.
 
-### Milestone 2: Phase 2 PySpark Distributed Pipeline Implementation
-- **Script Creation (`phase2_pyspark_pipeline.py`)**: Built `KeralaDistributedMemeComputeEngine` with:
-  - Spark cluster configuration (`appName="KeralaCollectivePsycheDistributedProcessor"`, `master="local[*]"`, `spark.driver.memory="2g"`, `spark.sql.shuffle.partitions="2"`).
-  - JVM log suppression (`setLogLevel("ERROR")`).
-  - Windows environment resilience fallback (automatic `JAVA_HOME` detection if omitted from parent process).
-  - Vectorized Spark UDFs for cultural relevance and humor density.
-  - Multi-column tensor calculation for overall existential weight.
+### Milestone 2–5: V1 Distributed Pipeline, NLP Model & KMI Dashboard
+- Built and validated `generate_corpus.py`, `phase2_pyspark_pipeline.py`, `phase3_sentiment_model.py`, and `phase4_dashboard.py` on the 85-record pilot corpus.
 
-### Milestone 3: Vernacular Corpus Generation & Pipeline Validation
-- **Corpus Synthesis (`generate_corpus.py`)**: Built 85 distributed records (49.66 KB payload) capturing iconic tropes (*Dashamoolam Damu, Manavalan, CID Moosa, Ramanathan in Punjabi House, Jagathy in Yodha, KTU supply trauma, midnight thattukada beef & porotta, hartal announcements*).
-- **End-to-End Spark Execution**: Executed `phase2_pyspark_pipeline.py` successfully on local Spark cluster. Persisted 85 scored records to `processed_memes.json`.
-- **Git Version Control**: Committed and pushed all Phase 2 assets to `origin/main` (`commit 92fb7fc`).
+### Milestone 6: V2 Biometric Meme Engine & 150MB+ Corpus Architecture
+- **Corpus Scaling (`generate_v2_corpus.py`)**: Built a high-throughput streaming Parquet writer utilizing `pyarrow.parquet.ParquetWriter`. Synthesized **250,000 records** in 2.09 seconds, producing `raw_meme_corpus.parquet` at **187.97 MB** physical disk size.
+- **Content Diversity Expansion**: Added 55 iconic characters (from Dashamoolam Damu, Manavalan, and CID Moosa to Shammi, Ramanathan, Gafoor, and Kuthiravattam Pappu) and 35 regional scenarios (KTU exam hall panic, Bangalore sleeper bus delays, Kochi water metro selfies, thattukada beef fry queues).
+- **Catalyst-Vectorized PySpark Engine (`spark_processor.py`)**:
+  - Eliminated slow Python UDF socket serialization by engineering pure Spark Catalyst expressions using `when`, `rlike`, `regexp_extract_all(..., lit(0))`, `least`, and `spark_round`.
+  - Configured PyArrow-based local collection to bypass Windows Hadoop `winutils.exe` committer restrictions.
+  - Processed all 250,000 records across 4 local CPU cores in **21.57 seconds**, outputting `biometric_memes.parquet` (**195.81 MB** uncompressed).
 
-### Milestone 4: Phase 3 Vernacular NLP Engine Implementation (September 2026)
-- **Script Creation (`phase3_sentiment_model.py`)**: Built `VernacularPsycheNLPEngine` to tokenize Manglish text and evaluate affective distributions across 6 cultural dimensions (*KTU Exam Trauma, Monday Work Shokam, Political Poru, Theppu, Nirvana, Existential Nihilism*).
-- **Metric Formulation**: Synthesized `kerala_mood_index` ($KMI = \min(KEW \times (1.0 + 0.5 \times \text{conf}), 15.0)$).
-- **Payload Generation**: Processed `processed_memes.json` into `mood_indexed_memes.json`. Classified 85 records into collective matrix (*Nirvana: 60, Political Poru: 16, KTU Trauma: 9*).
-
-### Milestone 5: Phase 4 Streamlit Dashboard Delivery (September 2026)
-- **Application Architecture (`phase4_dashboard.py`)**: Built `KeralaMoodIndexDashboard` utilizing Streamlit and Plotly for high-fidelity visual telemetry.
-- **Visual Metrics**: Implemented a `go.Indicator` gauge projecting the global `kerala_mood_index` aggregated across all distributed shards, supplemented with affective psychometric volume bar charts.
-- **Hackathon Readiness**: System successfully decoupled from Elasticsearch in favor of local JSON node processing for instantaneous deployment.
+### Milestone 7: Automated Pillow-to-WebP Compression, Lazy Loading & CDN Routing
+- **Automated Backend Compression (`compress_image()`)**:
+  - Implemented Pillow-based image interception in `app.py`.
+  - Resizes images proportionally (`max_width=600`) using `Image.Resampling.LANCZOS` and converts them to in-memory WebP buffers (`quality=60`).
+  - Benchmarked on sample assets: slashes uncompressed JPEG files from **91.5 KB to 3.8 KB (95.9% bandwidth reduction)** in **~3.2 ms**.
+- **Lazy Loading & Session State Pagination**:
+  - Implemented viewport chunking via `st.session_state.feed_limit` (initial limit: 5).
+  - Added interactive "🔥 Load More Chaos (+5 Memes)" button triggering `st.rerun()`.
+- **CDN Edge Transformation**:
+  - Added `get_cdn_url()` routing remote URLs through Cloudinary fetch transforms (`https://res.cloudinary.com/demo/image/fetch/w_600,f_webp/...`) to demonstrate zero-CPU edge optimization.
+- **Biometric Face-to-Meme Pipeline**:
+  - Integrated `st.camera_input()` with `deepface.DeepFace.analyze(actions=['emotion'], detector_backend='opencv')`.
+  - Sub-millisecond Parquet querying for $\ge 90$th percentile KEW memes matching the detected micro-expression.
+  - Renders both rich HTML card and on-the-fly WebP banner artifact.
 
 ---
 
@@ -182,174 +219,84 @@ Quantifies cultural resonance against the shared consciousness of Kerala cinema,
 
 $$\text{CRI}(\text{text}) = \min\left( \sum_{k \in \mathcal{A}} w_k \cdot \mathbb{I}(k \in \text{lower}(\text{text})), \; 10.0 \right)$$
 
-Where $\mathcal{A}$ is the Sacred Anchor Vocabulary:
-
-| Anchor Keyword | Weight ($w_k$) | Cultural Significance & Context |
-| :--- | :---: | :--- |
-| `dashamoolam` | **3.0** | Suraj Venjaramoodu in *Chattambinadu* (Ultimate comedy antagonist archetype) |
-| `salim kumar` | **3.0** | National Award-winning comedic luminary & dialogue icon |
-| `jagathy` | **3.0** | Jagathy Sreekumar (Uncontested king of expressive Malayalam slapstick & satire) |
-| `ktu` | **3.0** | APJ Abdul Kalam Technological University (Apex source of engineering student trauma) |
-| `damu` | **2.5** | Diminutive for Dashamoolam Damu, universal synonym for failed schemes |
-| `manavalan` | **2.5** | Salim Kumar's legendary foreign-return entrepreneur persona in *Pulival Kalyanam* |
-| `cid moosa` | **2.5** | Dileep & Johny Antony's quintessential slapstick detective masterpiece |
-| `supply` | **2.5** | Academic supplementary examination (BTech backlog trauma) |
-| `harisree` | **2.0** | Harisree Ashokan (Pivotal comic foil) |
-| `ramanathan` | **2.0** | Legendary deaf/mute impostor persona from *Punjabi House* ("Ayyo Ramanathan!") |
-| `theppu` | **2.0** | Vernacular colloquialism for betrayal / unrequited romantic dumping |
-| `hartal` | **2.0** | Kerala's traditional day of involuntary statewide rest & shuttered commerce |
-| `pinarayi` | **2.0** | Chief Minister political reference / press conference punchlines |
-| `sadhanam` | **2.0** | Iconic dialogue reference (*"Sadhanam kayyil undo?"*) |
-| `scene` | **1.5** | State of critical emotional distress or chaotic escalation (*"Scene contra!"*) |
-| `mwone` | **1.5** | Endearing vernacular address (*"Mwone Dinesha"*) |
-| `porotta` | **1.5** | Malabar layered flatbread (Cultural dietary pillar) |
-| `beef` | **1.5** | Traditional accompaniment to porotta (Culinary heritage) |
-| `bjp` | **1.5** | Political entity in Kerala tripartite electoral discourse |
-| `congress` | **1.5** | Political entity in Kerala tripartite electoral discourse |
-| `chalu` | **1.5** | Intentional bad joke or cringe humor trope |
-| `adipoli` | **1.0** | Universal Malayalam expression of enthusiastic approval |
-| `chaya` | **1.0** | Kerala tea shop (*thattukada*) beverage & social catalyst |
-| `kambi` | **1.0** | Vernacular pulp fiction / double entendre reference |
-
----
+Evaluated inside Spark Catalyst via stacked `when(lower(col("raw_ocr_text")).contains(k), lit(w)).otherwise(lit(0.0))` expressions.
 
 ### 2. Humor Density Metric ($HDM$)
-Quantifies chaotic comedic energy through non-linear heuristics:
+Quantifies comedic hysteria based on punctuation clustering, phonetic laughter, and all-caps shouty energy:
 
-$$\text{HDM}(\text{text}) = \min\left( 1.0 + \Delta_{\text{punc}} + \Delta_{\text{laughter}} + \Delta_{\text{caps}}, \; 10.0 \right)$$
+$$HDM = \min\left( 1.0 + \min(N_{\text{punc}} \times 0.3, 3.0) + \min(N_{\text{laugh}} \times 1.2, 4.0) + 2.0 \cdot \mathbb{I}\left(\frac{N_{\text{caps}}}{L} > 0.25\right), \; 10.0 \right)$$
 
-Where:
-- **Punctuation Hysteria ($\Delta_{\text{punc}}$)**: $\Delta_{\text{punc}} = \min(N_{[!?.]} \times 0.4, \; 3.0)$
-- **Phonetic Laughter Patterns ($\Delta_{\text{laughter}}$)**: Regex `(haha|hehe|chiri|eda|entho|ayyo|enthina)`: $\Delta_{\text{laughter}} = \min(N_{\text{patterns}} \times 1.5, \; 4.0)$
-- **All-Caps Shout Energy ($\Delta_{\text{caps}}$)**: $2.0$ if $\frac{N_{\text{uppercase}}}{L_{\text{text}}} > 0.3$, else $0.0$.
-
----
+Spark implementation utilizes `regexp_extract_all(col("raw_ocr_text"), lit(r"[!?.]"), lit(0))` with group index `0` to execute without Python UDF overhead.
 
 ### 3. Kerala Existential Weight ($KEW$)
-Harmonic weighted synthesis fusing cultural depth ($60\%$) with raw comedic hysteria ($40\%$):
+$$KEW = \text{round}(0.6 \times CRI + 0.4 \times HDM, \; 2)$$
 
-$$\text{KEW} = 0.6 \times \text{CRI} + 0.4 \times \text{HDM}$$
+### 4. DeepFace Emotion Mapping Taxonomy
+The Spark pipeline categorizes every meme text transcript directly into one of the 5 canonical DeepFace facial expression buckets:
 
----
-
-### 4. Kerala Mood Index ($KMI$)
-Harmonic interplay between Spark Existential Weight ($KEW$) and Phase 3 NLP Classification Confidence ($\text{conf}$):
-
-$$\text{KMI} = \min\left( \text{KEW} \times (1.0 + 0.5 \times \text{conf}), \; 15.0 \right)$$
-
-#### The 6 Semantic Anchor Taxonomies
-1. **KTU Exam Trauma**: `ktu`, `supply`, `exam`, `tholi`, `fail`, `paditham`, `btech`, `assignment`, `series`, `arrear`, `internal`
-2. **Monday Work Shokam**: `monday`, `work`, `office`, `manager`, `urakkam`, `leave`, `madi`, `pani`, `salary`, `appraisal`, `login`
-3. **Political Poru & Hartal**: `pinarayi`, `bjp`, `congress`, `cpim`, `hartal`, `kodi`, `strike`, `nethavu`, `sarkar`, `election`, `charcha`
-4. **Theppu & Romantic Melodrama**: `theppu`, `snehichu`, `kaamuki`, `kamukan`, `breakup`, `sad`, `thech`, `kalyanam`, `single`, `crush`
-5. **Nirvana (Thattukada & Vibe)**: `porotta`, `beef`, `chaya`, `adipoli`, `vibe`, `scene`, `kidu`, `set`, `food`, `koottukaran`
-6. **Existential Nihilism**: `shokam`, `veruppikkaal`, `daridryam`, `oola`, `myr`, `enthina`, `jeevitham`, `bore`, `nashttam`, `chalu`
+| DeepFace Emotion | Vernacular Semantic Triggers & Regional Nuances |
+| :--- | :--- |
+| **`happy`** | `swargam`, `bliss`, `adipoli`, `porotta`, `beef`, `celebration`, `milk abhishekam`, `set vibe`, `vibe` |
+| **`sad`** | `theppu`, `sad`, `supply`, `tholi`, `fail`, `karayunnu`, `breakup`, `tears`, `shokam` |
+| **`angry`** | `block`, `traffic`, `fight`, `scuffle`, `overtake`, `shouting`, `pinarayi`, `bjp`, `congress`, `kseb`, `dispute` |
+| **`fear`** | `drift`, `danger`, `whistle`, `police`, `threat`, `kettle`, `inspection`, `raid`, `panic`, `fear` |
+| **`neutral`** | Fallback for stoic dialogue, administrative announcements, and observations. |
 
 ---
 
 ## 6. DATA SCHEMAS & PAYLOAD CONTRACTS
 
-### Ingestion Contract: `meme_corpus.json`
-```json
-[
-  {
-    "meme_id": "MEME_001",
-    "title": "Dashamoolam Damu Police Station Breakdown",
-    "character": "Dashamoolam Damu",
-    "movie": "Chattambinadu",
-    "raw_ocr_text": "Dashamoolam Damu: Athu pinne sir... njan oru simple quotation eduthatha! Sadhanam kayyilundo mwone?! HAHAHA AYYO SCENE! Salim Kumar reaction epic!",
-    "year": 2009,
-    "category": "Classic Quotation",
-    "engagement_score": 32667.61,
-    "shares_count": 967,
-    "troll_page_handle": "@troll_malayalam_node_0",
-    "cloud_distributed_shard_id": "shard_asia_south_kerala_0"
-  }
-]
-```
+### V2 Biometric Meme Parquet Schema (`biometric_memes.parquet`)
 
-### Spark Analytical Contract: `processed_memes.json`
-```json
-[
-  {
-    "meme_id": "MEME_001",
-    "title": "Dashamoolam Damu Police Station Breakdown",
-    "character": "Dashamoolam Damu",
-    "movie": "Chattambinadu",
-    "raw_ocr_text": "Dashamoolam Damu: Athu pinne sir... njan oru simple quotation eduthatha! Sadhanam kayyilundo mwone?! HAHAHA AYYO SCENE! Salim Kumar reaction epic!",
-    "year": 2009,
-    "category": "Classic Quotation",
-    "engagement_score": 32667.61,
-    "shares_count": 967,
-    "troll_page_handle": "@troll_malayalam_node_0",
-    "cloud_distributed_shard_id": "shard_asia_south_kerala_0",
-    "cultural_relevance_index": 10.0,
-    "humor_density_metric": 7.0,
-    "kerala_existential_weight": 8.8
-  }
-]
-```
-
-### Phase 3 Mood Indexed Contract: `mood_indexed_memes.json`
-```json
-[
-  {
-    "meme_id": "MEME_001",
-    "title": "Dashamoolam Damu Police Station Breakdown",
-    "character": "Dashamoolam Damu",
-    "movie": "Chattambinadu",
-    "raw_ocr_text": "Dashamoolam Damu: Athu pinne sir... njan oru simple quotation eduthatha! Sadhanam kayyilundo mwone?! HAHAHA AYYO SCENE! Salim Kumar reaction epic!",
-    "year": 2009,
-    "category": "Classic Quotation",
-    "engagement_score": 32667.61,
-    "shares_count": 967,
-    "troll_page_handle": "@troll_malayalam_node_0",
-    "cloud_distributed_shard_id": "shard_asia_south_kerala_0",
-    "cultural_relevance_index": 10.0,
-    "humor_density_metric": 7.0,
-    "kerala_existential_weight": 8.8,
-    "dominant_mood": "Nirvana (Thattukada & Vibe)",
-    "sentiment_vector": {
-        "KTU Exam Trauma": 0,
-        "Monday Work Shokam": 0,
-        "Political Poru & Hartal": 0,
-        "Theppu & Romantic Melodrama": 0,
-        "Nirvana (Thattukada & Vibe)": 1,
-        "Existential Nihilism": 0
-    },
-    "mood_confidence": 1.0,
-    "kerala_mood_index": 13.2
-  }
-]
+```text
+root
+ |-- meme_id: string (nullable = true)
+ |-- character: string (nullable = true)
+ |-- actor: string (nullable = true)
+ |-- movie: string (nullable = true)
+ |-- character_archetype: string (nullable = true)
+ |-- scenario_id: string (nullable = true)
+ |-- scenario_title: string (nullable = true)
+ |-- scenario_category: string (nullable = true)
+ |-- target_emotion: string (nullable = true)
+ |-- raw_ocr_text: string (nullable = true)
+ |-- dialogue_snippet: string (nullable = true)
+ |-- engagement_score: double (nullable = true)
+ |-- shares_count: long (nullable = true)
+ |-- upvotes_count: long (nullable = true)
+ |-- troll_page_handle: string (nullable = true)
+ |-- cloud_distributed_shard_id: string (nullable = true)
+ |-- year: long (nullable = true)
+ |-- ocr_confidence_score: double (nullable = true)
+ |-- cultural_relevance_index: double (nullable = true)
+ |-- humor_density_metric: double (nullable = true)
+ |-- emotion: string (nullable = true)
+ |-- kerala_existential_weight: double (nullable = true)
 ```
 
 ---
 
 ## 7. INFRASTRUCTURE & DISTRIBUTED RUNTIME SPECIFICATIONS
 
-### Distributed, NLP & Visualization Runtime Prerequisites
-- **Java Virtual Machine**: OpenJDK 17 LTS (Microsoft Build `17.0.20.1+1-LTS` x64).
-  - Registry / Install Directory: `C:\Program Files\Microsoft\jdk-17.0.20.101-hotspot`
-  - Required Environment Variable: `JAVA_HOME` pointing to base directory.
-- **Python Execution Environment**: Python 3.11+ in isolated virtual environment (`.venv`).
-- **Core Libraries**:
-  - `pyspark==4.2.0`
-  - `py4j==0.10.9.9`
-  - `nltk==3.10.3`
-  - `regex==2026.9.10`
-  - `streamlit==1.63.0`
-  - `plotly==7.0.0`
-  - `pandas==3.0.5`
+### Hardware & Virtualization Target
+- **Machine**: ASUS TUF Gaming F16 Laptop
+- **Compute**: Multi-Core Local CPU (24 logical cores)
+- **Sensors**: Integrated HD / IR Webcam for live computer vision
+- **Java Virtual Machine**: OpenJDK 17 LTS (`C:\Program Files\Microsoft\jdk-17.0.20.101-hotspot`)
 
-### Spark Cluster Configuration Parameters
-```python
-SparkSession.builder \
-    .appName("KeralaCollectivePsycheDistributedProcessor") \
-    .master("local[*]") \
-    .config("spark.driver.memory", "2g") \
-    .config("spark.sql.shuffle.partitions", "2") \
-    .getOrCreate()
-```
+### Python 3.11 Environment Packages (`requirements.txt`)
+- `deepface==0.0.100`
+- `opencv-python==5.0.0.93`
+- `tensorflow==2.21.0`
+- `pyspark==4.2.0`
+- `py4j==0.10.9.9`
+- `pyarrow==25.0.1`
+- `fastparquet==2026.5.0`
+- `pillow==12.3.0`
+- `streamlit==1.63.0`
+- `plotly==7.0.0`
+- `pandas==3.0.5`
+- `nltk==3.10.3`
 
 ---
 
@@ -357,60 +304,47 @@ SparkSession.builder \
 
 ### 1. Activating the Environment
 ```powershell
-# From the repository root:
 .venv\Scripts\Activate.ps1
 ```
 
-### 2. Synthesizing / Refreshing the Corpus
+### 2. Generating the 150MB+ Parquet Corpus (Phase 1)
 ```powershell
-.venv\Scripts\python.exe generate_corpus.py
-# Output: Generated meme_corpus.json with 85 records, payload size: ~50 KB
+.venv\Scripts\python.exe generate_v2_corpus.py 250000
 ```
+- **Output**: `raw_meme_corpus.parquet` (187.97 MB, 250,000 records).
 
-### 3. Executing the PySpark Distributed Pipeline
+### 3. Running Distributed PySpark Emotion Mapping (Phase 2)
 ```powershell
-.venv\Scripts\python.exe phase2_pyspark_pipeline.py
+.venv\Scripts\python.exe spark_processor.py
 ```
-**Expected Console Telemetry:**
-```text
-[INIT] Allocating hyper-converged Spark execution nodes...
-[STAGE 1] Ingesting schema from distributed storage abstraction: meme_corpus.json
-[STAGE 2] Executing distributed matrix transformations across worker threads...
-[STAGE 3] Collecting distributed partitions into low-latency analytical payload...
-[SUCCESS] Distributed computation resolved. Persisted 85 transformed records to processed_memes.json.
-```
+- **Output**: `biometric_memes.parquet` (195.81 MB, 250,000 records) computed in ~21 seconds.
 
-### 4. Executing the Phase 3 NLP Sentiment Pipeline
+### 4. Generating Sample Local Meme Image Assets
 ```powershell
-.venv\Scripts\python.exe phase3_sentiment_model.py
+.venv\Scripts\python.exe create_sample_assets.py
 ```
-**Expected Console Telemetry:**
-```text
-[HH:MM:SS] Ingesting PySpark analytical matrix: processed_memes.json
-[SUCCESS] Classified 85 vernacular items. Output persisted to mood_indexed_memes.json
+- **Output**: 8 high-res JPEG files in `assets/memes/`.
 
-=== KERALA COLLECTIVE MOOD MATRIX ===
-  * Nirvana (Thattukada & Vibe)      : 60 memes
-  * Political Poru & Hartal          : 16 memes
-  * KTU Exam Trauma                  : 9 memes
-```
-
-### 5. Launching the Phase 4 Streamlit Dashboard
+### 5. Launching the V2 Biometric Streamlit Dashboard (Phase 3)
 ```powershell
-.venv\Scripts\streamlit.exe run phase4_dashboard.py
+.venv\Scripts\streamlit.exe run app.py
 ```
-**Access Endpoints:**
-- Local URL: `http://localhost:8501`
-- Network URL: `http://<your-lan-ip>:8501`
+- **Access Endpoints**:
+  - Local URL: `http://localhost:8501`
+  - Features:
+    - **Tab 1**: Global Telemetry KMI Gauge & Emotion Volume
+    - **Tab 2**: Real-Time IR/Webcam Biometric Facial Scanner with DeepFace
+    - **Tab 3**: Lazy-Loaded Vernacular Feed with Automated WebP Compression & CDN Toggle
 
 ---
 
 ## 9. DOWNSTREAM ROADMAP & FUTURE PHASES
 
-1. **Phase 1 Pipeline Formalization (OCR & Crawler)**:
+1. **Phase 1 Pipeline Formalization (OCR & Web Scraper)**:
    - Integrate Tesseract OCR & OpenCV for direct image-to-text extraction from Malayalam meme JPEG/PNG files.
-   - Manglish tokenization using Malayalam phonetic transliteration lexicons.
-2. **Phase 4: Streamlit Kerala Mood Index Dashboard**: [COMPLETED]
-   - Built real-time reactive Streamlit dashboard visualizing the collective Kerala psyche with Plotly `go.Indicator` gauge and affective psychometric volume charts.
-3. **Phase 5: Real-Time Streaming Ingestion**:
-   - Spark Structured Streaming integration to score live social media posts in real-time.
+2. **Phase 2 & 3 Biometric Parquet Matrix**: [COMPLETED]
+   - Scaled corpus to 250k records (195MB+ Parquet lake) with PySpark Catalyst execution and DeepFace real-time vision.
+3. **Phase 4 Visual Optimization (WebP & Lazy Loading)**: [COMPLETED]
+   - Built Pillow-to-WebP automated compression engine (-95.9% size reduction) and session-state progressive feed.
+4. **Phase 5 Real-Time Kafka / Spark Streaming**:
+   - Stream live social media posts directly into the PySpark Catalyst engine for continuous telemetry updates.

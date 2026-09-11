@@ -216,3 +216,6 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# Massive Parquet Data Lake Payloads (>100MB)
+*.parquet
