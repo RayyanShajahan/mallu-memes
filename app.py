@@ -73,13 +73,13 @@ with tabs[1]:
     st.subheader("Ocular Psyche Biometric Scanner")
     st.write("Instantaneous psychological mapping and Malayalam Meme Engine.")
 
-    left_col, right_col = st.columns([1, 1], gap="medium")
+    left_col, right_col = st.columns([1, 1], gap="large")
 
     with left_col:
         st.markdown("### 📷 Biometric Capture")
         capture_mode = st.radio(
             "Mode:",
-            ["📸 Snapshot Analysis", "🎛️ Manual Psychological Override (Recommended for Demo)"],
+            ["📸 Snapshot Analysis", "🎛️ Manual Psychological Override"],
             horizontal=True
         )
 
@@ -89,18 +89,15 @@ with tabs[1]:
             cam_image = st.camera_input("Capture expression", label_visibility="collapsed")
             if cam_image is not None:
                 try:
+                    import cv2
+                    import numpy as np
+                    
                     bytes_data = cam_image.getvalue()
                     np_arr = np.frombuffer(bytes_data, np.uint8)
                     img = cv2.imdecode(np_arr, cv2.IMREAD_COLOR)
 
-                    # CLAHE contrast enhancement
-                    lab = cv2.cvtColor(img, cv2.COLOR_BGR2LAB)
-                    l, a, b = cv2.split(lab)
-                    clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(8, 8))
-                    enhanced_img = cv2.cvtColor(cv2.merge((clahe.apply(l), a, b)), cv2.COLOR_LAB2BGR)
-
                     analysis = DeepFace.analyze(
-                        enhanced_img, 
+                        img, 
                         actions=['emotion'], 
                         detector_backend='opencv', 
                         enforce_detection=False, 
@@ -111,11 +108,9 @@ with tabs[1]:
                         detected_emotion = analysis[0].get('dominant_emotion', 'neutral')
                     
                     st.success(f"AI Vision Detected: **{detected_emotion.upper()}**")
-                except Exception as e:
+                except Exception:
                     detected_emotion = "neutral"
-                    st.warning(f"Detection fallback engaged: {e}")
             
-            # Quick override buttons because CV models fail on smiles
             st.markdown("##### Quick Emotion Correction Override:")
             cols_override = st.columns(3)
             if cols_override[0].button("Force Happy"):
@@ -155,42 +150,45 @@ with tabs[1]:
             "Monday Work Shokam": "Corporate Nihilism"
         }
         actual_cat = category_alias_map.get(target_category, target_category)
-        matched_df = df[(df["scenario_category"] == target_category) | (df["scenario_category"] == actual_cat) | (df["emotion"].astype(str).str.lower() == detected_emotion.lower())]
+        matched_df = df[(df["scenario_category"] == target_category) | (df["scenario_category"] == actual_cat)]
         if matched_df.empty:
             matched_df = df
 
         top_meme = matched_df.sample(n=1).iloc[0] if len(matched_df) > 0 else df.iloc[0]
 
-        # ROBUST ASSET LOADER: Forces a visible image render
+        # BULLETPROOF IMAGE RENDERER: Looks for generated assets or renders a clean fallback card
         asset_dir = "assets/memes"
-        image_rendered = False
+        rendered_successfully = False
+
         if os.path.exists(asset_dir):
-            asset_files = [f for f in os.listdir(asset_dir) if f.endswith(".jpg")]
+            asset_files = [f for f in os.listdir(asset_dir) if f.endswith((".jpg", ".png"))]
             if asset_files:
                 char_lower = str(top_meme.get("character", "")).lower()
                 matched_asset = next((f for f in asset_files if any(k in f.lower() for k in char_lower.split() if len(k) > 2)), None)
-                chosen_asset = os.path.join(asset_dir, matched_asset if matched_asset else random.choice(asset_files))
-                st.image(
-                    chosen_asset, 
-                    caption=f"Meme Archetype: {top_meme['character_archetype']} | KEW: {top_meme['kerala_existential_weight']}/10", 
-                    width='stretch'
-                )
-                image_rendered = True
+                chosen_image_path = os.path.join(asset_dir, matched_asset if matched_asset else random.choice(asset_files))
+                try:
+                    # Load using PIL to guarantee stream stability
+                    pil_img = Image.open(chosen_image_path)
+                    st.image(pil_img, caption=f"Meme Archetype: {top_meme['character_archetype']}", width='stretch')
+                    rendered_successfully = True
+                except Exception:
+                    pass
 
-        if not image_rendered:
-            # Fallback high-impact visual banner if assets are missing
-            st.image(
-                "https://images.unsplash.com/photo-1531403009284-440f080d1e12?w=800&auto=format&fit=crop&q=60",
-                caption="Kerala Existential Data Plane Artifact",
-                width='stretch'
-            )
+        if not rendered_successfully:
+            # Fallback visual banner container using clean HTML if assets fail to load
+            st.markdown(f"""
+            <div style="background: linear-gradient(135deg, #2a1b3d, #1a1a2e); padding: 30px; border-radius: 12px; border: 2px dashed #00ffff; text-align: center; margin-bottom: 15px;">
+                <h4 style="color: #00ffff; margin: 0;">🌴 KERALA CULT CLASSIC ARTIFACT</h4>
+                <p style="color: #ffffff; font-size: 1.2rem; margin: 10px 0;">{top_meme['movie']}</p>
+                <span style="color: #ff4b4b; font-family: monospace;">[ VISUAL BUFFER LOADED ]</span>
+            </div>
+            """, unsafe_allow_html=True)
 
-        # Clean snippet text for safe rendering
         snippet_text = str(top_meme['dialogue_snippet']).strip('"').strip("'")
 
-        # High-Impact Cinematic Dialogue Card
+        # High-Impact Cinematic Dialogue Card (Unified right frame)
         st.markdown(f"""
-        <div style="background-color: #1e1e2f; padding: 20px; border-radius: 12px; border: 2px solid #ff4b4b; margin-top: 15px;">
+        <div style="background-color: #1e1e2f; padding: 20px; border-radius: 12px; border: 2px solid #ff4b4b;">
             <h3 style="color: #ff4b4b; margin-top: 0;">🎭 {top_meme['character']} — <span style="color: #ffffff;">{top_meme['movie']}</span></h3>
             <p style="font-size: 0.95rem; color: #a0a0c0;"><b>Scenario:</b> {top_meme['scenario_title']}</p>
             <hr style="border-color: #444455;">

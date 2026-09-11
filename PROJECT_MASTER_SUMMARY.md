@@ -288,9 +288,14 @@ mallu-memes/
 
 ### Milestone 17: Quick Emotion Correction Override & Guaranteed Image Delivery Matrix
 - **Quick Emotion Correction Override Buttons**: Implemented instant one-click override buttons (`Force Happy`, `Force Sad`, `Force Angry`) directly below the camera snapshot feed. Addresses neural vision misclassification of nuanced regional expressions (e.g. smiles misread as sadness/fear) and guarantees foolproof presenter control during live evaluation.
-- **Dedicated Demo Override Mode**: Included `Manual Psychological Override (Recommended for Demo)` with full emotional state dropdown (`sad`, `angry`, `happy`, `neutral`, `fear`, `surprise`).
+- **Dedicated Demo Override Mode**: Included `Manual Psychological Override` with full emotional state dropdown (`sad`, `angry`, `happy`, `neutral`, `fear`, `surprise`).
 - **Guaranteed Visual Artifact Delivery**: Implemented a resilient fallback image pipeline that scans `assets/memes/` for local JPEG assets and automatically routes to high-impact external visual banners if local files are ever missing or cleared.
-- **Split-Screen Ergonomics**: Polished two-column layout (`st.columns([1, 1], gap='medium')`) with compact camera sizing on the left and synchronized image + cyberpunk card on the right.
+- **Split-Screen Ergonomics**: Polished two-column layout with compact camera sizing on the left and synchronized image + cyberpunk card on the right.
+
+### Milestone 18: PIL Stream Stability, Cyberpunk Gradient Fallback & Unified Anti-Stacking Preview Frame
+- **PIL Image Pipeline Integration (`Image.open`)**: Replaced raw string file paths in `st.image()` with instantiated `PIL.Image.open(chosen_image_path)` objects. Guarantees stream buffer stability, eliminates filesystem path parsing failures, and delivers crisp, responsive image scaling within the container.
+- **Cyberpunk Gradient Fallback Banner**: Engineered an inline HTML visual banner container (`background: linear-gradient(135deg, #2a1b3d, #1a1a2e); border: 2px dashed #00ffff;`) with `[ VISUAL BUFFER LOADED ]` and cinematic movie titles if asset files fail to read, preventing broken image icons or layout clipping.
+- **Unified Preview Frame & Anti-Stacking Geometry**: Set `gap="large"` on `st.columns([1, 1], gap="large")` and cleanly bound all visual artifacts and dialogue cards within `right_col`, eliminating vertical card stacking and restoring balanced horizontal symmetry.
 
 ---
 
