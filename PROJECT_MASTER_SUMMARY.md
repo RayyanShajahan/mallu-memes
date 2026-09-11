@@ -164,16 +164,18 @@ mallu-memes/
 │       └── ramanathan_malappuram.jpg       # Ramanathan shock card (89.6 KB)
 ├── Dockerfile                              # Production Hugging Face Spaces Docker SDK container definition
 ├── LICENSE                                 # MIT Open Source License
-├── README.md                               # Project intro, Hugging Face metadata & runbook
-├── app.py                                  # V2 Malayalam Meme Vault & Telemetry Streamlit App
-├── assets/memes/                           # Curated offline archive (sad/, angry/, happy/, neutral/ subfolders)
-├── biometric_memes.parquet                 # 195.81 MB pre-computed Parquet dataset (250,000 records)
+├── packages.txt                            # Debian Linux system dependencies (libgl1, libglib2.0-0) for Streamlit Cloud
+├── README.md                               # Project documentation, Streamlit Cloud & Hugging Face runbooks
+├── app.py                                  # V2 Malayalam Meme Vault & Biometric Streamlit App
+├── assets/memes/                           # Curated offline archive (29 authentic movie frames across emotional subfolders)
+├── biometric_memes.parquet                 # 195.81 MB local Parquet dataset (250,000 records, gitignored)
+├── biometric_memes_sample.parquet          # 0.88 MB cloud-optimized Parquet dataset (5,000 records, 55 characters, git-tracked)
 ├── create_sample_assets.py                 # Generates sample high-res meme JPEG banners
 ├── download_curated_memes.py               # Ingestion script pulling 21 authentic meme frames from archive
 ├── generate_v2_corpus.py                   # V2 massive streaming corpus generator (150MB+ / 250k rec)
 ├── PROJECT_MASTER_SUMMARY.md               # [THIS FILE] Single Source of Truth Compendium
-├── raw_meme_corpus.parquet                 # 187.97 MB raw Parquet corpus (250,000 records)
-├── requirements.txt                        # Pinned dependencies (streamlit-webrtc, av, deepface, etc.)
+├── raw_meme_corpus.parquet                 # 187.97 MB raw Parquet corpus (250,000 records, gitignored)
+├── requirements.txt                        # Pinned dependencies (streamlit, deepface, opencv-python, tensorflow, etc.)
 ├── spark_processor.py                      # V2 PySpark Distributed Emotion Mapping Engine
 └── verify_environment.py                   # Pre-demo diagnostic suite (STUN, weights, camera)
 ```
@@ -182,9 +184,11 @@ mallu-memes/
 
 | File / Component | Primary Technology | Purpose & Responsibility |
 | :--- | :--- | :--- |
-| `app.py` | Python 3.11, Streamlit 1.63, DeepFace 0.0.100, OpenCV 4.14, Pillow 12.3, Plotly 7.0 | Resilient Malayalam Meme Engine & Telemetry frontend. Features 3 tabs: Global Telemetry gauge, Curated Malayalam Meme Vault (Offline Mode with instant emotion mapping and true movie frames), and Vernacular Data Lake explorer. |
+| `app.py` | Python 3.11, Streamlit 1.63, DeepFace 0.0.100, OpenCV 4.14, Pillow 12.3, Plotly 7.0 | Resilient Malayalam Meme Engine & Biometric Telemetry frontend. Features 3 tabs: Global Telemetry gauge, Ocular Psyche Biometric Scanner & Curated Vault (native snapshot camera + manual override with exact movie scene synchronization), and Vernacular Data Lake explorer. |
+| `packages.txt` | Debian Apt Manifest | Provides system shared libraries (`libgl1`, `libglib2.0-0`) required by OpenCV in headless Linux cloud environments like Streamlit Community Cloud. |
+| `biometric_memes_sample.parquet` | Apache Parquet (< 1 MB) | 5,000-record cloud-ready Parquet dataset covering all 55 characters and 29 scenario categories with full schema parity, bypassing GitHub's 100MB file limit. |
 | `download_curated_memes.py` | Python 3.11, `urllib`, Pillow 12.3 | Ingestion engine fetching 21 iconic Malayalam movie meme frames from the public archive across 4 psychological categories (`sad`, `angry`, `happy`, `neutral`). |
-| `assets/memes/` | JPEG Image Assets | Categorized offline vault containing verified, high-resolution Malayalam movie frames (Kalyanaraman, Nadodikkattu, CID Moosa, Punjabi House, Spadikam, Godfather, Aavesham). |
+| `assets/memes/` | JPEG Image Assets | Categorized offline vault containing 29 verified, high-resolution Malayalam movie frames (Kalyanaraman, Nadodikkattu, CID Moosa, Punjabi House, Spadikam, Godfather, Aavesham). |
 | `spark_processor.py` | Python 3.11, PySpark 4.2.0, PyArrow 25.0 | Distributed ETL processor (`KeralaBiometricMemeProcessor`). Ingests `raw_meme_corpus.parquet`, applies vectorized Spark Catalyst expressions for CRI, HDM, and DeepFace emotion classification, and writes `biometric_memes.parquet`. |
 | `generate_v2_corpus.py` | Python 3.11, PyArrow 25.0 | Streaming synthesizer that generates 250,000 authentic vernacular meme records (187.97 MB Parquet) across 55 cinematic characters and 35 cultural scenarios. |
 | `verify_environment.py` | Python 3.11, `socket`, `cv2` | Pre-demo verification diagnostic suite. Validates DeepFace weight cache integrity, Google STUN UDP connectivity, and hardware camera device access. |
@@ -193,8 +197,8 @@ mallu-memes/
 | `create_sample_assets.py` | Python 3.11, Pillow 12.3 | Generates sample uncompressed 900x500 JPEG meme banners in `assets/memes/` to validate backend WebP compression and lazy loading. |
 | `raw_meme_corpus.parquet` | Apache Parquet (Uncompressed) | 187.97 MB raw ingestion corpus with 250,000 rows, 18 columns, and rich Manglish OCR text dialogues. |
 | `biometric_memes.parquet` | Apache Parquet (Uncompressed) | 195.81 MB indexed analytical data plane with 250,000 rows and 22 columns including `cultural_relevance_index`, `humor_density_metric`, `emotion`, and `kerala_existential_weight`. |
-| `README.md` | Markdown + YAML | Project README with Hugging Face Spaces configuration metadata (supporting both Streamlit & Docker SDKs). |
-| `requirements.txt` | Pip | Dependency manifest pinned with `streamlit-webrtc`, `av`, `deepface`, `opencv-python`, `fastparquet`, `pyarrow`, `pyspark`, `streamlit`, `pillow`, `plotly`, `tf-keras`, and `nltk`. |
+| `README.md` | Markdown + YAML | Comprehensive deployment documentation featuring turnkey Streamlit Community Cloud and Hugging Face Spaces setup guides. |
+| `requirements.txt` | Pip | Dependency manifest optimized for cloud containers with `streamlit`, `deepface`, `opencv-python`, `fastparquet`, `pyarrow`, `tensorflow`, `pillow`, `plotly`, `tf-keras`, `mtcnn`, and `nltk`. |
 
 ---
 
@@ -330,6 +334,20 @@ mallu-memes/
   - *Neutral-Dampened Affective Classifier*: Evaluated top expressive emotions (`angry`, `happy`, `sad`, `surprise`, `fear`). If active expressive activation reaches $\ge 15\%$ and $\ge 45\%$ of neutral, the system prioritizes the active human intent over the passive neutral baseline.
   - *Confidence Percentage & Breakdown Meter*: Surfaced exact percentage confidences in `st.success` and an interactive breakdown expander showing each emotion's activation level.
 
+### Milestone 23: Streamlit Community Cloud Turnkey Publishing Architecture
+- **Identified Hosting Constraints on Streamlit Community Cloud (`share.streamlit.io`)**:
+  1. *GitHub 100MB File Size Limit*: The primary Parquet data lake `biometric_memes.parquet` is 195.8 MB, and `raw_meme_corpus.parquet` is 187.9 MB. Direct commits to GitHub fail due to GitHub's hard file size ceiling.
+  2. *Headless Debian Shared Object Missing (`libGL.so.1`)*: Streamlit Cloud spins up standard Debian-based container instances lacking default OpenGL GUI libraries, causing `import cv2` to throw fatal DSO loader errors (`libGL.so.1: cannot open shared object file`).
+  3. *Bloated Build Manifests*: Legacy `requirements.txt` included unused `streamlit-webrtc` and `av` (PyAV) libraries requiring C-extension compilation that slow down and occasionally time out cloud container provisioning.
+- **Engineered Turnkey Publishing Architecture**:
+  - *Dual-Tier Parquet Data Pipeline*: Synthesized a lightweight 0.88 MB Parquet slice (`biometric_memes_sample.parquet`) encapsulating 5,000 authentic records across all 55 characters and 29 scenario categories with 100% schema parity.
+  - *Dynamic Cloud Ingestion Fallback*: Updated `load_data()` in `app.py` to prioritize `biometric_memes.parquet` locally, seamlessly falling back to `biometric_memes_sample.parquet` in cloud environments, and generating an emergency synthetic DataFrame if neither exists.
+  - *Git Whitelist Optimization*: Enhanced `.gitignore` with `!biometric_memes_sample.parquet` while keeping the 195MB+ files ignored, enabling immediate GitHub synchronization.
+  - *Debian System Dependencies (`packages.txt`)*: Authored `packages.txt` declaring `libgl1` and `libglib2.0-0` for automatic `apt-get` resolution by Streamlit Community Cloud's build bot.
+  - *Dependency Streamlining (`requirements.txt`)*: Cleaned `requirements.txt` by purging `streamlit-webrtc` and `av` and pinning `tensorflow`, `deepface`, `opencv-python`, `fastparquet`, `pyarrow`, `plotly`, `pillow`, `tf-keras`, `mtcnn`, and `nltk`.
+  - *Comprehensive Deployment Guide in `README.md`*: Structured step-by-step 1-click cloud publishing instructions, setting repository to `RayyanShajahan/mallu-memes`, branch `main`, main file `app.py`, and Python 3.11.
+  - *Pre-Flight Sanity Checks*: Confirmed `python -m py_compile app.py` exits 0, `pip check` reports no broken requirements, and local Streamlit server responds with HTTP 200.
+
 ---
 
 ## 5. PROPRIETARY SCORING ALGORITHMS & MATHEMATICAL FORMULATIONS
@@ -414,11 +432,24 @@ root
 
 ---
 
-## 8. ZERO-COST CLOUD DEPLOYMENT ARCHITECTURE (HUGGING FACE SPACES)
+## 8. CLOUD & CONTAINER DEPLOYMENT ARCHITECTURES
 
+### A. Streamlit Community Cloud (Recommended 1-Click Deployment)
+- **Target URL**: [share.streamlit.io](https://share.streamlit.io/)
+- **Configuration**:
+  - **Repository**: `RayyanShajahan/mallu-memes`
+  - **Branch**: `main`
+  - **Main file path**: `app.py`
+  - **Python Version**: `3.11`
+- **Automated System Resolution**:
+  - `packages.txt` provides Debian packages `libgl1` and `libglib2.0-0` to satisfy OpenCV dynamic link dependencies in headless cloud Linux.
+  - `requirements.txt` installs pure-Python and pre-compiled wheels for Streamlit, DeepFace, TensorFlow, PyArrow, etc.
+  - `biometric_memes_sample.parquet` (0.88 MB, 5,000 rows, 55 characters) loads instantly while keeping repo size well below GitHub's 100MB limit.
+
+### B. Hugging Face Spaces Deployment
 Deployable to **Hugging Face Spaces** on the **Free CPU Tier (2 vCPU · 16 GB RAM)** with dual SDK support:
 
-### Option A: Standard Streamlit SDK
+#### Option 1: Standard Streamlit SDK
 - In `README.md`, maintain standard YAML frontmatter:
   ```yaml
   ---

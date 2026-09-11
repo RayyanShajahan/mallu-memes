@@ -10,39 +10,38 @@ import numpy as np
 import cv2
 from deepface import DeepFace
 
-# Optional WebRTC imports with error resilience
-WEBRTC_AVAILABLE = False
-try:
-    from streamlit_webrtc import webrtc_streamer, VideoProcessorBase, RTCConfiguration
-    import av
-    WEBRTC_AVAILABLE = True
-except ImportError:
-    pass
-
 st.set_page_config(page_title="Kerala Biometric Meme Engine", layout="wide", page_icon="🌴")
 
 # Load Parquet Database
 @st.cache_data
 def load_data():
-    parquet_path = "biometric_memes.parquet"
-    if os.path.exists(parquet_path):
-        data = pd.read_parquet(parquet_path)
-        # Ensure emotion column reflects diverse target_emotion states
-        if "target_emotion" in data.columns:
-            data["emotion"] = data["target_emotion"]
-        return data
+    full_parquet = "biometric_memes.parquet"
+    sample_parquet = "biometric_memes_sample.parquet"
+    
+    if os.path.exists(full_parquet):
+        data = pd.read_parquet(full_parquet)
+    elif os.path.exists(sample_parquet):
+        data = pd.read_parquet(sample_parquet)
     else:
-        # Fallback dummy df if parquet is missing
-        return pd.DataFrame({
+        # Fallback dummy df if parquet is completely missing
+        data = pd.DataFrame({
             "meme_id": ["MEME_001"],
             "character": ["Dashamoolam Damu"],
             "movie": ["Chattambinadu"],
             "scenario_title": ["Onam Pookkalam Turf War"],
+            "scenario_category": ["Corporate Nihilism"],
             "character_archetype": ["Failed Quotation Gangster"],
+            "target_emotion": ["neutral"],
             "emotion": ["neutral"],
+            "cultural_relevance_index": [9.0],
+            "humor_density_metric": [8.5],
             "kerala_existential_weight": [9.04],
             "dialogue_snippet": ['"Athu pinne sir... njan oru simple quotation eduthatha!"']
         })
+
+    if "target_emotion" in data.columns:
+        data["emotion"] = data["target_emotion"]
+    return data
 
 df = load_data()
 

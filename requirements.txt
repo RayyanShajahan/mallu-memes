@@ -1,13 +1,12 @@
 streamlit
-streamlit-webrtc
 deepface
 opencv-python
 pandas
 pyarrow
 fastparquet
-av
 plotly
 pillow
+tensorflow
 tf-keras
 mtcnn
 nltk

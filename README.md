@@ -12,99 +12,117 @@ pinned: false
 # 🌴 Kerala Biometric Meme Engine (Mallu Memes V2)
 **Real-Time Computer Vision, PySpark Distributed Telemetry, and Vernacular Cultural Intelligence**
 
-An over-engineered, hyper-local biometric cultural intelligence system that uses **continuous computer vision (WebRTC + DeepFace)** and an enterprise **150MB+ columnar Parquet data lake (250,000 records)** processed via **PySpark** to match user facial micro-expressions with existentially heavy Malayalam cinema memes.
+An over-engineered, hyper-local biometric cultural intelligence dashboard that pairs **real-time computer vision (DeepFace)** with an enterprise **columnar Parquet data lake** processed via **Apache Spark** to map human facial micro-expressions into existentially heavy Malayalam cinema memes.
 
 ---
 
-## ⚡ Key Features
+## ☁️ Deploying to Streamlit Community Cloud (Recommended)
 
-1. **Live Continuous Biometric Engine (WebRTC + DeepFace)**:
-   - Streams 30+ FPS video directly from the user's camera via `streamlit-webrtc` using Google STUN (`stun:stun.l.google.com:19302`).
-   - DeepFace extracts real-time micro-expressions and burns a cyberpunk telemetry HUD (`DETECTED PSYCHE`) directly onto the live video feed.
-   - Maps emotions (`happy`, `sad`, `angry`, `fear`, `neutral`, `surprise`, `disgust`) to regional cultural buckets (*KTU Exam Trauma, Nirvana Thattukada, Political Poru, Monday Work Shokam*).
-   - Instantly scans the 195MB Parquet lake in **< 5 ms** to project a matching high-KEW meme.
+This repository is pre-configured for turnkey 1-click deployment on **Streamlit Community Cloud** ([share.streamlit.io](https://share.streamlit.io/)).
 
-2. **Automated Pillow-to-WebP Compression Engine**:
-   - Intercepts uncompressed JPEG meme banners, scales them proportionally (`max_width=600`) using `Image.Resampling.LANCZOS`, and converts to in-memory WebP buffers (`quality=60`).
-   - Slashes image sizes from **91.5 KB to 3.8 KB (95.9% bandwidth reduction)** in **~3.2 ms**.
+### Step-by-Step Deployment Guide:
+1. **Sign in**: Log in to [share.streamlit.io](https://share.streamlit.io/) with your GitHub account.
+2. **Deploy an App**: Click **"New app"** (or **"Create app"**).
+3. **Repository Configuration**:
+   - **Repository**: `RayyanShajahan/mallu-memes`
+   - **Branch**: `main`
+   - **Main file path**: `app.py`
+   - **App URL**: Choose your custom URL or keep the default.
+4. **Advanced Settings (Optional)**:
+   - **Python Version**: `3.11` (recommended)
+5. **Click Deploy**: Streamlit Cloud automatically:
+   - Reads [packages.txt](file:///c:/Users/ra416/OneDrive/Desktop/mallu-memes/packages.txt) to install Debian dependencies (`libgl1`, `libglib2.0-0`) for headless OpenCV.
+   - Installs Python dependencies from [requirements.txt](file:///c:/Users/ra416/OneDrive/Desktop/mallu-memes/requirements.txt).
+   - Ingests the optimized [biometric_memes_sample.parquet](file:///c:/Users/ra416/OneDrive/Desktop/mallu-memes/biometric_memes_sample.parquet) (5,000 records, 55 characters, 29 categories, < 1 MB) adhering strictly to GitHub's 100MB file limit.
+   - Serves the live application instantly!
 
-3. **Progressive Lazy Loading**:
-   - Prevents browser tab crashes by paginating through `st.session_state.feed_limit` and a "Load More Chaos" trigger.
-   - Includes an Edge CDN transform toggle (`https://res.cloudinary.com/.../w_600,f_webp/...`) for zero-CPU remote image optimization.
+---
 
-4. **Distributed Big Data Engine (PySpark Catalyst)**:
-   - Evaluates the **Cultural Relevance Index ($CRI$)**, **Humor Density Metric ($HDM$)**, and compound **Kerala Existential Weight ($KEW$)** across **250,000 records** in **21.57 seconds** using native JVM Catalyst expressions.
+## ⚡ Key Architecture & Features
+
+### 1. 📷 Ocular Psyche Biometric Scanner (Tab 2)
+- **Native Browser Camera Input**: Uses Streamlit's native `st.camera_input` for zero-configuration webcam access on desktop and mobile without requiring WebRTC STUN/TURN server handshakes.
+- **CLAHE Contrast Normalization**: Applies Contrast-Limited Adaptive Histogram Equalization to normalize facial lighting across dark rooms, high-backlight settings, and low-fidelity laptop cameras.
+- **Primary Foreground Face Selection**: Automatically extracts the dominant face (`max(w * h)`) to prevent background bystanders from corrupting emotion analysis.
+- **Intelligent Neutral-Dampened Affective Detection**: Standard Facial Expression Recognition (FER) neural networks disproportionately skew toward "neutral" (often 40%+ even during genuine laughter or distress). The engine implements an affective dampener: if any expressive emotion exceeds 15% confidence and is at least 45% of the neutral signal, the human expression is actively promoted.
+- **Curated Malayalam Meme Vault**: Serves 29 high-resolution authentic Malayalam movie frames (*Kalyanaraman, Nadodikkattu, CID Moosa, Punjabi House, Spadikam, Godfather, Akkare Akkare Akkare, In Harihar Nagar, Aavesham*) mapped directly to psychological categories (*KTU Exam Trauma, Nirvana Thattukada, Political Poru, Monday Work Shokam*).
+- **Exact Character & Dialogue Synchronization**: Eliminates character-image mismatches by linking images to canonical identities in `IMAGE_METADATA` and querying matching dialogue snippets and Kerala Existential Weight (KEW) scores.
+
+### 2. 📊 Global Telemetry & KMI Index (Tab 1)
+- **Aggregate Kerala Mood Index (KMI)**: Real-time Plotly gauge chart visualizing statewide existential tension.
+- **Telemetry Indicators**: Displays total meme lake count, dominant cultural states, and Spark Parquet partition health.
+
+### 3. 📂 Vernacular Meme Lake Explorer (Tab 3)
+- Interactive high-performance dataframe explorer querying the columnar Parquet lake.
+
+### 4. 🗄️ Big Data Architecture (PySpark Catalyst)
+- Evaluates the **Cultural Relevance Index ($CRI$)**, **Humor Density Metric ($HDM$)**, and compound **Kerala Existential Weight ($KEW$)** across **250,000 records** in **21.57 seconds** using native JVM Catalyst expressions.
+- The cloud frontend is decoupled from runtime JVM/Spark requirements, querying the pre-computed Parquet lake through `pyarrow` and `pandas`.
 
 ---
 
 ## 🚀 Local Quickstart
 
+### Prerequisites
+- Python 3.10 or 3.11
+- Webcam for biometric capture
+
+### Windows (PowerShell)
 ```powershell
-# 1. Clone & activate virtual environment
+# 1. Clone repository
 git clone https://github.com/RayyanShajahan/mallu-memes.git
 cd mallu-memes
+
+# 2. Create and activate virtual environment
+python -m venv .venv
 .venv\Scripts\Activate.ps1
 
-# 2. Install dependencies
+# 3. Install dependencies
 pip install -r requirements.txt
 
-# 3. Launch the Streamlit Biometric Dashboard
+# 4. Launch Streamlit app
 streamlit run app.py
 ```
-Open `http://localhost:8501` in your browser and grant webcam permissions when prompted.
+
+### Linux / macOS
+```bash
+# 1. Clone repository
+git clone https://github.com/RayyanShajahan/mallu-memes.git
+cd mallu-memes
+
+# 2. Create and activate virtual environment
+python3 -m venv .venv
+source .venv/bin/activate
+
+# 3. Install dependencies
+pip install -r requirements.txt
+
+# 4. Launch Streamlit app
+streamlit run app.py
+```
+Navigate to `http://localhost:8501` in your browser.
 
 ---
 
-## ☁️ Zero-Cost Hugging Face Spaces Deployment
+## 📦 Cloud & Container Compatibility Matrix
 
-This repository supports both **Streamlit SDK** and the recommended **Docker SDK** for Hugging Face Spaces:
-
-### Option A: Standard Streamlit SDK
-1. Create a Space on [Hugging Face](https://huggingface.co/spaces), select **Streamlit** SDK, and choose **Free CPU Tier (2 vCPU · 16 GB RAM)**.
-2. In `README.md`, ensure the header is:
-   ```yaml
-   ---
-   title: Kerala Biometric Meme Engine
-   emoji: 🌴
-   colorFrom: red
-   colorTo: yellow
-   sdk: streamlit
-   sdk_version: "1.63.0"
-   app_file: app.py
-   pinned: false
-   ---
-   ```
-
-### Option B: Containerized Docker SDK (Recommended Fallback)
-Hugging Face recently transitioned Spaces toward the Docker runtime. A production-ready `Dockerfile` is provided in the repository root:
-1. When creating or configuring the Space, select **Docker** as the SDK.
-2. Update the `README.md` YAML header to:
-   ```yaml
-   ---
-   title: Kerala Biometric Meme Engine
-   emoji: 🌴
-   colorFrom: red
-   colorTo: yellow
-   sdk: docker
-   pinned: false
-   ---
-   ```
-3. The container automatically installs OpenCV system libraries, pre-caches `facial_expression_model_weights.h5` during build, and binds Streamlit to port `7860`.
+| Platform | Deployment Target | Status | Requirements |
+| :--- | :--- | :--- | :--- |
+| **Streamlit Community Cloud** | `app.py` | ✅ Turnkey Ready | `packages.txt` (`libgl1`, `libglib2.0-0`) + `requirements.txt` |
+| **Hugging Face Spaces** | Streamlit SDK / Docker | ✅ Turnkey Ready | Configured via `README.md` YAML frontmatter & `Dockerfile` |
+| **Local Environment** | Windows / Linux / macOS | ✅ Tested | Python 3.10-3.11 with `.venv` |
 
 ---
 
-## 🛠️ Pre-Demo Verification Suite
+## 🛠️ Pre-Demo Diagnostic Verification
 
-Run the diagnostic tool before live presentations:
+Run the included hardware and asset diagnostic suite:
 ```powershell
 .venv\Scripts\python.exe verify_environment.py
 ```
-Checks:
-- **Weight Cache Integrity**: Confirms `facial_expression_model_weights.h5` (~5.97 MB) is present in `~/.deepface/weights/`.
-- **STUN Connectivity**: Tests UDP ping to `stun.l.google.com:19302` to ensure venue firewalls allow WebRTC handshakes.
-- **Hardware Camera**: Confirms device index 0 is open and accessible.
 
 ---
 
 ## 📜 License
-MIT License. Built for the Kerala internet collective consciousness.
+MIT License. Dedicated to the Kerala internet collective consciousness.
+
