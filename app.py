@@ -242,17 +242,7 @@ def load_biometric_dataset(parquet_path="biometric_memes.parquet"):
             df["kerala_existential_weight"] = 8.5
         return df
 
-    # Fallback to mood_indexed_memes.json
-    json_path = "mood_indexed_memes.json"
-    if os.path.exists(json_path):
-        with open(json_path, "r", encoding="utf-8") as f:
-            df = pd.DataFrame(json.load(f))
-            df["emotion"] = df["dominant_mood"].apply(
-                lambda m: "happy" if "Nirvana" in str(m) else ("sad" if "KTU" in str(m) else "angry")
-            )
-            return df
-
-    st.error(f"[FATAL ERROR] Cannot locate '{parquet_path}'. Please run Phase 1 & Phase 2 first!")
+    st.error(f"[FATAL ERROR] Cannot locate '{parquet_path}'. Please run Phase 1 (generate_v2_corpus.py) and Phase 2 (spark_processor.py) first!")
     st.stop()
 
 

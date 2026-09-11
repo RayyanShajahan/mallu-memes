@@ -133,7 +133,7 @@ mallu-memes/
 ├── .agents/
 │   └── rules/
 │       └── sync-master-summary.md          # Automation rule enforcing SSOT synchronization
-├── .gitignore                              # Comprehensive exclusions (venv, caches, artifacts)
+├── .gitignore                              # Comprehensive exclusions (venv, caches, *.parquet)
 ├── .venv/                                  # Isolated Python 3.11 virtual environment
 ├── assets/
 │   └── memes/                              # Sample high-resolution uncompressed JPEG memes
@@ -150,14 +150,7 @@ mallu-memes/
 ├── app.py                                  # Phase 3 V2 Biometric Streamlit Application + WebP Feed
 ├── biometric_memes.parquet                 # 195.81 MB pre-computed Parquet dataset (250,000 records)
 ├── create_sample_assets.py                 # Generates sample high-res meme JPEG banners
-├── generate_corpus.py                      # V1 synthetic corpus synthesizer (~50 KB test payload)
 ├── generate_v2_corpus.py                   # V2 massive streaming corpus generator (150MB+ / 250k rec)
-├── meme_corpus.json                        # V1 input corpus (85 records)
-├── mood_indexed_memes.json                 # V1 Phase 3 payload with sentiment vectors & KMI
-├── phase2_pyspark_pipeline.py              # V1 PySpark Distributed Pipeline
-├── phase3_sentiment_model.py               # V1 Vernacular NLP Sentiment & Mood Engine
-├── phase4_dashboard.py                     # V1 Streamlit Kerala Mood Index Visualization Matrix
-├── processed_memes.json                    # V1 Phase 2 output analytical payload
 ├── PROJECT_MASTER_SUMMARY.md               # [THIS FILE] Single Source of Truth Compendium
 ├── raw_meme_corpus.parquet                 # 187.97 MB raw Parquet corpus (250,000 records)
 ├── requirements.txt                        # Pinned dependencies (deepface, pyspark, opencv, etc.)
@@ -184,8 +177,8 @@ mallu-memes/
 - **Microsoft OpenJDK 17 LTS Installed**: Provisioned through `winget` (`Microsoft.OpenJDK.17` version `17.0.20.101`). Permanent system `JAVA_HOME` configured at `C:\Program Files\Microsoft\jdk-17.0.20.101-hotspot\` with JVM binaries in system `Path`.
 - **Virtual Environment Rebuild**: Migrated environment to Python 3.11.9 (`C:\Users\ra416\AppData\Local\Programs\Python\Python311\python.exe`) to guarantee binary wheel compatibility with `tensorflow` and `deepface`.
 
-### Milestone 2–5: V1 Distributed Pipeline, NLP Model & KMI Dashboard
-- Built and validated `generate_corpus.py`, `phase2_pyspark_pipeline.py`, `phase3_sentiment_model.py`, and `phase4_dashboard.py` on the 85-record pilot corpus.
+### Milestone 2–5: V1 Distributed Pipeline, NLP Model & KMI Dashboard (Archived)
+- Built and validated pilot pipeline on the 85-record test corpus. Superseded by the V2 150MB+ columnar Parquet and computer vision architecture.
 
 ### Milestone 6: V2 Biometric Meme Engine & 150MB+ Corpus Architecture
 - **Corpus Scaling (`generate_v2_corpus.py`)**: Built a high-throughput streaming Parquet writer utilizing `pyarrow.parquet.ParquetWriter`. Synthesized **250,000 records** in 2.09 seconds, producing `raw_meme_corpus.parquet` at **187.97 MB** physical disk size.
@@ -209,6 +202,11 @@ mallu-memes/
   - Integrated `st.camera_input()` with `deepface.DeepFace.analyze(actions=['emotion'], detector_backend='opencv')`.
   - Sub-millisecond Parquet querying for $\ge 90$th percentile KEW memes matching the detected micro-expression.
   - Renders both rich HTML card and on-the-fly WebP banner artifact.
+
+### Milestone 8: Decommissioning of Legacy V1 Artifacts & Architecture Consolidation
+- **Purged Obsolete V1 Artifacts**: Permanently removed legacy prototype scripts and redundant JSON data planes (`generate_corpus.py`, `meme_corpus.json`, `phase2_pyspark_pipeline.py`, `processed_memes.json`, `phase3_sentiment_model.py`, `mood_indexed_memes.json`, `phase4_dashboard.py`).
+- **Single-Stack Parquet Consolidation**: Refactored `app.py` data ingestion to strictly rely on `biometric_memes.parquet` (with raw Parquet fallback), fully eliminating obsolete JSON fallbacks.
+- **Git Ignore Safeguard**: Configured `*.parquet` in `.gitignore` to prevent GitHub 100MB file push rejections while maintaining deterministic 20-second reproducibility from source scripts.
 
 ---
 
