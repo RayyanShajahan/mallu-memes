@@ -7,14 +7,14 @@ import random
 from PIL import Image
 import io
 import numpy as np
+import cv2
+from deepface import DeepFace
 
 # Optional WebRTC imports with error resilience
 WEBRTC_AVAILABLE = False
 try:
     from streamlit_webrtc import webrtc_streamer, VideoProcessorBase, RTCConfiguration
     import av
-    import cv2
-    from deepface import DeepFace
     WEBRTC_AVAILABLE = True
 except ImportError:
     pass
@@ -27,8 +27,8 @@ def load_data():
     parquet_path = "biometric_memes.parquet"
     if os.path.exists(parquet_path):
         data = pd.read_parquet(parquet_path)
-        # Ensure emotion column reflects diverse target_emotion states if collapsed
-        if "target_emotion" in data.columns and data["emotion"].nunique() <= 1:
+        # Ensure emotion column reflects diverse target_emotion states
+        if "target_emotion" in data.columns:
             data["emotion"] = data["target_emotion"]
         return data
     else:
@@ -63,7 +63,7 @@ with tabs[0]:
             gauge={'axis': {'range': [0, 15]}, 'bar': {'color': "#ff4b4b"}}
         ))
         fig.update_layout(height=350, template="plotly_dark")
-        st.plotly_chart(fig, use_container_width=True)
+        st.plotly_chart(fig, width='stretch')
     with col2:
         st.metric("Total Memes in Lake", f"{len(df):,}")
         st.metric("Dominant State", "Monday Work Shokam")
@@ -91,9 +91,6 @@ with tabs[1]:
             cam_image = st.camera_input("Capture expression", label_visibility="collapsed")
             if cam_image is not None:
                 try:
-                    import cv2
-                    import numpy as np
-                    
                     bytes_data = cam_image.getvalue()
                     np_arr = np.frombuffer(bytes_data, np.uint8)
                     img = cv2.imdecode(np_arr, cv2.IMREAD_COLOR)
@@ -115,8 +112,9 @@ with tabs[1]:
                         detected_emotion = analysis[0].get('dominant_emotion', 'neutral')
                     
                     st.success(f"Detected: **{detected_emotion.upper()}**")
-                except Exception:
+                except Exception as e:
                     detected_emotion = "neutral"
+                    st.warning(f"Detection fallback engaged: {e}")
         else:
             detected_emotion = st.selectbox(
                 "Demo Override Emotion:",
@@ -165,12 +163,15 @@ with tabs[1]:
                 st.image(
                     chosen_asset, 
                     caption=f"{top_meme['character']} | KEW Score: {top_meme['kerala_existential_weight']}/10", 
-                    use_container_width=True
+                    width='stretch'
                 )
                 rendered_image = True
 
         if not rendered_image:
             st.warning("Local assets missing or empty. Run `create_sample_assets.py` to generate visual meme cards.")
+
+        # Clean snippet text for safe rendering
+        snippet_text = str(top_meme['dialogue_snippet']).strip('"').strip("'")
 
         # Cinematic Text Card below or alongside the image
         st.markdown(f"""
@@ -178,7 +179,7 @@ with tabs[1]:
             <h3 style="color: #ff4b4b; margin-top: 0;">🎭 {top_meme['character']} — <span style="color: #ffffff;">{top_meme['movie']}</span></h3>
             <p style="font-size: 0.95rem; color: #a0a0c0;"><b>Scenario:</b> {top_meme['scenario_title']}</p>
             <hr style="border-color: #444455;">
-            <p style="color: #00ffff; font-style: italic; font-size: 1.1rem; margin: 10px 0;">"{top_meme['dialogue_snippet']}"</p>
+            <p style="color: #00ffff; font-style: italic; font-size: 1.1rem; margin: 10px 0;">"{snippet_text}"</p>
             <div style="display: flex; justify-content: space-between; margin-top: 15px;">
                 <span style="background-color: #ff4b4b; color: white; padding: 4px 12px; border-radius: 15px; font-weight: bold; font-size: 0.85rem;">KEW: {top_meme['kerala_existential_weight']}/10</span>
                 <span style="color: #8888aa; font-family: monospace; font-size: 0.8rem;">250k PARQUET LAKE</span>

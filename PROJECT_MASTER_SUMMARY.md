@@ -277,8 +277,14 @@ mallu-memes/
 
 ### Milestone 15: Dual-Column Split Screen & Synchronized Visual-Cinematic Projection
 - **Two-Column Split Screen Matrix**: Replaced full-width camera layout with a balanced `st.columns([1, 1], gap="medium")` architecture in Tab 2. The left column encapsulates compact camera controls (`st.camera_input` with `label_visibility="collapsed"`) and manual simulation overrides, preventing camera feed viewport dominance.
-- **Dual Visual-Cinematic Card Display**: Right column unifies both visual and typographic outputs by rendering the high-resolution JPEG artifact from `assets/memes/` (`use_container_width=True`) alongside the cyberpunk neon dialogue card (`#1e1e2f` card with cyan dialogue snippet, KEW score, and Parquet data plane tag).
+- **Dual Visual-Cinematic Card Display**: Right column unifies both visual and typographic outputs by rendering the high-resolution JPEG artifact from `assets/memes/` (`width='stretch'`) alongside the cyberpunk neon dialogue card (`#1e1e2f` card with cyan dialogue snippet, KEW score, and Parquet data plane tag).
 - **Hardened Parquet & Asset Binding**: Preserves character-aware asset matching and regional category alignment (`Academic Trauma`, `Political Satire`, `Gastronomic Nirvana`, `Corporate Nihilism`) querying the 250,000-record Parquet data lake with randomized sampling.
+
+### Milestone 16: Deprecation Warning Eradication, Dependency Manifest Hardening & Robust HTML Escaping
+- **Streamlit Parameter Modernization**: Replaced all deprecated instances of `use_container_width=True` with modern `width='stretch'` across `st.plotly_chart` and `st.image`, eliminating UI deprecation banners.
+- **Top-Level Vision Import Decoupling**: Moved `cv2` and `DeepFace` out of the optional `streamlit_webrtc` exception block into primary top-level imports, ensuring snapshot detection operates reliably in all runtime configurations.
+- **Complete `requirements.txt` Synchronization**: Fully populated `requirements.txt` with all missing packages (`plotly`, `pillow`, `pyarrow`, `tf-keras`, `mtcnn`, `nltk`), preventing `ModuleNotFoundError` during fresh virtual environment builds or Hugging Face container deployments.
+- **Sanitized HTML Text Interpolation**: Added quote cleaning on `top_meme['dialogue_snippet']` to prevent attribute boundary breakage inside the custom `#1e1e2f` card container.
 
 ---
 
