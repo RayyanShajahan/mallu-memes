@@ -71,23 +71,21 @@ with tabs[0]:
 
 with tabs[1]:
     st.subheader("Ocular Psyche Biometric Scanner")
-    st.write("Compact live capture on the left mapped to automated meme artifact rendering on the right.")
+    st.write("Instantaneous psychological mapping and Malayalam Meme Engine.")
 
-    # Create a clean split screen: Left for camera/controls, Right for the meme output
     left_col, right_col = st.columns([1, 1], gap="medium")
 
     with left_col:
         st.markdown("### 📷 Biometric Capture")
         capture_mode = st.radio(
             "Mode:",
-            ["📸 Snapshot", "🧪 Simulator"],
+            ["📸 Snapshot Analysis", "🎛️ Manual Psychological Override (Recommended for Demo)"],
             horizontal=True
         )
 
         detected_emotion = "neutral"
 
-        if capture_mode == "📸 Snapshot":
-            # Compact camera input sizing
+        if capture_mode == "📸 Snapshot Analysis":
             cam_image = st.camera_input("Capture expression", label_visibility="collapsed")
             if cam_image is not None:
                 try:
@@ -95,6 +93,7 @@ with tabs[1]:
                     np_arr = np.frombuffer(bytes_data, np.uint8)
                     img = cv2.imdecode(np_arr, cv2.IMREAD_COLOR)
 
+                    # CLAHE contrast enhancement
                     lab = cv2.cvtColor(img, cv2.COLOR_BGR2LAB)
                     l, a, b = cv2.split(lab)
                     clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(8, 8))
@@ -111,13 +110,24 @@ with tabs[1]:
                     if isinstance(analysis, list) and len(analysis) > 0:
                         detected_emotion = analysis[0].get('dominant_emotion', 'neutral')
                     
-                    st.success(f"Detected: **{detected_emotion.upper()}**")
+                    st.success(f"AI Vision Detected: **{detected_emotion.upper()}**")
                 except Exception as e:
                     detected_emotion = "neutral"
                     st.warning(f"Detection fallback engaged: {e}")
+            
+            # Quick override buttons because CV models fail on smiles
+            st.markdown("##### Quick Emotion Correction Override:")
+            cols_override = st.columns(3)
+            if cols_override[0].button("Force Happy"):
+                detected_emotion = "happy"
+            if cols_override[1].button("Force Sad"):
+                detected_emotion = "sad"
+            if cols_override[2].button("Force Angry"):
+                detected_emotion = "angry"
+
         else:
             detected_emotion = st.selectbox(
-                "Demo Override Emotion:",
+                "Select Exact Psychological State:",
                 ["sad", "angry", "happy", "neutral", "fear", "surprise"]
             )
 
@@ -132,7 +142,7 @@ with tabs[1]:
             "neutral": "Monday Work Shokam"
         }
         target_category = emotion_map.get(detected_emotion, "Monday Work Shokam")
-        st.info(f"🎯 **Profile:** {detected_emotion.upper()} ➔ **Category:** {target_category}")
+        st.info(f"🎯 **Active Psyche Profile:** {detected_emotion.upper()} ➔ **Kerala Category:** {target_category}")
 
     with right_col:
         st.markdown("### 🖼️ Matched Meme Artifact")
@@ -151,9 +161,9 @@ with tabs[1]:
 
         top_meme = matched_df.sample(n=1).iloc[0] if len(matched_df) > 0 else df.iloc[0]
 
-        # Safe asset image rendering from assets/memes/
+        # ROBUST ASSET LOADER: Forces a visible image render
         asset_dir = "assets/memes"
-        rendered_image = False
+        image_rendered = False
         if os.path.exists(asset_dir):
             asset_files = [f for f in os.listdir(asset_dir) if f.endswith(".jpg")]
             if asset_files:
@@ -162,26 +172,31 @@ with tabs[1]:
                 chosen_asset = os.path.join(asset_dir, matched_asset if matched_asset else random.choice(asset_files))
                 st.image(
                     chosen_asset, 
-                    caption=f"{top_meme['character']} | KEW Score: {top_meme['kerala_existential_weight']}/10", 
+                    caption=f"Meme Archetype: {top_meme['character_archetype']} | KEW: {top_meme['kerala_existential_weight']}/10", 
                     width='stretch'
                 )
-                rendered_image = True
+                image_rendered = True
 
-        if not rendered_image:
-            st.warning("Local assets missing or empty. Run `create_sample_assets.py` to generate visual meme cards.")
+        if not image_rendered:
+            # Fallback high-impact visual banner if assets are missing
+            st.image(
+                "https://images.unsplash.com/photo-1531403009284-440f080d1e12?w=800&auto=format&fit=crop&q=60",
+                caption="Kerala Existential Data Plane Artifact",
+                width='stretch'
+            )
 
         # Clean snippet text for safe rendering
         snippet_text = str(top_meme['dialogue_snippet']).strip('"').strip("'")
 
-        # Cinematic Text Card below or alongside the image
+        # High-Impact Cinematic Dialogue Card
         st.markdown(f"""
-        <div style="background-color: #1e1e2f; padding: 20px; border-radius: 12px; border: 2px solid #ff4b4b; margin-top: 10px;">
+        <div style="background-color: #1e1e2f; padding: 20px; border-radius: 12px; border: 2px solid #ff4b4b; margin-top: 15px;">
             <h3 style="color: #ff4b4b; margin-top: 0;">🎭 {top_meme['character']} — <span style="color: #ffffff;">{top_meme['movie']}</span></h3>
             <p style="font-size: 0.95rem; color: #a0a0c0;"><b>Scenario:</b> {top_meme['scenario_title']}</p>
             <hr style="border-color: #444455;">
             <p style="color: #00ffff; font-style: italic; font-size: 1.1rem; margin: 10px 0;">"{snippet_text}"</p>
             <div style="display: flex; justify-content: space-between; margin-top: 15px;">
-                <span style="background-color: #ff4b4b; color: white; padding: 4px 12px; border-radius: 15px; font-weight: bold; font-size: 0.85rem;">KEW: {top_meme['kerala_existential_weight']}/10</span>
+                <span style="background-color: #ff4b4b; color: white; padding: 4px 12px; border-radius: 15px; font-weight: bold; font-size: 0.85rem;">KEW Score: {top_meme['kerala_existential_weight']}/10</span>
                 <span style="color: #8888aa; font-family: monospace; font-size: 0.8rem;">250k PARQUET LAKE</span>
             </div>
         </div>
