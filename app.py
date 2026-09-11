@@ -8,6 +8,7 @@ from PIL import Image
 import io
 import numpy as np
 import cv2
+import datetime
 from deepface import DeepFace
 
 st.set_page_config(page_title="Kerala Biometric Meme Engine", layout="wide", page_icon="🌴")
@@ -44,6 +45,41 @@ def load_data():
     return data
 
 df = load_data()
+
+# Initialize Session State for Personalized Biometric Face Memory
+if "calibrated_face_memory" not in st.session_state:
+    st.session_state.calibrated_face_memory = []
+
+def extract_face_biometric_vector(face_bgr, raw_emotions):
+    """
+    Extracts a 4,075-D multi-scale facial topographic descriptor:
+    - 1,764-D HOG structural gradient orientation (eyebrow angle, scowl lines, lip tightness)
+    - 2,304-D Dense grayscale topography (spatial brightness distribution)
+    - 7-D Neural FER softmax activation vector
+    """
+    try:
+        gray = cv2.cvtColor(face_bgr, cv2.COLOR_BGR2GRAY)
+        
+        # 1. HOG Structural Gradient Orientation (64x64)
+        resized_64 = cv2.resize(gray, (64, 64))
+        hog = cv2.HOGDescriptor((64, 64), (16, 16), (8, 8), (8, 8), 9)
+        hog_feat = hog.compute(resized_64).flatten().astype(np.float32)
+        hog_norm = hog_feat / (np.linalg.norm(hog_feat) + 1e-7)
+        
+        # 2. Dense Topography (48x48)
+        resized_48 = cv2.resize(gray, (48, 48)).flatten().astype(np.float32)
+        topo_norm = resized_48 / (np.linalg.norm(resized_48) + 1e-7)
+        
+        # 3. Neural FER Activation Vector (7-D)
+        labels = ['angry', 'disgust', 'fear', 'happy', 'sad', 'surprise', 'neutral']
+        fer_raw = np.array([float(raw_emotions.get(l, 0.0)) for l in labels], dtype=np.float32)
+        fer_norm = fer_raw / (np.linalg.norm(fer_raw) + 1e-7)
+        
+        # Multi-scale concatenated vector
+        combined = np.concatenate([hog_norm * 0.5, topo_norm * 0.3, fer_norm * 0.2])
+        return combined / (np.linalg.norm(combined) + 1e-7)
+    except Exception:
+        return np.zeros(4075, dtype=np.float32)
 
 # Definitive Authentic Malayalam Meme Asset Identity Map
 IMAGE_METADATA = {
@@ -297,39 +333,95 @@ with tabs[1]:
                         )
                         raw_emotions = primary_face.get('emotion', {})
                         
-                        # Bayesian Prior-Normalized Affective Classifier:
-                        # Resolves FER-2013 training prior bias (where neutral accounts for >58% of weight).
-                        # Mathematical formulation: P(intent = e | img) proportional to P_raw(e) / Prior(e)
-                        EMOTION_PRIORS = {
-                            "neutral": 0.58,
-                            "angry": 0.08,
-                            "happy": 0.10,
-                            "sad": 0.10,
-                            "fear": 0.07,
-                            "surprise": 0.05,
-                            "disgust": 0.02
-                        }
+                        # Extract primary face crop for biometric vector extraction
+                        region = primary_face.get('region', {})
+                        rx, ry, rw, rh = region.get('x', 0), region.get('y', 0), region.get('w', 0), region.get('h', 0)
+                        rx = max(0, rx); ry = max(0, ry)
+                        rw = min(rw, enhanced_img.shape[1] - rx); rh = min(rh, enhanced_img.shape[0] - ry)
+                        face_crop = enhanced_img[ry:ry+rh, rx:rx+rw] if rw > 15 and rh > 15 else enhanced_img
 
-                        unnorm_scores = {k: float(v) / EMOTION_PRIORS.get(k, 0.10) for k, v in raw_emotions.items()}
-                        total_unnorm = sum(unnorm_scores.values()) if sum(unnorm_scores.values()) > 0 else 1.0
-                        calibrated_emotions = {k: (v / total_unnorm) * 100.0 for k, v in unnorm_scores.items()}
+                        # Extract 4,075-D multi-scale biometric vector (HOG + Topography + FER signature)
+                        current_face_vector = extract_face_biometric_vector(face_crop, raw_emotions)
 
-                        # Winner selection based on Bayesian calibrated probability
-                        detected_emotion = max(calibrated_emotions, key=calibrated_emotions.get)
-                        top_calibrated_conf = float(calibrated_emotions[detected_emotion])
-                        raw_conf = float(raw_emotions.get(detected_emotion, 0.0))
-                        
-                        st.success(f"AI Vision Detected: **{detected_emotion.upper()}** ({top_calibrated_conf:.1f}% Calibrated Intent | Raw FER: {raw_conf:.1f}%)")
+                        # Check against Personalized Biometric Vector Memory
+                        memory_match = None
+                        best_sim = 0.0
+                        for mem in st.session_state.calibrated_face_memory:
+                            sim = float(np.dot(current_face_vector, mem["vector"]))
+                            if sim > best_sim:
+                                best_sim = sim
+                                memory_match = mem
 
-                        # Display mini emotion meter for full visibility with both calibrated and raw metrics
-                        with st.expander("📊 View Facial Micro-Expression Breakdown (Bayesian Calibrated)", expanded=True):
-                            sorted_calibrated = sorted(calibrated_emotions.items(), key=lambda x: x[1], reverse=True)
-                            for em_name, em_val in sorted_calibrated:
-                                r_val = float(raw_emotions.get(em_name, 0.0))
-                                st.progress(
-                                    min(max(float(em_val) / 100.0, 0.0), 1.0), 
-                                    text=f"{em_name.capitalize()}: {float(em_val):.1f}% (Raw FER: {r_val:.1f}%)"
-                                )
+                        if memory_match is not None and best_sim >= 0.78:
+                            detected_emotion = memory_match["label"]
+                            st.success(f"🧠 **Personalized Biometric Memory Match:** **{detected_emotion.upper()}** ({best_sim*100:.1f}% Structural Match)")
+                            st.caption(f"Recognized your calibrated facial topography memorized at {memory_match['timestamp']}.")
+                        else:
+                            # Bayesian Prior-Normalized Affective Classifier:
+                            # Resolves FER-2013 training prior bias (where neutral accounts for >58% of weight).
+                            # Mathematical formulation: P(intent = e | img) proportional to P_raw(e) / Prior(e)
+                            EMOTION_PRIORS = {
+                                "neutral": 0.58,
+                                "angry": 0.08,
+                                "happy": 0.10,
+                                "sad": 0.10,
+                                "fear": 0.07,
+                                "surprise": 0.05,
+                                "disgust": 0.02
+                            }
+
+                            unnorm_scores = {k: float(v) / EMOTION_PRIORS.get(k, 0.10) for k, v in raw_emotions.items()}
+                            total_unnorm = sum(unnorm_scores.values()) if sum(unnorm_scores.values()) > 0 else 1.0
+                            calibrated_emotions = {k: (v / total_unnorm) * 100.0 for k, v in unnorm_scores.items()}
+
+                            # Winner selection based on Bayesian calibrated probability
+                            detected_emotion = max(calibrated_emotions, key=calibrated_emotions.get)
+                            top_calibrated_conf = float(calibrated_emotions[detected_emotion])
+                            raw_conf = float(raw_emotions.get(detected_emotion, 0.0))
+                            
+                            st.success(f"AI Vision Detected: **{detected_emotion.upper()}** ({top_calibrated_conf:.1f}% Calibrated Intent | Raw FER: {raw_conf:.1f}%)")
+
+                            # Display mini emotion meter for full visibility with both calibrated and raw metrics
+                            with st.expander("📊 View Facial Micro-Expression Breakdown (Bayesian Calibrated)", expanded=True):
+                                sorted_calibrated = sorted(calibrated_emotions.items(), key=lambda x: x[1], reverse=True)
+                                for em_name, em_val in sorted_calibrated:
+                                    r_val = float(raw_emotions.get(em_name, 0.0))
+                                    st.progress(
+                                        min(max(float(em_val) / 100.0, 0.0), 1.0), 
+                                        text=f"{em_name.capitalize()}: {float(em_val):.1f}% (Raw FER: {r_val:.1f}%)"
+                                    )
+
+                        # Interactive Teach AI / Memorize Widget
+                        st.markdown("##### 🧠 Teach AI: Memorize This Facial Structure")
+                        st.caption("If the emotion is wrong, correct it below. The system will memorize your facial topography for future scans:")
+                        teach_c1, teach_c2 = st.columns([1, 1])
+                        with teach_c1:
+                            target_correction = st.selectbox(
+                                "Correct Emotion:",
+                                ["angry", "happy", "sad", "neutral", "fear", "surprise"],
+                                index=["angry", "happy", "sad", "neutral", "fear", "surprise"].index("angry") if detected_emotion != "angry" else 0,
+                                key="teach_corr_select"
+                            )
+                        with teach_c2:
+                            st.write("")
+                            st.write("")
+                            if st.button("💾 Memorize Face", use_container_width=True):
+                                new_entry = {
+                                    "vector": current_face_vector,
+                                    "label": target_correction,
+                                    "timestamp": datetime.datetime.now().strftime("%H:%M:%S")
+                                }
+                                st.session_state.calibrated_face_memory.append(new_entry)
+                                st.toast(f"✅ Learned! Facial structure memorized as {target_correction.upper()}!")
+                                st.rerun()
+
+                        if st.session_state.calibrated_face_memory:
+                            with st.expander(f"🗂️ Active Learned Memories ({len(st.session_state.calibrated_face_memory)})", expanded=False):
+                                for i, m in enumerate(st.session_state.calibrated_face_memory):
+                                    st.write(f"• **Memory #{i+1}:** {m['label'].upper()} (Learned at {m['timestamp']})")
+                                if st.button("🗑️ Clear All Learned Memories", key="clear_face_mem_btn"):
+                                    st.session_state.calibrated_face_memory = []
+                                    st.rerun()
                     else:
                         detected_emotion = "neutral"
                 except Exception as e:

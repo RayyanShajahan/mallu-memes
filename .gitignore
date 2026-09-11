@@ -220,3 +220,7 @@ __marimo__/
 # Massive Parquet Data Lake Payloads (>100MB)
 *.parquet
 !biometric_memes_sample.parquet
+
+# User external asset workspace
+lovable assets/
+
