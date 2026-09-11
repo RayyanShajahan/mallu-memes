@@ -275,6 +275,11 @@ mallu-memes/
 - **Elimination of Broken / Placeholder Images**: Dropped local image file I/O dependencies in Tab 2, avoiding generic placeholder banners or missing asset errors during live presentations and elevating the Malayalam script and existential weight into the visual center.
 - **High-Velocity Preprocessing & Inference**: Streamlined snapshot capture with fast OpenCV LAB CLAHE contrast balancing (`clipLimit=2.0`) and non-blocking OpenCV detector inference (`enforce_detection=False`, `silent=True`), providing near-instantaneous UI response (< 1s) upon camera click.
 
+### Milestone 15: Dual-Column Split Screen & Synchronized Visual-Cinematic Projection
+- **Two-Column Split Screen Matrix**: Replaced full-width camera layout with a balanced `st.columns([1, 1], gap="medium")` architecture in Tab 2. The left column encapsulates compact camera controls (`st.camera_input` with `label_visibility="collapsed"`) and manual simulation overrides, preventing camera feed viewport dominance.
+- **Dual Visual-Cinematic Card Display**: Right column unifies both visual and typographic outputs by rendering the high-resolution JPEG artifact from `assets/memes/` (`use_container_width=True`) alongside the cyberpunk neon dialogue card (`#1e1e2f` card with cyan dialogue snippet, KEW score, and Parquet data plane tag).
+- **Hardened Parquet & Asset Binding**: Preserves character-aware asset matching and regional category alignment (`Academic Trauma`, `Political Satire`, `Gastronomic Nirvana`, `Corporate Nihilism`) querying the 250,000-record Parquet data lake with randomized sampling.
+
 ---
 
 ## 5. PROPRIETARY SCORING ALGORITHMS & MATHEMATICAL FORMULATIONS
