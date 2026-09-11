@@ -7,3 +7,5 @@ __pycache__/
 .gitignore
 .agents/
 *.log
+biometric_memes.parquet
+raw_meme_corpus.parquet
