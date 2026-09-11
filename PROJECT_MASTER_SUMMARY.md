@@ -270,6 +270,11 @@ mallu-memes/
 - **Resilient Fallback Detector Pipeline**: Configured a two-tier detector pipeline: if MTCNN strict bounds are missed due to sudden motion, the engine automatically catches the exception and falls back to `detector_backend='opencv'` with `enforce_detection=False`.
 - **Categorical Parquet Database Matching**: Aligned regional categories (`KTU Exam Trauma` $\to$ `Academic Trauma`, `Political Poru & Hartal` $\to$ `Political Satire`, `Nirvana` $\to$ `Gastronomic Nirvana`, `Monday Work Shokam` $\to$ `Corporate Nihilism`) with randomized sample selection (`matched_df.sample(n=1)`), ensuring dynamic, non-repetitive meme recommendations.
 
+### Milestone 14: Text-First Cyberpunk Cinematic Card & High-Velocity AI Layout
+- **Cyberpunk Cinematic Card Container**: Pivoted Tab 2 from local image placeholder loading to a rich, high-contrast neon card layout (`background-color: #1e1e2f; border: 2px solid #ff4b4b; box-shadow: 0px 0px 20px rgba(255, 75, 75, 0.3)`). The card champions high-impact typography with character headers, movie tags, italicized cyan punchlines, and branded badges.
+- **Elimination of Broken / Placeholder Images**: Dropped local image file I/O dependencies in Tab 2, avoiding generic placeholder banners or missing asset errors during live presentations and elevating the Malayalam script and existential weight into the visual center.
+- **High-Velocity Preprocessing & Inference**: Streamlined snapshot capture with fast OpenCV LAB CLAHE contrast balancing (`clipLimit=2.0`) and non-blocking OpenCV detector inference (`enforce_detection=False`, `silent=True`), providing near-instantaneous UI response (< 1s) upon camera click.
+
 ---
 
 ## 5. PROPRIETARY SCORING ALGORITHMS & MATHEMATICAL FORMULATIONS

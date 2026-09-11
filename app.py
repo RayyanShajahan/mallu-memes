@@ -71,67 +71,48 @@ with tabs[0]:
 
 with tabs[1]:
     st.subheader("Ocular Psyche Biometric Scanner")
-    st.write("Take a snapshot with advanced MTCNN face-alignment for hyper-accurate expression reading.")
+    st.write("Instantaneous psychological mapping and Kerala Existential Meme Engine.")
 
     capture_mode = st.radio(
         "Choose Mode:",
-        ["📸 Instant Snapshot (High-Accuracy AI)", "🧪 Emotion Simulator (Guaranteed Demo Mode)"],
+        ["📸 Instant Snapshot (Fast AI)", "🧪 Emotion Simulator (Guaranteed Demo Mode)"],
         horizontal=True
     )
 
     detected_emotion = "neutral"
-    emotion_scores = {}
 
-    if capture_mode == "📸 Instant Snapshot (High-Accuracy AI)":
+    if capture_mode == "📸 Instant Snapshot (Fast AI)":
         cam_image = st.camera_input("Strike a pose & capture your expression")
         if cam_image is not None:
             try:
                 import cv2
                 import numpy as np
                 
-                # Read image bytes into OpenCV format
                 bytes_data = cam_image.getvalue()
                 np_arr = np.frombuffer(bytes_data, np.uint8)
                 img = cv2.imdecode(np_arr, cv2.IMREAD_COLOR)
-                
-                # Preprocessing: CLAHE Contrast Normalization for uneven lighting
+
+                # Fast OpenCV preprocessing
                 lab = cv2.cvtColor(img, cv2.COLOR_BGR2LAB)
                 l, a, b = cv2.split(lab)
-                clahe = cv2.createCLAHE(clipLimit=3.0, tileGridSize=(8, 8))
-                cl = clahe.apply(l)
-                enhanced_img = cv2.cvtColor(cv2.merge((cl, a, b)), cv2.COLOR_LAB2BGR)
+                clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(8, 8))
+                enhanced_img = cv2.cvtColor(cv2.merge((clahe.apply(l), a, b)), cv2.COLOR_LAB2BGR)
 
-                # HIGH ACCURACY FIX: Use detector_backend='mtcnn' for precise face detection and alignment
-                with st.spinner("Analyzing facial micro-expressions via MTCNN neural pipeline..."):
-                    analysis = DeepFace.analyze(
-                        enhanced_img, 
-                        actions=['emotion'], 
-                        detector_backend='mtcnn', 
-                        enforce_detection=True, 
-                        silent=True
-                    )
+                analysis = DeepFace.analyze(
+                    enhanced_img, 
+                    actions=['emotion'], 
+                    detector_backend='opencv', 
+                    enforce_detection=False, 
+                    silent=True
+                )
                 
                 if isinstance(analysis, list) and len(analysis) > 0:
                     detected_emotion = analysis[0].get('dominant_emotion', 'neutral')
-                    emotion_scores = analysis[0].get('emotion', {})
                 
                 st.success(f"🔍 AI Vision Detected Emotion: **{detected_emotion.upper()}**")
-                
-                # Show confidence breakdown to prove accuracy to judges
-                if emotion_scores:
-                    with st.expander("📊 View Full Emotion Probability Breakdown"):
-                        for emo, score in sorted(emotion_scores.items(), key=lambda item: item[1], reverse=True):
-                            st.progress(int(score), text=f"{emo.capitalize()}: {score:.1f}%")
-
             except Exception as e:
-                # Fallback if MTCNN can't find a clear face bounding box
-                try:
-                    analysis = DeepFace.analyze(enhanced_img, actions=['emotion'], detector_backend='opencv', enforce_detection=False, silent=True)
-                    detected_emotion = analysis[0].get('dominant_emotion', 'neutral')
-                    st.warning(f"MTCNN strict bounds missed. Fallback OpenCV detector read: **{detected_emotion.upper()}**")
-                except:
-                    st.warning("Face detection unclear. Defaulting to Neutral.")
-                    detected_emotion = "neutral"
+                detected_emotion = "neutral"
+                st.warning("Detection fallback engaged. Defaulting to Neutral.")
     else:
         detected_emotion = st.selectbox(
             "Select Exact Emotion (Hackathon Demo Override):",
@@ -165,25 +146,21 @@ with tabs[1]:
 
     top_meme = matched_df.sample(n=1).iloc[0] if len(matched_df) > 0 else df.iloc[0]
 
-    # Layout: Image Display vs Text Dialogue
-    col_img, col_txt = st.columns([1, 1])
-    
-    with col_img:
-        st.markdown("### 🖼️ Matched Meme Artifact")
-        asset_files = [f for f in os.listdir("assets/memes") if f.endswith(".jpg")] if os.path.exists("assets/memes") else []
-        if asset_files:
-            char_lower = str(top_meme.get("character", "")).lower()
-            matched_asset = next((f for f in asset_files if any(k in f.lower() for k in char_lower.split() if len(k) > 2)), None)
-            chosen_asset = os.path.join("assets/memes", matched_asset if matched_asset else random.choice(asset_files))
-            st.image(chosen_asset, caption=f"{top_meme['scenario_title']} (KEW: {top_meme['kerala_existential_weight']})", width='stretch')
-        else:
-            st.error("Missing local meme assets! Run `create_sample_assets.py` in your terminal to populate pictures.")
-
-    with col_txt:
-        st.markdown(f"### 🎭 {top_meme['character']} — {top_meme['movie']}")
-        st.markdown(f"**Scenario:** {top_meme['scenario_title']}")
-        st.markdown(f"**Archetype:** {top_meme['character_archetype']} | **KEW Score:** {top_meme['kerala_existential_weight']}/10")
-        st.info(f"**Dialogue Transcript:**\n\n{top_meme['dialogue_snippet']}")
+    # Cinematic Card Layout (Zero broken images, pure high-impact typography)
+    st.markdown("---")
+    st.markdown(f"""
+    <div style="background-color: #1e1e2f; padding: 30px; border-radius: 15px; border: 2px solid #ff4b4b; box-shadow: 0px 0px 20px rgba(255, 75, 75, 0.3);">
+        <h2 style="color: #ff4b4b; margin-top: 0;">🎭 {top_meme['character']} — <span style="color: #ffffff;">{top_meme['movie']}</span></h2>
+        <p style="font-size: 1.1rem; color: #a0a0c0;"><b>Scenario:</b> {top_meme['scenario_title']} | <b>Archetype:</b> {top_meme['character_archetype']}</p>
+        <hr style="border-color: #444455;">
+        <h3 style="color: #00ffff; font-style: italic; margin: 20px 0;">{top_meme['dialogue_snippet']}</h3>
+        <div style="display: flex; justify-content: space-between; margin-top: 20px;">
+            <span style="background-color: #ff4b4b; color: white; padding: 5px 15px; border-radius: 20px; font-weight: bold;">KEW Score: {top_meme['kerala_existential_weight']}/10</span>
+            <span style="color: #8888aa; font-family: monospace;">DATA PLANE SHARD: 250k PARQUET LAKE</span>
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
+    st.markdown("---")
 
 with tabs[2]:
     st.subheader("Vernacular Meme Lake Explorer")
