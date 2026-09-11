@@ -221,6 +221,3 @@ __marimo__/
 *.parquet
 !biometric_memes_sample.parquet
 
-# User external asset workspace
-lovable assets/
-

@@ -81,56 +81,148 @@ def extract_face_biometric_vector(face_bgr, raw_emotions):
     except Exception:
         return np.zeros(4075, dtype=np.float32)
 
-# Definitive Authentic Malayalam Meme Asset Identity Map
+# Definitive Authentic Malayalam Meme Asset Identity Map (with English translations and signal classes from Lovable)
 IMAGE_METADATA = {
-    'actually_modern': ('Pyari', 'Kalyanaraman', 'Actually njaan modern aanu!'),
-    'actually-njaan-modern': ('Pyari', 'Kalyanaraman', 'Actually njaan modern aanu!'),
-    'pyari': ('Pyari', 'Kalyanaraman', 'Actually njaan modern aanu!'),
-    'salim_kumar_crying': ('Ponjikkara', 'Kalyanaraman', 'Achuvettaa... I love you!'),
-    'achuvettaa': ('Ponjikkara', 'Kalyanaraman', 'Achuvettaa... I love you!'),
-    'collector': ('Ponjikkara', 'Kalyanaraman', 'Alla... Ernakulam jilla collector mindaathe kutthi kayattedo!'),
-    'dasan_kattappara': ('Vijayan', 'Nadodikkattu', 'Achan paranju ithilum bhedham kattapparayum eduth kakkaan irangunnathaanennu!'),
-    'kattappara': ('Vijayan', 'Nadodikkattu', 'Achan paranju ithilum bhedham kattapparayum eduth kakkaan irangunnathaanennu!'),
-    'dasan_resignation': ('Dasan', 'Nadodikkattu', 'Allenkilum ee thallipoli companiyile joli njangalkk prashnamalla!'),
-    'thallipoli': ('Dasan', 'Nadodikkattu', 'Allenkilum ee thallipoli companiyile joli njangalkk prashnamalla!'),
-    'moosa_shavam': ('CID Moosa', 'CID Moosa', 'Athinekkaal nallath ente shavam edukkunnathalle!'),
-    'shavam': ('CID Moosa', 'CID Moosa', 'Athinekkaal nallath ente shavam edukkunnathalle!'),
-    'cid_moosa': ('CID Moosa', 'CID Moosa', 'Moosa... CID Moosa!'),
-    'dharidryam': ('Thorappan Kochunni', 'CID Moosa', 'Athonnum illenkilum dharidryathinu kuravonnum illallo!'),
-    'dharidryathinu': ('Thorappan Kochunni', 'CID Moosa', 'Athonnum illenkilum dharidryathinu kuravonnum illallo!'),
-    'appukkuttan': ('Appukkuttan', 'In Harihar Nagar', 'Appukkutta... ninte oru kaaryam!'),
-    'appukuttan': ('Appukkuttan', 'In Harihar Nagar', 'Appukkutta... ninte oru kaaryam!'),
-    'bhraanth': ('Mahadevan', 'In Harihar Nagar', 'Aarkkadaa bhraanth?!'),
-    'ramanathan': ('Ramanathan', 'In Harihar Nagar', 'Thomaskutty vittoda!'),
-    'karnnore': ('Unnithan', 'Manichitrathazhu', 'Adukkaruth karnnore, entaduth maathram adukkaruth!'),
-    'kuttikkadan': ('Kuttikkadan', 'Spadikam', 'Nee aaraada kooduthal chodikkan?'),
-    'anjooran': ('Anjooran', 'Godfather', 'Aanede chevittil maathramalla, ninte ammede chevittilum vekkeda panji!'),
-    'panji': ('Anjooran', 'Godfather', 'Aanede chevittil maathramalla, ninte ammede chevittilum vekkeda panji!'),
-    'krishnan_nair': ('Krishnan Nair', 'Akkare Akkare Akkare', 'Shooting begins!'),
-    'krishnan-nair': ('Krishnan Nair', 'Akkare Akkare Akkare', 'Shooting begins!'),
-    'paul_barber': ('Paul Barber', 'Akkare Akkare Akkare', 'Ninte achanaada Paul Barber!'),
-    'paul-barber': ('Paul Barber', 'Akkare Akkare Akkare', 'Ninte achanaada Paul Barber!'),
-    'sadhanam': ('Dasan & Vijayan', 'Akkare Akkare Akkare', 'Sadhanam kayyilundo?'),
-    'ramanan_biriyani': ('Ramanan', 'Punjabi House', 'Annu undaakkiya biriyaani okke enth cheytho aavo!'),
-    'biriyaani': ('Ramanan', 'Punjabi House', 'Annu undaakkiya biriyaani okke enth cheytho aavo!'),
-    'gangadharan': ('Gangadharan Muthalali', 'Punjabi House', 'Akathu poyi Punjabikalod para, Gangadharan Muthalaaliyum Ramananum vannirikkunnu ennu!'),
-    'alakkum': ('Ramanan', 'Punjabi House', 'Ariyaan paadillanjittu chodikkukaya, randu varshamaayi ivide alakkum nanayum onnumille?'),
-    'pavanayi': ('Ananthan Nambiar', 'Nadodikkattu', 'Angane Pavanayi shavamaayi!'),
-    'ranga_annan': ('Ranga Annan', 'Aavesham', 'Eda mone! All the best da!'),
-    'all-the-best': ('Ranga Annan', 'Aavesham', 'Eda mone! All the best da!'),
-    'jagathy_aha': ('Nischal', 'Kilukkam', 'Aha... anganayanalle!'),
-    'anganayanalle': ('Nischal', 'Kilukkam', 'Aha... anganayanalle!'),
-    'gafoor': ('Gafoor Ka Dhosth', 'Nadodikkattu', 'Savari giri giri!'),
-    'damu': ('Dashamoolam Damu', 'Chattambinadu', 'Njaan aaraannu ariyilla le?'),
-    'manavalan': ('Manavalan', 'Pulival Kalyanam', 'Njan aara mon! Dubai Manavalan!'),
-    'pappu': ('Kuthiravattam Pappu', 'Vellanakalude Nadu', 'Ippo shariyaakki tharaam!')
+    'bus_existential': ('Dasan & Vijayan', 'Nadodikkattu', 'Ellathinum athintethaya samayam undu, Dasa.', 'Everything has its appointed time, Dasan.', 'Hopeful delusion / contagious'),
+    'bus-existential': ('Dasan & Vijayan', 'Nadodikkattu', 'Ellathinum athintethaya samayam undu, Dasa.', 'Everything has its appointed time, Dasan.', 'Hopeful delusion / contagious'),
+    'chacko_resolve': ('Chacko Mash', 'Spadikam', 'Ormayundo ee mukham? Marakkan pattilla.', 'Do you remember this face? The psyche never forgets.', 'Authoritative fury / stable'),
+    'chacko-resolve': ('Chacko Mash', 'Spadikam', 'Ormayundo ee mukham? Marakkan pattilla.', 'Do you remember this face? The psyche never forgets.', 'Authoritative fury / stable'),
+    'chacko': ('Chacko Mash', 'Spadikam', 'Ormayundo ee mukham? Marakkan pattilla.', 'Do you remember this face? The psyche never forgets.', 'Authoritative fury / stable'),
+    'ktu_trauma': ('George', 'Premam', 'Enthokkeyo pratheekshichu… enthokkeyo aayi.', 'Expected everything. Received character development.', 'Academic despair / resilient'),
+    'ktu-trauma': ('George', 'Premam', 'Enthokkeyo pratheekshichu… enthokkeyo aayi.', 'Expected everything. Received character development.', 'Academic despair / resilient'),
+    'actually_modern': ('Pyari', 'Kalyanaraman', 'Actually njaan modern aanu!', 'Actually, I am modern!', 'Self-delusion / high social optimism'),
+    'actually-njaan-modern': ('Pyari', 'Kalyanaraman', 'Actually njaan modern aanu!', 'Actually, I am modern!', 'Self-delusion / high social optimism'),
+    'pyari': ('Pyari', 'Kalyanaraman', 'Actually njaan modern aanu!', 'Actually, I am modern!', 'Self-delusion / high social optimism'),
+    'salim_kumar_crying': ('Ponjikkara', 'Kalyanaraman', 'Achuvettaa... I love you!', 'Achuvetta... I love you!', 'Unreciprocated grief / absolute melodrama'),
+    'achuvettaa': ('Ponjikkara', 'Kalyanaraman', 'Achuvettaa... I love you!', 'Achuvetta... I love you!', 'Unreciprocated grief / absolute melodrama'),
+    'collector': ('Ponjikkara', 'Kalyanaraman', 'Alla... Ernakulam jilla collector mindaathe kutthi kayattedo!', 'Hey, let the Ernakulam District Collector enter quietly!', 'Bureaucratic delirium'),
+    'dasan_kattappara': ('Vijayan', 'Nadodikkattu', 'Achan paranju ithilum bhedham kattapparayum eduth kakkaan irangunnathaanennu!', 'Father said it is better to take a crowbar and steal than work this job!', 'Youth unemployment angst'),
+    'kattappara': ('Vijayan', 'Nadodikkattu', 'Achan paranju ithilum bhedham kattapparayum eduth kakkaan irangunnathaanennu!', 'Father said it is better to take a crowbar and steal than work this job!', 'Youth unemployment angst'),
+    'dasan_resignation': ('Dasan', 'Nadodikkattu', 'Allenkilum ee thallipoli companiyile joli njangalkk prashnamalla!', 'Anyway, losing this useless company job means nothing to us!', 'Defiant corporate pride'),
+    'thallipoli': ('Dasan', 'Nadodikkattu', 'Allenkilum ee thallipoli companiyile joli njangalkk prashnamalla!', 'Anyway, losing this useless company job means nothing to us!', 'Defiant corporate pride'),
+    'moosa_shavam': ('CID Moosa', 'CID Moosa', 'Athinekkaal nallath ente shavam edukkunnathalle!', 'Better to carry out my corpse than do that!', 'Nihilistic defeatism'),
+    'shavam': ('CID Moosa', 'CID Moosa', 'Athinekkaal nallath ente shavam edukkunnathalle!', 'Better to carry out my corpse than do that!', 'Nihilistic defeatism'),
+    'cid_moosa': ('CID Moosa', 'CID Moosa', 'Moosa... CID Moosa!', 'Moosa... CID Moosa!', 'Heroic swagger / high energy'),
+    'dharidryam': ('Thorappan Kochunni', 'CID Moosa', 'Athonnum illenkilum dharidryathinu kuravonnum illallo!', 'Even if we lack everything else, there is no shortage of poverty!', 'Pure existential resignation'),
+    'dharidryathinu': ('Thorappan Kochunni', 'CID Moosa', 'Athonnum illenkilum dharidryathinu kuravonnum illallo!', 'Even if we lack everything else, there is no shortage of poverty!', 'Pure existential resignation'),
+    'appukkuttan': ('Appukkuttan', 'In Harihar Nagar', 'Appukkutta... ninte oru kaaryam!', 'Appukkutta... you are unbelievable!', 'Social anxiety / awkward panic'),
+    'appukuttan': ('Appukkuttan', 'In Harihar Nagar', 'Appukkutta... ninte oru kaaryam!', 'Appukkutta... you are unbelievable!', 'Social anxiety / awkward panic'),
+    'bhraanth': ('Mahadevan', 'In Harihar Nagar', 'Aarkkadaa bhraanth?!', 'Who the hell is crazy?!', 'Explosive fury / group chaos'),
+    'ramanathan': ('Ramanathan', 'In Harihar Nagar', 'Thomaskutty vittoda!', 'Thomaskutty, run for your life!', 'Survival instinct / panic'),
+    'karnnore': ('Unnithan', 'Manichitrathazhu', 'Adukkaruth karnnore, entaduth maathram adukkaruth!', 'Stay away, elder! Just do not approach me!', 'Paranoid superstition'),
+    'kuttikkadan': ('Kuttikkadan', 'Spadikam', 'Nee aaraada kooduthal chodikkan?', 'Who are you to ask too many questions?!', 'Authoritative aggression'),
+    'anjooran': ('Anjooran', 'Godfather', 'Aanede chevittil maathramalla, ninte ammede chevittilum vekkeda panji!', 'Put cotton not just in the elephant ear, put it in your mother ear too!', 'Patriarchal rage'),
+    'panji': ('Anjooran', 'Godfather', 'Aanede chevittil maathramalla, ninte ammede chevittilum vekkeda panji!', 'Put cotton not just in the elephant ear, put it in your mother ear too!', 'Patriarchal rage'),
+    'krishnan_nair': ('Krishnan Nair', 'Akkare Akkare Akkare', 'Shooting begins!', 'Shooting begins!', 'Hyper-optimistic incompetence'),
+    'krishnan-nair': ('Krishnan Nair', 'Akkare Akkare Akkare', 'Shooting begins!', 'Shooting begins!', 'Hyper-optimistic incompetence'),
+    'paul_barber': ('Paul Barber', 'Akkare Akkare Akkare', 'Ninte achanaada Paul Barber!', 'Your father is Paul Barber!', 'Identity crisis rage'),
+    'paul-barber': ('Paul Barber', 'Akkare Akkare Akkare', 'Ninte achanaada Paul Barber!', 'Your father is Paul Barber!', 'Identity crisis rage'),
+    'sadhanam': ('Dasan & Vijayan', 'Akkare Akkare Akkare', 'Sadhanam kayyilundo?', 'Do you have the stuff in hand?', 'Subtle clandestine tension'),
+    'ramanan_biriyani': ('Ramanan', 'Punjabi House', 'Annu undaakkiya biriyaani okke enth cheytho aavo!', 'Wonder what happened to all the biryani made that day!', 'Culinary yearning / starvation'),
+    'biriyaani': ('Ramanan', 'Punjabi House', 'Annu undaakkiya biriyaani okke enth cheytho aavo!', 'Wonder what happened to all the biryani made that day!', 'Culinary yearning / starvation'),
+    'gangadharan': ('Gangadharan Muthalali', 'Punjabi House', 'Akathu poyi Punjabikalod para, Gangadharan Muthalaaliyum Ramananum vannirikkunnu ennu!', 'Go inside and tell the Punjabis: Proprietor Gangadharan and Ramanan have arrived!', 'Delusional landlord pride'),
+    'alakkum': ('Ramanan', 'Punjabi House', 'Ariyaan paadillanjittu chodikkukaya, randu varshamaayi ivide alakkum nanayum onnumille?', 'Just asking out of ignorance, has there been no laundry here for two years?', 'Domestic exhaustion'),
+    'pavanayi': ('Ananthan Nambiar', 'Nadodikkattu', 'Angane Pavanayi shavamaayi!', 'And so Pavanayi turned into a corpse!', 'Professional failure / fatalism'),
+    'ranga_annan': ('Ranga Annan', 'Aavesham', 'Eda mone! All the best da!', 'Hey brother! All the best da!', 'Hyper-energetic brotherhood / chaos'),
+    'all-the-best': ('Ranga Annan', 'Aavesham', 'Eda mone! All the best da!', 'Hey brother! All the best da!', 'Hyper-energetic brotherhood / chaos'),
+    'jagathy_aha': ('Nischal', 'Kilukkam', 'Aha... anganayanalle!', 'Aha... so that is how it is!', 'Cynical realization'),
+    'anganayanalle': ('Nischal', 'Kilukkam', 'Aha... anganayanalle!', 'Aha... so that is how it is!', 'Cynical realization'),
+    'gafoor': ('Gafoor Ka Dhosth', 'Nadodikkattu', 'Savari giri giri!', 'Smooth ride, all is well!', 'Optimistic travel hustle'),
+    'damu': ('Dashamoolam Damu', 'Chattambinadu', 'Njaan aaraannu ariyilla le?', 'You do not know who I am, do you?', 'Underestimated street rage'),
+    'manavalan': ('Manavalan', 'Pulival Kalyanam', 'Njan aara mon! Dubai Manavalan!', 'Who do you think I am, kid! Dubai Manavalan!', 'Expatriate swagger'),
+    'pappu': ('Kuthiravattam Pappu', 'Vellanakalude Nadu', 'Ippo shariyaakki tharaam!', 'I will fix it right now!', 'Chronic overpromise')
 }
 
-st.markdown("<h1 style='text-align: center;'>🌴 The 'Meme-ing of Life' Sentiment Analyzer</h1>", unsafe_allow_html=True)
-st.markdown("<h4 style='text-align: center; color: #ff4b4b;'>Biometric Ocular Psyche & Kerala Existential Telemetry</h4>", unsafe_allow_html=True)
+# Cyberpunk Glassmorphic Theme Injection
+st.markdown("""
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap');
+
+html, body, [class*="css"] {
+    font-family: 'IBM Plex Mono', monospace;
+}
+
+/* Background data grid */
+.stApp {
+    background-color: #0c1020;
+    background-image: 
+        linear-gradient(to right, rgba(0, 240, 255, 0.04) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(0, 240, 255, 0.04) 1px, transparent 1px);
+    background-size: 32px 32px;
+}
+
+/* Custom Cyberpunk Tabs */
+.stTabs [data-baseweb="tab-list"] {
+    gap: 8px;
+    background-color: rgba(18, 24, 43, 0.7);
+    border: 1px solid rgba(0, 240, 255, 0.2);
+    border-radius: 8px;
+    padding: 6px;
+}
+.stTabs [data-baseweb="tab"] {
+    font-family: 'Chakra Petch', sans-serif;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: #94a3b8;
+    border-radius: 6px;
+    padding: 8px 18px;
+}
+.stTabs [aria-selected="true"] {
+    background: rgba(0, 240, 255, 0.12) !important;
+    color: #00f0ff !important;
+    border-bottom: 2px solid #00f0ff !important;
+}
+
+/* Metric Cards */
+[data-testid="stMetric"] {
+    background: rgba(18, 24, 43, 0.85);
+    border: 1px solid rgba(0, 240, 255, 0.22);
+    border-radius: 8px;
+    padding: 12px;
+    box-shadow: inset 0 1px 0 rgba(0, 240, 255, 0.1);
+}
+[data-testid="stMetricLabel"] {
+    color: #94a3b8 !important;
+    font-size: 0.8rem !important;
+    text-transform: uppercase;
+}
+[data-testid="stMetricValue"] {
+    color: #00f0ff !important;
+    font-family: 'Chakra Petch', sans-serif;
+    font-weight: 700;
+}
+</style>
+""", unsafe_allow_html=True)
+
+# Cyberpunk Header from Lovable
+current_clock = datetime.datetime.now().strftime("%H:%M:%S")
+st.markdown(f"""
+<div style="display: flex; justify-content: space-between; align-items: flex-end; border-left: 3px solid #00f0ff; padding-left: 18px; margin-bottom: 24px; flex-wrap: wrap; gap: 14px;">
+    <div>
+        <div style="display: flex; align-items: center; gap: 8px; font-size: 11px; text-transform: uppercase; color: #94a3b8; font-family: 'IBM Plex Mono', monospace;">
+            <span style="color: #00f0ff;">⚡</span> KCPDP_OS v4.8.2 // Node KL-14 // <span style="color: #22d3ee;">{current_clock} IST</span>
+        </div>
+        <h1 style="margin: 4px 0 0 0; font-family: 'Chakra Petch', sans-serif; font-size: 2.7rem; font-weight: 700; text-transform: uppercase; line-height: 1.05;">
+            The <span style="color: #00f0ff; text-shadow: 0 0 20px rgba(0, 240, 255, 0.5);">“Meme-ing”</span> of Life
+        </h1>
+        <p style="margin: 6px 0 0 0; font-size: 0.95rem; text-transform: uppercase; color: #94a3b8;">
+            Sentiment Analyzer <span style="color: #ff4b4b; font-weight: bold;">// Kerala Edition</span>
+        </p>
+    </div>
+    <div style="background: rgba(18, 24, 43, 0.85); border: 1px solid rgba(0, 240, 255, 0.25); border-radius: 8px; padding: 10px 16px; display: flex; align-items: center; gap: 12px;">
+        <span style="display: inline-block; width: 10px; height: 10px; border-radius: 50%; background-color: #00ffcc; box-shadow: 0 0 10px #00ffcc;"></span>
+        <div>
+            <div style="font-size: 10px; text-transform: uppercase; color: #94a3b8;">Kerala Collective Psyche Processor</div>
+            <div style="font-size: 12px; font-weight: bold; color: #00ffcc; text-transform: uppercase; font-family: 'Chakra Petch', sans-serif;">Live Telemetry Active</div>
+        </div>
+    </div>
+</div>
+""", unsafe_allow_html=True)
 st.divider()
 
-tabs = st.tabs(["📊 Global Telemetry", "📸 The Biometric Scanner", "📂 Vernacular Feed"])
+tabs = st.tabs(["📊 Global Telemetry", "📸 Ocular Psyche Scanner", "🗄️ Vernacular Meme Vault"])
+
 
 with tabs[0]:
     st.markdown("""
@@ -216,6 +308,96 @@ with tabs[0]:
             fig_pie.update_layout(height=320, template="plotly_dark", margin=dict(l=20, r=20, t=20, b=20), showlegend=True)
             st.plotly_chart(fig_pie, width='stretch')
             st.caption("Distribution of affective states compiled across all partitions in the Parquet Data Lake.")
+
+    st.divider()
+
+    # Regional & Temporal Telemetry Row (Lovable Cyberpunk Telemetry Modules)
+    st.markdown("#### 📡 Regional Vectors & Pulse Dynamics")
+    col_reg1, col_reg2 = st.columns([1.2, 0.8], gap="medium")
+    with col_reg1:
+        st.markdown("##### 📍 Regional Sentiment Distribution `[DISTRICT.VECTOR]`")
+        dist_df = pd.DataFrame([
+            {"District": "EKM", "Joy Coefficient": 68, "Existential Load": 31},
+            {"District": "TVM", "Joy Coefficient": 54, "Existential Load": 42},
+            {"District": "KKD", "Joy Coefficient": 76, "Existential Load": 28},
+            {"District": "TCR", "Joy Coefficient": 61, "Existential Load": 46},
+            {"District": "KNR", "Joy Coefficient": 72, "Existential Load": 33},
+            {"District": "ALP", "Joy Coefficient": 58, "Existential Load": 51},
+        ])
+        fig_dist = go.Figure()
+        fig_dist.add_trace(go.Bar(
+            x=dist_df["District"], 
+            y=dist_df["Joy Coefficient"], 
+            name="Joy Coefficient", 
+            marker_color="#00f0ff"
+        ))
+        fig_dist.add_trace(go.Bar(
+            x=dist_df["District"], 
+            y=dist_df["Existential Load"], 
+            name="Existential Load", 
+            marker_color="#ff4b4b"
+        ))
+        fig_dist.update_layout(
+            barmode="group",
+            height=290,
+            template="plotly_dark",
+            margin=dict(l=20, r=20, t=25, b=20),
+            legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1)
+        )
+        st.plotly_chart(fig_dist, use_container_width=True)
+        st.caption("District-wise cross-sectional sentiment comparison across 6 major Kerala cultural hubs.")
+
+    with col_reg2:
+        st.markdown("##### 💓 Collective Psyche Pulse `[PULSE.6H]`")
+        pulse_df = pd.DataFrame([
+            {"Time": "18:00", "Pulse": 44},
+            {"Time": "19:00", "Pulse": 52},
+            {"Time": "20:00", "Pulse": 48},
+            {"Time": "21:00", "Pulse": 67},
+            {"Time": "22:00", "Pulse": 71},
+            {"Time": "23:00", "Pulse": 64},
+        ])
+        fig_pulse = go.Figure()
+        fig_pulse.add_trace(go.Scatter(
+            x=pulse_df["Time"],
+            y=pulse_df["Pulse"],
+            mode="lines+markers",
+            name="Psyche Index",
+            line=dict(color="#00f0ff", width=3),
+            fill="tozeroy",
+            fillcolor="rgba(0, 240, 255, 0.18)"
+        ))
+        fig_pulse.update_layout(
+            height=290,
+            template="plotly_dark",
+            margin=dict(l=20, r=20, t=25, b=20),
+            yaxis=dict(range=[30, 85])
+        )
+        st.plotly_chart(fig_pulse, use_container_width=True)
+        st.caption("Trailing 6-hour aggregate psychological load across live statewide telemetry channels.")
+
+    # Live Ingestion Stream (Real-Time Ingestion Event Log)
+    st.markdown("##### 📻 Live Telemetry Ingestion Stream `[STREAM.LIVE]`")
+    stream_events = [
+        {"timestamp": "23:02:14", "node": "KOZHIKODE", "discourse": "Auto-rickshaw fare altercation & beach vibe discourse", "delta": "+0.82", "trend": "up"},
+        {"timestamp": "23:02:11", "node": "ERNAKULAM", "discourse": "IT park resignation meme spike & Infopark traffic rant", "delta": "-0.64", "trend": "down"},
+        {"timestamp": "23:02:08", "node": "KOLLAM", "discourse": "Harbor fresh catch price debate & domestic tension", "delta": "-0.12", "trend": "down"},
+        {"timestamp": "23:02:04", "node": "THRISSUR", "discourse": "Pooram percussion anticipation & festive euphoria", "delta": "+0.91", "trend": "up"},
+        {"timestamp": "23:01:58", "node": "MALAPPURAM", "discourse": "Sevens football championship late-night chai debate", "delta": "+0.75", "trend": "up"},
+    ]
+    stream_html = "".join([
+        f"""<div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255, 255, 255, 0.07); padding: 8px 0; font-size: 12px;">
+            <span style="color: #94a3b8; width: 90px; font-family: 'IBM Plex Mono', monospace;">{ev['timestamp']}</span>
+            <span style="color: #00f0ff; font-weight: bold; width: 120px; font-family: 'IBM Plex Mono', monospace;">[{ev['node']}]</span>
+            <span style="color: #e2e8f0; flex: 1; margin: 0 12px;">{ev['discourse']}</span>
+            <span style="color: {'#00ffcc' if ev['trend']=='up' else '#ff4b4b'}; font-weight: bold; font-family: 'IBM Plex Mono', monospace;">{ev['delta']} KEW</span>
+        </div>""" for ev in stream_events
+    ])
+    st.markdown(f"""
+    <div style="background: rgba(18, 24, 43, 0.85); border: 1px solid rgba(0, 240, 255, 0.25); border-radius: 8px; padding: 16px; margin-bottom: 24px;">
+        {stream_html}
+    </div>
+    """, unsafe_allow_html=True)
 
     st.divider()
 
@@ -510,11 +692,17 @@ with tabs[1]:
                 fname_lower = os.path.basename(chosen_img).lower()
                 meta_match = next((v for k, v in IMAGE_METADATA.items() if k in fname_lower), None)
                 if meta_match:
-                    card_character, card_movie, card_dialogue = meta_match
+                    card_character = meta_match[0]
+                    card_movie = meta_match[1]
+                    card_dialogue = meta_match[2]
+                    card_translation = meta_match[3] if len(meta_match) > 3 else "Kerala vernacular existential expression."
+                    card_signal_class = meta_match[4] if len(meta_match) > 4 else "Vernacular Affective Core"
                 else:
                     card_character = top_meme['character']
                     card_movie = top_meme['movie']
                     card_dialogue = str(top_meme['dialogue_snippet']).strip('"').strip("'")
+                    card_translation = "Kerala vernacular existential expression."
+                    card_signal_class = "Parquet Lake Vector Match"
 
                 # Fetch matching archetype & scenario from Parquet if available
                 char_df = matched_df[matched_df['character'].str.contains(card_character.split()[0], case=False, na=False)]
@@ -548,6 +736,8 @@ with tabs[1]:
             card_character = top_meme['character']
             card_movie = top_meme['movie']
             card_dialogue = str(top_meme['dialogue_snippet']).strip('"').strip("'")
+            card_translation = "Kerala vernacular existential expression."
+            card_signal_class = "Parquet Lake Vector Match"
             scenario_title = top_meme['scenario_title']
             kew_score = top_meme['kerala_existential_weight']
             archetype = top_meme['character_archetype']
@@ -561,20 +751,298 @@ with tabs[1]:
             </div>
             """, unsafe_allow_html=True)
 
-        # High-Impact Cinematic Dialogue Card (Unified right frame)
+        # High-Impact Cinematic Dialogue Card (Unified right frame from Lovable UI)
         st.markdown(f"""
-        <div style="background-color: #1e1e2f; padding: 20px; border-radius: 12px; border: 2px solid #ff4b4b;">
-            <h3 style="color: #ff4b4b; margin-top: 0;">🎭 {card_character} — <span style="color: #ffffff;">{card_movie}</span></h3>
-            <p style="font-size: 0.95rem; color: #a0a0c0;"><b>Scenario:</b> {scenario_title}</p>
-            <hr style="border-color: #444455;">
-            <p style="color: #00ffff; font-style: italic; font-size: 1.1rem; margin: 10px 0;">"{card_dialogue}"</p>
-            <div style="display: flex; justify-content: space-between; margin-top: 15px;">
-                <span style="background-color: #ff4b4b; color: white; padding: 4px 12px; border-radius: 15px; font-weight: bold; font-size: 0.85rem;">KEW Score: {kew_score}/10</span>
-                <span style="color: #8888aa; font-family: monospace; font-size: 0.8rem;">250k PARQUET LAKE</span>
+        <div style="background: rgba(18, 24, 43, 0.92); border: 1px solid rgba(0, 240, 255, 0.35); border-radius: 12px; padding: 22px; margin-top: 15px; box-shadow: 0 8px 32px rgba(0, 0, 0, 0.45);">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                <span style="background: rgba(255, 75, 75, 0.15); border: 1px solid rgba(255, 75, 75, 0.6); color: #ff4b4b; padding: 3px 10px; border-radius: 4px; font-size: 11px; font-weight: bold; font-family: 'IBM Plex Mono', monospace;">MATCH 99.4%</span>
+                <span style="color: #00f0ff; font-family: 'IBM Plex Mono', monospace; font-size: 11px;">[RESEARCH_GRADE_SIMULATION]</span>
+            </div>
+            <h3 style="color: #ffffff; font-family: 'Chakra Petch', sans-serif; font-size: 1.4rem; margin: 0 0 4px 0;">
+                🎭 {card_character} <span style="color: #00f0ff;">· {card_movie}</span>
+            </h3>
+            <p style="font-size: 0.85rem; color: #94a3b8; margin: 0 0 14px 0;"><b>Scenario Archetype:</b> {scenario_title} ({archetype})</p>
+            <blockquote style="border-left: 3px solid #00f0ff; padding-left: 14px; margin: 12px 0; color: #f8fafc; font-size: 1.15rem; font-style: italic; font-weight: 500; line-height: 1.4;">
+                “{card_dialogue}”
+                <span style="display: block; margin-top: 6px; font-style: normal; font-size: 0.85rem; color: #94a3b8; font-family: 'IBM Plex Mono', monospace;">
+                    ↳ {card_translation}
+                </span>
+            </blockquote>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 18px; border-top: 1px solid rgba(255, 255, 255, 0.1); padding-top: 14px;">
+                <div style="background: rgba(12, 16, 32, 0.8); border: 1px solid rgba(255, 75, 75, 0.3); padding: 10px; border-radius: 6px;">
+                    <div style="font-size: 9px; color: #94a3b8; text-transform: uppercase;">Kerala Existential Weight</div>
+                    <div style="font-family: 'Chakra Petch', sans-serif; font-size: 1.4rem; font-weight: bold; color: #ff4b4b; margin-top: 2px;">{kew_score} <span style="font-size: 0.8rem; color: #94a3b8;">/ 10</span></div>
+                </div>
+                <div style="background: rgba(12, 16, 32, 0.8); border: 1px solid rgba(0, 240, 255, 0.3); padding: 10px; border-radius: 6px;">
+                    <div style="font-size: 9px; color: #94a3b8; text-transform: uppercase;">Signal Class</div>
+                    <div style="font-family: 'IBM Plex Mono', monospace; font-size: 0.82rem; font-weight: bold; color: #00f0ff; margin-top: 4px; text-transform: uppercase;">{card_signal_class}</div>
+                </div>
+            </div>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 14px; font-size: 10px; color: #64748b; font-family: 'IBM Plex Mono', monospace;">
+                <span>SOURCE: APACHE SPARK PARQUET LAKE</span>
+                <span style="color: #00ffcc;">CATALYST VERIFIED</span>
             </div>
         </div>
         """, unsafe_allow_html=True)
 
 with tabs[2]:
-    st.subheader("Vernacular Meme Lake Explorer")
-    st.dataframe(df[["meme_id", "character", "movie", "scenario_title", "emotion", "kerala_existential_weight"]].head(50), width='stretch')
+    st.markdown("""
+    <div style="background: linear-gradient(135deg, #1a1a2e, #16213e); padding: 20px; border-radius: 12px; border-left: 5px solid #00f0ff; margin-bottom: 20px;">
+        <h3 style="color: #00f0ff; margin: 0 0 6px 0;">🗄️ Vernacular Meme Vault & Parquet Lake Explorer</h3>
+        <p style="color: #c5c5e0; font-size: 0.95rem; margin: 0;">
+            Explore the curated Kerala cinematic psyche repository and search 250,000 indexed records across Apache Spark columnar partitions.
+        </p>
+    </div>
+    """, unsafe_allow_html=True)
+
+    VAULT_MEMES = [
+        {
+            "id": 1,
+            "title": "KTU Internal Marks: The Reckoning",
+            "dialogue": "Enthokkeyo pratheekshichu… enthokkeyo aayi.",
+            "translation": "Expected everything. Received character development.",
+            "movie": "Premam (2015)",
+            "character": "George",
+            "archetype": "Academic Martyr",
+            "mood": "Despair",
+            "kew": 9.48,
+            "image": "assets/memes/sad/sad_ktu_trauma.jpg"
+        },
+        {
+            "id": 2,
+            "title": "The Chacko Ultimatum",
+            "dialogue": "Ormayundo ee mukham? Marakkan pattilla.",
+            "translation": "Do you remember this face? The psyche never forgets.",
+            "movie": "Spadikam (1995)",
+            "character": "Chacko Mash",
+            "archetype": "Unforgiving Patriarch",
+            "mood": "Rage",
+            "kew": 8.82,
+            "image": "assets/memes/angry/angry_chacko_resolve.jpg"
+        },
+        {
+            "id": 3,
+            "title": "KSRTC Serotonin Event",
+            "dialogue": "Ellathinum athintethaya samayam undu, Dasa.",
+            "translation": "Everything has its appointed time, Dasan.",
+            "movie": "Nadodikkattu (1987)",
+            "character": "Dasan & Vijayan",
+            "archetype": "Delusional Optimist",
+            "mood": "Hope",
+            "kew": 7.26,
+            "image": "assets/memes/happy/happy_bus_existential.jpg"
+        },
+        {
+            "id": 4,
+            "title": "Monday Standup Response",
+            "dialogue": "Ippo shariyaakki tharaam!",
+            "translation": "I will fix it right now!",
+            "movie": "Vellanakalude Nadu (1988)",
+            "character": "Kuthiravattam Pappu",
+            "archetype": "Chronic Fixer",
+            "mood": "Chaos",
+            "kew": 8.14,
+            "image": "assets/memes/pappu_shariyaakkam.jpg"
+        },
+        {
+            "id": 5,
+            "title": "Salary Day + 1 Existential Void",
+            "dialogue": "Angane Pavanayi shavamaayi!",
+            "translation": "And so Pavanayi turned into a corpse!",
+            "movie": "Nadodikkattu (1987)",
+            "character": "Ananthan Nambiar",
+            "archetype": "Professional Casualty",
+            "mood": "Despair",
+            "kew": 9.71,
+            "image": "assets/memes/happy_pavanayi_shavamaayi.jpg"
+        },
+        {
+            "id": 6,
+            "title": "Street Respect Protocol",
+            "dialogue": "Njaan aaraannu ariyilla le?",
+            "translation": "You do not know who I am, do you?",
+            "movie": "Chattambinadu (2009)",
+            "character": "Dashamoolam Damu",
+            "archetype": "Underestimated Brawler",
+            "mood": "Rage",
+            "kew": 8.95,
+            "image": "assets/memes/damu_choodu.jpg"
+        },
+        {
+            "id": 7,
+            "title": "Gulf Return Expatriate Swagger",
+            "dialogue": "Njan aara mon! Dubai Manavalan!",
+            "translation": "Who do you think I am, kid! Dubai Manavalan!",
+            "movie": "Pulival Kalyanam (2003)",
+            "character": "Manavalan",
+            "archetype": "Expatriate Aristocrat",
+            "mood": "Hope",
+            "kew": 7.94,
+            "image": "assets/memes/manavalan_royal.jpg"
+        },
+        {
+            "id": 8,
+            "title": "Late-Night Hostel Energy Catalyst",
+            "dialogue": "Eda mone! All the best da!",
+            "translation": "Hey brother! All the best da!",
+            "movie": "Aavesham (2024)",
+            "character": "Ranga Annan",
+            "archetype": "Uninhibited Godfather",
+            "mood": "Chaos",
+            "kew": 9.12,
+            "image": "assets/memes/happy_ranga_annan_aavesham.jpg"
+        },
+        {
+            "id": 9,
+            "title": "Unreciprocated Melodramatic Grief",
+            "dialogue": "Achuvettaa... I love you!",
+            "translation": "Achuvetta... I love you!",
+            "movie": "Kalyanaraman (2002)",
+            "character": "Ponjikkara",
+            "archetype": "Tragicomic Romantic",
+            "mood": "Despair",
+            "kew": 9.56,
+            "image": "assets/memes/sad_salim_kumar_crying.jpg"
+        },
+        {
+            "id": 10,
+            "title": "Modernity Assertion Protocol",
+            "dialogue": "Actually njaan modern aanu!",
+            "translation": "Actually, I am modern!",
+            "movie": "Kalyanaraman (2002)",
+            "character": "Pyari",
+            "archetype": "Eccentric Sidekick",
+            "mood": "Hope",
+            "kew": 7.45,
+            "image": "assets/memes/neutral_actually_modern.jpg"
+        },
+        {
+            "id": 11,
+            "title": "Nihilistic Task Defeatism",
+            "dialogue": "Athinekkaal nallath ente shavam edukkunnathalle!",
+            "translation": "Better to carry out my corpse than do that!",
+            "movie": "CID Moosa (2003)",
+            "character": "CID Moosa",
+            "archetype": "Exasperated Detective",
+            "mood": "Despair",
+            "kew": 9.30,
+            "image": "assets/memes/sad_moosa_shavam.jpg"
+        },
+        {
+            "id": 12,
+            "title": "Explosive Group Chaos",
+            "dialogue": "Aarkkadaa bhraanth?!",
+            "translation": "Who the hell is crazy?!",
+            "movie": "In Harihar Nagar (1990)",
+            "character": "Mahadevan",
+            "archetype": "Hostel Instigator",
+            "mood": "Rage",
+            "kew": 8.76,
+            "image": "assets/memes/angry_aarkkada_bhraanth.jpg"
+        }
+    ]
+
+    # Search and Filter Toolbar
+    v_col1, v_col2 = st.columns([1.5, 1])
+    with v_col1:
+        vault_query = st.text_input("🔍 Search dialogue, movie, character, or archetype:", placeholder="e.g. Dasan, Chacko, Premam, modern...", key="vault_search_box")
+    with v_col2:
+        mood_filter = st.radio("Mood Filter:", ["All", "Hope", "Despair", "Rage", "Chaos"], horizontal=True, key="vault_mood_filter")
+
+    # Filter Items
+    q = vault_query.strip().lower()
+    filtered_memes = [
+        m for m in VAULT_MEMES
+        if (mood_filter == "All" or m["mood"] == mood_filter)
+        and (not q or q in m["title"].lower() or q in m["dialogue"].lower() or q in m["translation"].lower() or q in m["movie"].lower() or q in m["character"].lower() or q in m["archetype"].lower())
+    ]
+
+    st.caption(f"Showing **{len(filtered_memes)}** artifacts resolved (Sorted by KEW relevance ↓)")
+
+    # 3-Column Card Grid
+    grid_cols = st.columns(3, gap="medium")
+    mood_colors = {
+        "Despair": "#3399ff",
+        "Rage": "#ff4b4b",
+        "Hope": "#00ffcc",
+        "Chaos": "#ffaa00"
+    }
+
+    for idx, item in enumerate(filtered_memes):
+        col = grid_cols[idx % 3]
+        with col:
+            mood_badge_color = mood_colors.get(item["mood"], "#00f0ff")
+            img_path = item["image"]
+            if not os.path.exists(img_path):
+                alt_path = os.path.join("assets/memes", os.path.basename(img_path))
+                if os.path.exists(alt_path):
+                    img_path = alt_path
+
+            if os.path.exists(img_path):
+                try:
+                    pil_card = Image.open(img_path)
+                    max_card_h = 240
+                    cw, ch = pil_card.size
+                    if ch > max_card_h:
+                        new_cw = int(cw * (max_card_h / ch))
+                        pil_card = pil_card.resize((new_cw, max_card_h), Image.Resampling.LANCZOS)
+                    st.image(pil_card, use_container_width=True)
+                except Exception:
+                    st.image(img_path, use_container_width=True)
+
+            st.markdown(f"""
+            <div style="background: rgba(18, 24, 43, 0.85); border: 1px solid rgba(0, 240, 255, 0.2); border-radius: 8px; padding: 14px; margin-bottom: 18px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                    <span style="background: rgba(0, 240, 255, 0.15); border: 1px solid rgba(0, 240, 255, 0.5); color: #00f0ff; font-size: 10px; font-weight: bold; padding: 2px 8px; border-radius: 3px; font-family: 'IBM Plex Mono', monospace;">
+                        KEW {item['kew']}
+                    </span>
+                    <span style="background: rgba(255, 75, 75, 0.15); border: 1px solid {mood_badge_color}; color: {mood_badge_color}; font-size: 10px; font-weight: bold; padding: 2px 8px; border-radius: 3px; font-family: 'IBM Plex Mono', monospace;">
+                        {item['mood'].upper()}
+                    </span>
+                </div>
+                <div style="font-family: 'Chakra Petch', sans-serif; font-weight: 700; font-size: 1.05rem; color: #ffffff; margin-bottom: 2px;">
+                    {item['title']}
+                </div>
+                <div style="font-size: 10px; text-transform: uppercase; color: #94a3b8; margin-bottom: 10px; font-family: 'IBM Plex Mono', monospace;">
+                    {item['movie']} // {item['archetype']}
+                </div>
+                <div style="border-left: 2px solid #00f0ff; padding-left: 10px; color: #e2e8f0; font-size: 0.95rem; font-style: italic; margin-bottom: 6px;">
+                    “{item['dialogue']}”
+                </div>
+                <div style="font-size: 11px; color: #94a3b8; font-family: 'IBM Plex Mono', monospace; margin-bottom: 10px;">
+                    ↳ {item['translation']}
+                </div>
+            </div>
+            """, unsafe_allow_html=True)
+            st.code(item['dialogue'], language="text")
+
+    # Big Data Lake Columnar Parquet Explorer
+    st.divider()
+    with st.expander("🗄️ Query Full 250,000-Record Parquet Data Lake (Spark Columnar Pushdown)", expanded=False):
+        st.markdown("##### Filter Parquet Lake Partitions")
+        pq_c1, pq_c2, pq_c3 = st.columns(3)
+        with pq_c1:
+            sel_emotion = st.multiselect(
+                "Filter Emotion:", 
+                options=df["emotion"].unique().tolist() if "emotion" in df.columns else [],
+                default=[]
+            )
+        with pq_c2:
+            sel_category = st.multiselect(
+                "Filter Scenario Category:",
+                options=df["scenario_category"].unique().tolist() if "scenario_category" in df.columns else [],
+                default=[]
+            )
+        with pq_c3:
+            row_limit = st.slider("Row Limit to Stream:", min_value=10, max_value=500, value=50, step=10)
+
+        lake_view_df = df
+        if sel_emotion:
+            lake_view_df = lake_view_df[lake_view_df["emotion"].isin(sel_emotion)]
+        if sel_category:
+            lake_view_df = lake_view_df[lake_view_df["scenario_category"].isin(sel_category)]
+
+        display_cols = [c for c in ["meme_id", "character", "movie", "scenario_title", "emotion", "kerala_existential_weight", "dialogue_snippet"] if c in lake_view_df.columns]
+        st.dataframe(lake_view_df[display_cols].head(row_limit), use_container_width=True)
+        st.caption(f"Displaying top {min(row_limit, len(lake_view_df))} of {len(lake_view_df):,} filtered records from the Snappy-compressed Parquet store.")
+
