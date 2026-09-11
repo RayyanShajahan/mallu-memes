@@ -313,6 +313,12 @@ mallu-memes/
 - **Dynamic Category Asset Binding**: Captured or selected emotions immediately trigger dynamic lookup against categorized local folders (`assets/memes/<category>/`), rendering authentic movie scenes (Kalyanaraman, Nadodikkattu, Spadikam, etc.) with responsive PIL scaling.
 - **Synchronized Dialogue Cards**: Renders dialogue quotes, character archetypes, and KEW scores queried directly from the 250k Parquet Lake.
 
+### Milestone 21: Exact Character, Movie & Dialogue Card-Image Synchronization
+- **Eliminated Character-Image Mismatch**: Resolved the desynchronization where `top_meme` from Parquet (e.g. Gafoor Ka Dhosth) was selected independently of `chosen_img` (e.g. Pyari from Kalyanaraman in `neutral_actually_modern.jpg`).
+- **Comprehensive Image Identity Mapping (`IMAGE_METADATA`)**: Integrated a comprehensive dictionary mapping all 29 image assets and aliases directly to their canonical character, movie, and punchline dialogue (Pyari $\to$ Kalyanaraman, Ponjikkara $\to$ Kalyanaraman, Ramanan $\to$ Punjabi House, Kuttikkadan $\to$ Spadikam, Anjooran $\to$ Godfather, etc.).
+- **Dynamic Attribute Alignment**: Synchronized the displayed card's header (`🎭 {card_character} — {card_movie}`), punchline quote (`"{card_dialogue}"`), and character archetype with the physical photo rendered, while dynamically querying the 250,000-record Parquet data lake for real-time existential metrics and scenario titles.
+- **Zero Camera / Meme Interference**: Executed strictly within the right-hand preview frame with zero regressions to the left-hand camera capture pipeline, quick override buttons, or layout symmetry.
+
 ---
 
 ## 5. PROPRIETARY SCORING ALGORITHMS & MATHEMATICAL FORMULATIONS

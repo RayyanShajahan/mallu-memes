@@ -46,6 +46,51 @@ def load_data():
 
 df = load_data()
 
+# Definitive Authentic Malayalam Meme Asset Identity Map
+IMAGE_METADATA = {
+    'actually_modern': ('Pyari', 'Kalyanaraman', 'Actually njaan modern aanu!'),
+    'actually-njaan-modern': ('Pyari', 'Kalyanaraman', 'Actually njaan modern aanu!'),
+    'pyari': ('Pyari', 'Kalyanaraman', 'Actually njaan modern aanu!'),
+    'salim_kumar_crying': ('Ponjikkara', 'Kalyanaraman', 'Achuvettaa... I love you!'),
+    'achuvettaa': ('Ponjikkara', 'Kalyanaraman', 'Achuvettaa... I love you!'),
+    'collector': ('Ponjikkara', 'Kalyanaraman', 'Alla... Ernakulam jilla collector mindaathe kutthi kayattedo!'),
+    'dasan_kattappara': ('Vijayan', 'Nadodikkattu', 'Achan paranju ithilum bhedham kattapparayum eduth kakkaan irangunnathaanennu!'),
+    'kattappara': ('Vijayan', 'Nadodikkattu', 'Achan paranju ithilum bhedham kattapparayum eduth kakkaan irangunnathaanennu!'),
+    'dasan_resignation': ('Dasan', 'Nadodikkattu', 'Allenkilum ee thallipoli companiyile joli njangalkk prashnamalla!'),
+    'thallipoli': ('Dasan', 'Nadodikkattu', 'Allenkilum ee thallipoli companiyile joli njangalkk prashnamalla!'),
+    'moosa_shavam': ('CID Moosa', 'CID Moosa', 'Athinekkaal nallath ente shavam edukkunnathalle!'),
+    'shavam': ('CID Moosa', 'CID Moosa', 'Athinekkaal nallath ente shavam edukkunnathalle!'),
+    'cid_moosa': ('CID Moosa', 'CID Moosa', 'Moosa... CID Moosa!'),
+    'dharidryam': ('Thorappan Kochunni', 'CID Moosa', 'Athonnum illenkilum dharidryathinu kuravonnum illallo!'),
+    'dharidryathinu': ('Thorappan Kochunni', 'CID Moosa', 'Athonnum illenkilum dharidryathinu kuravonnum illallo!'),
+    'appukkuttan': ('Appukkuttan', 'In Harihar Nagar', 'Appukkutta... ninte oru kaaryam!'),
+    'appukuttan': ('Appukkuttan', 'In Harihar Nagar', 'Appukkutta... ninte oru kaaryam!'),
+    'bhraanth': ('Mahadevan', 'In Harihar Nagar', 'Aarkkadaa bhraanth?!'),
+    'ramanathan': ('Ramanathan', 'In Harihar Nagar', 'Thomaskutty vittoda!'),
+    'karnnore': ('Unnithan', 'Manichitrathazhu', 'Adukkaruth karnnore, entaduth maathram adukkaruth!'),
+    'kuttikkadan': ('Kuttikkadan', 'Spadikam', 'Nee aaraada kooduthal chodikkan?'),
+    'anjooran': ('Anjooran', 'Godfather', 'Aanede chevittil maathramalla, ninte ammede chevittilum vekkeda panji!'),
+    'panji': ('Anjooran', 'Godfather', 'Aanede chevittil maathramalla, ninte ammede chevittilum vekkeda panji!'),
+    'krishnan_nair': ('Krishnan Nair', 'Akkare Akkare Akkare', 'Shooting begins!'),
+    'krishnan-nair': ('Krishnan Nair', 'Akkare Akkare Akkare', 'Shooting begins!'),
+    'paul_barber': ('Paul Barber', 'Akkare Akkare Akkare', 'Ninte achanaada Paul Barber!'),
+    'paul-barber': ('Paul Barber', 'Akkare Akkare Akkare', 'Ninte achanaada Paul Barber!'),
+    'sadhanam': ('Dasan & Vijayan', 'Akkare Akkare Akkare', 'Sadhanam kayyilundo?'),
+    'ramanan_biriyani': ('Ramanan', 'Punjabi House', 'Annu undaakkiya biriyaani okke enth cheytho aavo!'),
+    'biriyaani': ('Ramanan', 'Punjabi House', 'Annu undaakkiya biriyaani okke enth cheytho aavo!'),
+    'gangadharan': ('Gangadharan Muthalali', 'Punjabi House', 'Akathu poyi Punjabikalod para, Gangadharan Muthalaaliyum Ramananum vannirikkunnu ennu!'),
+    'alakkum': ('Ramanan', 'Punjabi House', 'Ariyaan paadillanjittu chodikkukaya, randu varshamaayi ivide alakkum nanayum onnumille?'),
+    'pavanayi': ('Ananthan Nambiar', 'Nadodikkattu', 'Angane Pavanayi shavamaayi!'),
+    'ranga_annan': ('Ranga Annan', 'Aavesham', 'Eda mone! All the best da!'),
+    'all-the-best': ('Ranga Annan', 'Aavesham', 'Eda mone! All the best da!'),
+    'jagathy_aha': ('Nischal', 'Kilukkam', 'Aha... anganayanalle!'),
+    'anganayanalle': ('Nischal', 'Kilukkam', 'Aha... anganayanalle!'),
+    'gafoor': ('Gafoor Ka Dhosth', 'Nadodikkattu', 'Savari giri giri!'),
+    'damu': ('Dashamoolam Damu', 'Chattambinadu', 'Njaan aaraannu ariyilla le?'),
+    'manavalan': ('Manavalan', 'Pulival Kalyanam', 'Njan aara mon! Dubai Manavalan!'),
+    'pappu': ('Kuthiravattam Pappu', 'Vellanakalude Nadu', 'Ippo shariyaakki tharaam!')
+}
+
 st.markdown("<h1 style='text-align: center;'>🌴 The 'Meme-ing of Life' Sentiment Analyzer</h1>", unsafe_allow_html=True)
 st.markdown("<h4 style='text-align: center; color: #ff4b4b;'>Biometric Ocular Psyche & Kerala Existential Telemetry</h4>", unsafe_allow_html=True)
 st.divider()
@@ -189,35 +234,63 @@ with tabs[1]:
 
             if matched_files:
                 chosen_img = random.choice(matched_files)
+
+                # Precise Character, Movie & Dialogue Synchronization from Chosen Image
+                fname_lower = os.path.basename(chosen_img).lower()
+                meta_match = next((v for k, v in IMAGE_METADATA.items() if k in fname_lower), None)
+                if meta_match:
+                    card_character, card_movie, card_dialogue = meta_match
+                else:
+                    card_character = top_meme['character']
+                    card_movie = top_meme['movie']
+                    card_dialogue = str(top_meme['dialogue_snippet']).strip('"').strip("'")
+
+                # Fetch matching archetype & scenario from Parquet if available
+                char_df = matched_df[matched_df['character'].str.contains(card_character.split()[0], case=False, na=False)]
+                if not char_df.empty:
+                    meme_row = char_df.sample(n=1).iloc[0]
+                    scenario_title = meme_row['scenario_title']
+                    kew_score = meme_row.get('kerala_existential_weight', top_meme['kerala_existential_weight'])
+                    archetype = meme_row.get('character_archetype', top_meme['character_archetype'])
+                else:
+                    scenario_title = top_meme['scenario_title']
+                    kew_score = top_meme['kerala_existential_weight']
+                    archetype = top_meme['character_archetype']
+
                 try:
                     pil_img = Image.open(chosen_img)
-                    st.image(pil_img, caption=f"Meme Archetype: {top_meme['character_archetype']} | KEW: {top_meme['kerala_existential_weight']}/10", width='stretch')
+                    st.image(pil_img, caption=f"Meme Archetype: {archetype} | KEW: {kew_score}/10", width='stretch')
                     rendered_successfully = True
                 except Exception:
-                    st.image(chosen_img, caption=f"Meme Archetype: {top_meme['character_archetype']} | KEW: {top_meme['kerala_existential_weight']}/10", width='stretch')
+                    st.image(chosen_img, caption=f"Meme Archetype: {archetype} | KEW: {kew_score}/10", width='stretch')
                     rendered_successfully = True
 
         if not rendered_successfully:
+            card_character = top_meme['character']
+            card_movie = top_meme['movie']
+            card_dialogue = str(top_meme['dialogue_snippet']).strip('"').strip("'")
+            scenario_title = top_meme['scenario_title']
+            kew_score = top_meme['kerala_existential_weight']
+            archetype = top_meme['character_archetype']
+
             # Fallback visual banner container using clean HTML if assets fail to load
             st.markdown(f"""
             <div style="background: linear-gradient(135deg, #2a1b3d, #1a1a2e); padding: 30px; border-radius: 12px; border: 2px dashed #00ffff; text-align: center; margin-bottom: 15px;">
                 <h4 style="color: #00ffff; margin: 0;">🌴 KERALA CULT CLASSIC ARTIFACT</h4>
-                <p style="color: #ffffff; font-size: 1.2rem; margin: 10px 0;">{top_meme['movie']}</p>
+                <p style="color: #ffffff; font-size: 1.2rem; margin: 10px 0;">{card_movie}</p>
                 <span style="color: #ff4b4b; font-family: monospace;">[ VISUAL BUFFER LOADED ]</span>
             </div>
             """, unsafe_allow_html=True)
 
-        snippet_text = str(top_meme['dialogue_snippet']).strip('"').strip("'")
-
         # High-Impact Cinematic Dialogue Card (Unified right frame)
         st.markdown(f"""
         <div style="background-color: #1e1e2f; padding: 20px; border-radius: 12px; border: 2px solid #ff4b4b;">
-            <h3 style="color: #ff4b4b; margin-top: 0;">🎭 {top_meme['character']} — <span style="color: #ffffff;">{top_meme['movie']}</span></h3>
-            <p style="font-size: 0.95rem; color: #a0a0c0;"><b>Scenario:</b> {top_meme['scenario_title']}</p>
+            <h3 style="color: #ff4b4b; margin-top: 0;">🎭 {card_character} — <span style="color: #ffffff;">{card_movie}</span></h3>
+            <p style="font-size: 0.95rem; color: #a0a0c0;"><b>Scenario:</b> {scenario_title}</p>
             <hr style="border-color: #444455;">
-            <p style="color: #00ffff; font-style: italic; font-size: 1.1rem; margin: 10px 0;">"{snippet_text}"</p>
+            <p style="color: #00ffff; font-style: italic; font-size: 1.1rem; margin: 10px 0;">"{card_dialogue}"</p>
             <div style="display: flex; justify-content: space-between; margin-top: 15px;">
-                <span style="background-color: #ff4b4b; color: white; padding: 4px 12px; border-radius: 15px; font-weight: bold; font-size: 0.85rem;">KEW Score: {top_meme['kerala_existential_weight']}/10</span>
+                <span style="background-color: #ff4b4b; color: white; padding: 4px 12px; border-radius: 15px; font-weight: bold; font-size: 0.85rem;">KEW Score: {kew_score}/10</span>
                 <span style="color: #8888aa; font-family: monospace; font-size: 0.8rem;">250k PARQUET LAKE</span>
             </div>
         </div>
