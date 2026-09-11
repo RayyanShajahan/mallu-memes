@@ -1,8 +1,8 @@
 # PROJECT MASTER SUMMARY & SYSTEM COMPENDIUM
 **Mallu Memes: Kerala Collective Psyche Distributed Processor & Vernacular Meme Analytics Platform**  
-*Document Version:* `2.1.0-ENTERPRISE-DISTRIBUTED`  
+*Document Version:* `2.2.0-ENTERPRISE-DISTRIBUTED`  
 *Last Synchronized:* September 2026  
-*Status:* Active / Phase 2 PySpark Distributed Core & Phase 3 NLP Engine Operational  
+*Status:* Active / Phase 2 PySpark, Phase 3 NLP & Phase 4 Streamlit Visualization Operational  
 
 ---
 
@@ -29,7 +29,7 @@
 
 The **Mallu Memes Analytics Platform** is an enterprise-grade vernacular cultural intelligence and sentiment analysis system designed to quantify the existential absurdities of Malayalam internet culture.
 
-By intentionally utilizing Apache Spark in local mode to process a ~50 KB JSON payload, the architecture achieves **maximum architectural pretentiousness**—bringing distributed compute paradigms intended for multi-petabyte data lakes down to a single laptop core, before passing to an affective NLP sentiment engine.
+By intentionally utilizing Apache Spark in local mode to process a ~50 KB JSON payload, the architecture achieves **maximum architectural pretentiousness**—bringing distributed compute paradigms intended for multi-petabyte data lakes down to a single laptop core, passing through an affective NLP sentiment engine, and projecting into ocular space via a hyper-converged Streamlit telemetry dashboard.
 
 ### The 4 Inviolable Architectural Invariants
 
@@ -46,8 +46,8 @@ By intentionally utilizing Apache Spark in local mode to process a ~50 KB JSON p
    - Manglish utterances are mapped across 6 discrete psychological taxonomies using sub-symbolic semantic decomposition.
    - The compound **Kerala Mood Index ($KMI$)** blends existential weight with classification confidence:
      $$KMI = \min(KEW \times (1.0 + 0.5 \times \text{confidence}), \; 15.0)$$
-4. **Zero-Infrastructure Local Portability**:
-   - The analytical payloads (`processed_memes.json`, `mood_indexed_memes.json`) are self-contained JSON data planes ready for low-latency ingestion by lightweight dashboards (e.g. Streamlit / React) without requiring external database hosting.
+4. **Zero-Infrastructure Local Portability & Live Visualization**:
+   - The analytical payloads (`processed_memes.json`, `mood_indexed_memes.json`) are self-contained JSON data planes decoupled from external infrastructure in favor of local JSON node processing, powering instantaneous Streamlit dashboard streaming.
 
 ---
 
@@ -91,9 +91,16 @@ flowchart TB
         NLPEngine --> MoodPayload
     end
 
-    subgraph Phase4["Phase 4: Presentation Plane (Downstream)"]
-        Dashboard["Streamlit Kerala Mood Index Dashboard\n(Real-Time Gauges, Mood Matrix, Leaderboards)"]
+    subgraph Phase4["Phase 4: Visual Presentation & Ocular Telemetry (Active)"]
+        Dashboard["Streamlit Kerala Mood Index Dashboard\n(phase4_dashboard.py : Port 8501)"]
+        Gauge["Plotly go.Indicator Gauge\n(Aggregate KMI Metric)"]
+        Bar["Plotly Express Bar Chart\n(Affective Volume Matrix)"]
+        Table["Top Existential Artifacts Leaderboard"]
+        
         MoodPayload --> Dashboard
+        Dashboard --> Gauge
+        Dashboard --> Bar
+        Dashboard --> Table
     end
 ```
 
@@ -115,22 +122,24 @@ mallu-memes/
 ├── mood_indexed_memes.json                 # Phase 3 output analytical payload with sentiment vectors & KMI
 ├── phase2_pyspark_pipeline.py              # Phase 2 Distributed PySpark Compute Engine
 ├── phase3_sentiment_model.py               # Phase 3 Vernacular NLP Sentiment & Mood Engine
+├── phase4_dashboard.py                     # Phase 4 Streamlit Kerala Mood Index Visualization Matrix
 ├── processed_memes.json                    # Phase 2 output analytical payload with metrics
 ├── PROJECT_MASTER_SUMMARY.md               # [THIS FILE] Single Source of Truth Compendium
-└── requirements.txt                        # Pinned dependencies (pyspark, py4j, nltk)
+└── requirements.txt                        # Pinned dependencies (pyspark, py4j, nltk, streamlit, plotly, pandas)
 ```
 
 ### Detailed Component Inventory
 
 | File / Component | Primary Technology | Purpose & Responsibility |
 | :--- | :--- | :--- |
+| `phase4_dashboard.py` | Python 3.11, Streamlit 1.63, Plotly 7.0, Pandas | Hyper-converged visual telemetry matrix (`KeralaMoodIndexDashboard`). Streams `mood_indexed_memes.json`, renders `go.Indicator` KMI gauge, affective volume chart, and existential leaderboards. |
+| `phase3_sentiment_model.py` | Python 3.11, NLTK 3.10 | Vernacular sentiment classifier (`VernacularPsycheNLPEngine`). Tokenizes Manglish text, evaluates sentiment across 6 affective taxonomies, computes `kerala_mood_index`, and outputs `mood_indexed_memes.json`. |
 | `phase2_pyspark_pipeline.py` | Python 3.11, PySpark 4.2.0 | Core distributed compute engine (`KeralaDistributedMemeComputeEngine`). Builds SparkSession in `local[*]`, registers custom UDFs, transforms dataframe, and outputs `processed_memes.json`. |
-| `phase3_sentiment_model.py` | Python 3.11, NLTK | Vernacular sentiment classifier (`VernacularPsycheNLPEngine`). Tokenizes Manglish text, evaluates sentiment across 6 affective taxonomies, computes `kerala_mood_index`, and outputs `mood_indexed_memes.json`. |
 | `generate_corpus.py` | Python 3.11, `json`, `random` | Generates 85+ authentic vernacular meme records (~50 KB) featuring iconic Malayalam tropes, dialogue excerpts, engagement metrics, and distributed shard IDs. |
 | `meme_corpus.json` | JSON Schema | Ingestion corpus containing raw meme titles, OCR texts, categories, characters, movies, and distributed shard metadata. |
 | `processed_memes.json` | JSON Schema | Enriched Spark output containing original metadata plus `cultural_relevance_index`, `humor_density_metric`, and `kerala_existential_weight`. |
 | `mood_indexed_memes.json` | JSON Schema | Fully classified Phase 3 payload with `dominant_mood`, `sentiment_vector`, `mood_confidence`, and `kerala_mood_index`. |
-| `requirements.txt` | Pip | Reproducible Python environment pinning (`pyspark==4.2.0`, `py4j==0.10.9.9`, `nltk==3.10.3`, etc.). |
+| `requirements.txt` | Pip | Reproducible Python environment pinning (`pyspark`, `py4j`, `nltk`, `streamlit`, `pandas`, `plotly`, etc.). |
 | `.agents/rules/sync-master-summary.md` | Agentic Workflow Rule | Enforces that any modification or feature addition to the repository immediately updates this compendium. |
 
 ---
@@ -158,6 +167,11 @@ mallu-memes/
 - **Script Creation (`phase3_sentiment_model.py`)**: Built `VernacularPsycheNLPEngine` to tokenize Manglish text and evaluate affective distributions across 6 cultural dimensions (*KTU Exam Trauma, Monday Work Shokam, Political Poru, Theppu, Nirvana, Existential Nihilism*).
 - **Metric Formulation**: Synthesized `kerala_mood_index` ($KMI = \min(KEW \times (1.0 + 0.5 \times \text{conf}), 15.0)$).
 - **Payload Generation**: Processed `processed_memes.json` into `mood_indexed_memes.json`. Classified 85 records into collective matrix (*Nirvana: 60, Political Poru: 16, KTU Trauma: 9*).
+
+### Milestone 5: Phase 4 Streamlit Dashboard Delivery (September 2026)
+- **Application Architecture (`phase4_dashboard.py`)**: Built `KeralaMoodIndexDashboard` utilizing Streamlit and Plotly for high-fidelity visual telemetry.
+- **Visual Metrics**: Implemented a `go.Indicator` gauge projecting the global `kerala_mood_index` aggregated across all distributed shards, supplemented with affective psychometric volume bar charts.
+- **Hackathon Readiness**: System successfully decoupled from Elasticsearch in favor of local JSON node processing for instantaneous deployment.
 
 ---
 
@@ -313,7 +327,7 @@ $$\text{KMI} = \min\left( \text{KEW} \times (1.0 + 0.5 \times \text{conf}), \; 1
 
 ## 7. INFRASTRUCTURE & DISTRIBUTED RUNTIME SPECIFICATIONS
 
-### Distributed & NLP Runtime Prerequisites
+### Distributed, NLP & Visualization Runtime Prerequisites
 - **Java Virtual Machine**: OpenJDK 17 LTS (Microsoft Build `17.0.20.1+1-LTS` x64).
   - Registry / Install Directory: `C:\Program Files\Microsoft\jdk-17.0.20.101-hotspot`
   - Required Environment Variable: `JAVA_HOME` pointing to base directory.
@@ -323,6 +337,9 @@ $$\text{KMI} = \min\left( \text{KEW} \times (1.0 + 0.5 \times \text{conf}), \; 1
   - `py4j==0.10.9.9`
   - `nltk==3.10.3`
   - `regex==2026.9.10`
+  - `streamlit==1.63.0`
+  - `plotly==7.0.0`
+  - `pandas==3.0.5`
 
 ### Spark Cluster Configuration Parameters
 ```python
@@ -378,6 +395,14 @@ SparkSession.builder \
   * KTU Exam Trauma                  : 9 memes
 ```
 
+### 5. Launching the Phase 4 Streamlit Dashboard
+```powershell
+.venv\Scripts\streamlit.exe run phase4_dashboard.py
+```
+**Access Endpoints:**
+- Local URL: `http://localhost:8501`
+- Network URL: `http://<your-lan-ip>:8501`
+
 ---
 
 ## 9. DOWNSTREAM ROADMAP & FUTURE PHASES
@@ -385,8 +410,7 @@ SparkSession.builder \
 1. **Phase 1 Pipeline Formalization (OCR & Crawler)**:
    - Integrate Tesseract OCR & OpenCV for direct image-to-text extraction from Malayalam meme JPEG/PNG files.
    - Manglish tokenization using Malayalam phonetic transliteration lexicons.
-2. **Phase 4: Streamlit Kerala Mood Index Dashboard**:
-   - Build a real-time reactive Streamlit dashboard visualizing the collective Kerala psyche.
-   - Live mood distribution donut charts, character breakdowns, and interactive KMI leaderboards.
+2. **Phase 4: Streamlit Kerala Mood Index Dashboard**: [COMPLETED]
+   - Built real-time reactive Streamlit dashboard visualizing the collective Kerala psyche with Plotly `go.Indicator` gauge and affective psychometric volume charts.
 3. **Phase 5: Real-Time Streaming Ingestion**:
    - Spark Structured Streaming integration to score live social media posts in real-time.
