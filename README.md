@@ -60,7 +60,7 @@ This repository is 100% pre-configured and verified for turnkey deployment on **
 - **Cinematic Artifact Match Display**: Renders high-resolution curated frames with `MATCH 99.4%` badge, Malayalam quote, English translation subtitle, KEW score, and Signal Class badge.
 
 ### 3. 🗄️ Vernacular Meme Vault & Lake Explorer (Tab 3)
-- **Searchable Visual Card Grid**: 3-column responsive grid containing 12 curated cult artifacts spanning *Premam, Spadikam, Nadodikkattu, Vellanakalude Nadu, Chattambinadu, Pulival Kalyanam, Aavesham, Kalyanaraman, CID Moosa*, and *In Harihar Nagar*.
+- **Searchable Visual Card Grid**: 3-column responsive grid with uniform 16:10 cinematic cropping containing 12 curated cult artifacts spanning *Premam, Spadikam, Nadodikkattu, Aavesham, Punjabi House, Kalyanaraman, CID Moosa, In Harihar Nagar*, and *Godfather*.
 - **Interactive Mood Filtering**: Filter pills for `All`, `Hope`, `Despair`, `Rage`, and `Chaos`.
 - **Quick Copy Dialogue Snippets**: One-click formatted code snippet blocks (`st.code`) for instant viral sharing.
 - **Big Data Parquet Lake Query Engine**: Interactive 250,000-record Parquet data lake query console with emotion, category, and stream limit filters.
