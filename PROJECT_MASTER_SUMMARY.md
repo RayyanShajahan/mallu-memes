@@ -165,9 +165,11 @@ mallu-memes/
 ├── Dockerfile                              # Production Hugging Face Spaces Docker SDK container definition
 ├── LICENSE                                 # MIT Open Source License
 ├── README.md                               # Project intro, Hugging Face metadata & runbook
-├── app.py                                  # Phase 5 Live Continuous WebRTC Biometric Streamlit App
+├── app.py                                  # V2 Malayalam Meme Vault & Telemetry Streamlit App
+├── assets/memes/                           # Curated offline archive (sad/, angry/, happy/, neutral/ subfolders)
 ├── biometric_memes.parquet                 # 195.81 MB pre-computed Parquet dataset (250,000 records)
 ├── create_sample_assets.py                 # Generates sample high-res meme JPEG banners
+├── download_curated_memes.py               # Ingestion script pulling 21 authentic meme frames from archive
 ├── generate_v2_corpus.py                   # V2 massive streaming corpus generator (150MB+ / 250k rec)
 ├── PROJECT_MASTER_SUMMARY.md               # [THIS FILE] Single Source of Truth Compendium
 ├── raw_meme_corpus.parquet                 # 187.97 MB raw Parquet corpus (250,000 records)
@@ -180,7 +182,9 @@ mallu-memes/
 
 | File / Component | Primary Technology | Purpose & Responsibility |
 | :--- | :--- | :--- |
-| `app.py` | Python 3.11, Streamlit 1.63, `streamlit-webrtc` 0.77, `av` 17.1, DeepFace 0.0.100, OpenCV 4.14, Pillow 12.3, Plotly 7.0 | Resilient Phase 5 Live Continuous Biometric Meme Engine frontend. Features 3 tabs: Global Telemetry gauge, Biometric Scanner with drop-proof WebRTC video streaming, Instant Snapshot Frame (Pillow RGB decoded), Emotion Simulator matrix, and side-by-side true JPEG meme artifact rendering from `assets/memes/`, and Vernacular Data Lake explorer. |
+| `app.py` | Python 3.11, Streamlit 1.63, DeepFace 0.0.100, OpenCV 4.14, Pillow 12.3, Plotly 7.0 | Resilient Malayalam Meme Engine & Telemetry frontend. Features 3 tabs: Global Telemetry gauge, Curated Malayalam Meme Vault (Offline Mode with instant emotion mapping and true movie frames), and Vernacular Data Lake explorer. |
+| `download_curated_memes.py` | Python 3.11, `urllib`, Pillow 12.3 | Ingestion engine fetching 21 iconic Malayalam movie meme frames from the public archive across 4 psychological categories (`sad`, `angry`, `happy`, `neutral`). |
+| `assets/memes/` | JPEG Image Assets | Categorized offline vault containing verified, high-resolution Malayalam movie frames (Kalyanaraman, Nadodikkattu, CID Moosa, Punjabi House, Spadikam, Godfather, Aavesham). |
 | `spark_processor.py` | Python 3.11, PySpark 4.2.0, PyArrow 25.0 | Distributed ETL processor (`KeralaBiometricMemeProcessor`). Ingests `raw_meme_corpus.parquet`, applies vectorized Spark Catalyst expressions for CRI, HDM, and DeepFace emotion classification, and writes `biometric_memes.parquet`. |
 | `generate_v2_corpus.py` | Python 3.11, PyArrow 25.0 | Streaming synthesizer that generates 250,000 authentic vernacular meme records (187.97 MB Parquet) across 55 cinematic characters and 35 cultural scenarios. |
 | `verify_environment.py` | Python 3.11, `socket`, `cv2` | Pre-demo verification diagnostic suite. Validates DeepFace weight cache integrity, Google STUN UDP connectivity, and hardware camera device access. |
@@ -296,6 +300,16 @@ mallu-memes/
 - **PIL Image Pipeline Integration (`Image.open`)**: Replaced raw string file paths in `st.image()` with instantiated `PIL.Image.open(chosen_image_path)` objects. Guarantees stream buffer stability, eliminates filesystem path parsing failures, and delivers crisp, responsive image scaling within the container.
 - **Cyberpunk Gradient Fallback Banner**: Engineered an inline HTML visual banner container (`background: linear-gradient(135deg, #2a1b3d, #1a1a2e); border: 2px dashed #00ffff;`) with `[ VISUAL BUFFER LOADED ]` and cinematic movie titles if asset files fail to read, preventing broken image icons or layout clipping.
 - **Unified Preview Frame & Anti-Stacking Geometry**: Set `gap="large"` on `st.columns([1, 1], gap="large")` and cleanly bound all visual artifacts and dialogue cards within `right_col`, eliminating vertical card stacking and restoring balanced horizontal symmetry.
+
+### Milestone 19: Curated Malayalam Meme Vault & Automated Public Archive Ingestion
+- **Automated Public Archive Ingestion (`download_curated_memes.py`)**: Built an automated downloader script querying `arunpt/malayalam-plain-memes-archive` directly over HTTPS. Downloaded, verified with Pillow, and organized 21 authentic, full-resolution Malayalam movie meme frames across 4 core emotional folders:
+  - `assets/memes/sad/`: Salim Kumar weeping (`achuvettaa`), Dasan & Vijayan kattappara, CID Moosa shavam, Appukkuttan expression, Manichitrathazhu karnnore.
+  - `assets/memes/angry/`: Spadikam Kuttikkadan, Godfather Anjooran panji, Akkare Akkare Akkare Krinshnan Nair gun, Paul Barber, In Harihar Nagar bhraanth.
+  - `assets/memes/happy/`: Ramanan biriyani, Gangadharan mothalali, Sadhanam kayyilundo, Pavanayi shavamaayi, Aavesham Ranga Annan, Kilukkam Jagathy.
+  - `assets/memes/neutral/`: Dasan & Vijayan company resignation, CID Moosa dharidryam, Punjabi House alakkum nanayum, Kalyanaraman collector kutthi, Pyari actually modern.
+- **Curated Malayalam Meme Vault Frontend**: Restructured Tab 2 into the zero-friction **Curated Malayalam Meme Vault (Offline Mode)**. Presenters select psychological intent via dropdown without camera latency, Wi-Fi STUN blocks, or ambient lighting degradation.
+- **Category-Aligned Offline Image Routing**: Implemented multi-tier asset lookup checking category-specific folders first (`assets/memes/<emotion>/`), category-prefixed root assets, and falling back gracefully.
+- **Real-Time 250k Parquet Lake Alignment**: Retained dynamic aliasing (`Academic Trauma`, `Political Satire`, `Gastronomic Nirvana`, `Corporate Nihilism`) extracting authentic dialogues, character archetypes, and KEW scores with 0ms delay.
 
 ---
 
@@ -441,11 +455,11 @@ Hugging Face recently recommended the Docker SDK for production Spaces using C++
 ```
 - **Output**: `biometric_memes.parquet` (195.81 MB, 250,000 records) computed in ~21 seconds.
 
-### 4. Generating Sample Local Meme Image Assets
+### 4. Downloading Authentic Curated Malayalam Movie Meme Assets
 ```powershell
-.venv\Scripts\python.exe create_sample_assets.py
+.venv\Scripts\python.exe download_curated_memes.py
 ```
-- **Output**: 8 high-res JPEG files in `assets/memes/`.
+- **Output**: 21 full-resolution authentic Malayalam movie meme JPEG frames downloaded from the public archive and organized across `assets/memes/` and subfolders (`sad/`, `angry/`, `happy/`, `neutral/`).
 
 ### 5. Running the Pre-Demo Verification Suite (Diagnostic Check)
 ```powershell
@@ -464,7 +478,7 @@ Hugging Face recently recommended the Docker SDK for production Spaces using C++
   - Local URL: `http://localhost:8501`
   - Features:
     - **Tab 1**: Global Telemetry KMI Gauge & Emotion Volume
-    - **Tab 2**: Ocular Psyche Biometric Scanner (Dual-column split screen with snapshot capture, quick emotion correction override buttons, manual psychological override selector, resilient image artifact delivery, and cyberpunk dialogue card)
+    - **Tab 2**: Curated Malayalam Meme Vault (Offline Mode with instant emotion selector, category-matched true movie frames from Kalyanaraman, Nadodikkattu, CID Moosa, Punjabi House, Spadikam, Godfather, Aavesham, dialogue quotes, and KEW metrics)
     - **Tab 3**: Vernacular Meme Lake Explorer (Interactive 250,000-record Parquet data lake browser)
 
 ---

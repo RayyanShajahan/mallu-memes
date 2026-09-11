@@ -70,135 +70,90 @@ with tabs[0]:
         st.markdown("Distributed Apache Spark pipeline active. Parquet columnar layer loaded successfully.")
 
 with tabs[1]:
-    st.subheader("Ocular Psyche Biometric Scanner")
-    st.write("Instantaneous psychological mapping and Malayalam Meme Engine.")
+    st.subheader("Curated Malayalam Meme Vault (Offline Mode)")
+    st.write("Instant manual emotion selection mapped directly to your local meme library.")
 
-    left_col, right_col = st.columns([1, 1], gap="large")
+    # Dropdown to select emotion directly without camera friction
+    selected_emotion = st.selectbox(
+        "Select Emotional State:",
+        ["sad", "angry", "happy", "neutral", "fear", "surprise"]
+    )
 
-    with left_col:
-        st.markdown("### 📷 Biometric Capture")
-        capture_mode = st.radio(
-            "Mode:",
-            ["📸 Snapshot Analysis", "🎛️ Manual Psychological Override"],
-            horizontal=True
-        )
+    emotion_map = {
+        "sad": "KTU Exam Trauma",
+        "fear": "KTU Exam Trauma",
+        "angry": "Political Poru & Hartal",
+        "disgust": "Political Poru & Hartal",
+        "happy": "Nirvana (Thattukada & Vibe)",
+        "surprise": "Nirvana (Thattukada & Vibe)",
+        "neutral": "Monday Work Shokam"
+    }
+    target_category = emotion_map.get(selected_emotion, "Monday Work Shokam")
+    st.info(f"🎯 Target Category: **{target_category}**")
 
-        detected_emotion = "neutral"
+    # Dynamic Parquet Database Matching
+    category_alias_map = {
+        "KTU Exam Trauma": "Academic Trauma",
+        "Political Poru & Hartal": "Political Satire",
+        "Nirvana (Thattukada & Vibe)": "Gastronomic Nirvana",
+        "Monday Work Shokam": "Corporate Nihilism"
+    }
+    actual_cat = category_alias_map.get(target_category, target_category)
+    matched_df = df[(df["scenario_category"] == target_category) | (df["scenario_category"] == actual_cat)]
+    if matched_df.empty:
+        matched_df = df
+    top_meme = matched_df.sample(n=1).iloc[0] if len(matched_df) > 0 else df.iloc[0]
 
-        if capture_mode == "📸 Snapshot Analysis":
-            cam_image = st.camera_input("Capture expression", label_visibility="collapsed")
-            if cam_image is not None:
-                try:
-                    import cv2
-                    import numpy as np
-                    
-                    bytes_data = cam_image.getvalue()
-                    np_arr = np.frombuffer(bytes_data, np.uint8)
-                    img = cv2.imdecode(np_arr, cv2.IMREAD_COLOR)
+    col1, col2 = st.columns([1, 1], gap="medium")
 
-                    analysis = DeepFace.analyze(
-                        img, 
-                        actions=['emotion'], 
-                        detector_backend='opencv', 
-                        enforce_detection=False, 
-                        silent=True
-                    )
-                    
-                    if isinstance(analysis, list) and len(analysis) > 0:
-                        detected_emotion = analysis[0].get('dominant_emotion', 'neutral')
-                    
-                    st.success(f"AI Vision Detected: **{detected_emotion.upper()}**")
-                except Exception:
-                    detected_emotion = "neutral"
-            
-            st.markdown("##### Quick Emotion Correction Override:")
-            cols_override = st.columns(3)
-            if cols_override[0].button("Force Happy"):
-                detected_emotion = "happy"
-            if cols_override[1].button("Force Sad"):
-                detected_emotion = "sad"
-            if cols_override[2].button("Force Angry"):
-                detected_emotion = "angry"
-
-        else:
-            detected_emotion = st.selectbox(
-                "Select Exact Psychological State:",
-                ["sad", "angry", "happy", "neutral", "fear", "surprise"]
-            )
-
-        # Emotion Routing Matrix
-        emotion_map = {
-            "sad": "KTU Exam Trauma",
-            "fear": "KTU Exam Trauma",
-            "angry": "Political Poru & Hartal",
-            "disgust": "Political Poru & Hartal",
-            "happy": "Nirvana (Thattukada & Vibe)",
-            "surprise": "Nirvana (Thattukada & Vibe)",
-            "neutral": "Monday Work Shokam"
-        }
-        target_category = emotion_map.get(detected_emotion, "Monday Work Shokam")
-        st.info(f"🎯 **Active Psyche Profile:** {detected_emotion.upper()} ➔ **Kerala Category:** {target_category}")
-
-    with right_col:
-        st.markdown("### 🖼️ Matched Meme Artifact")
-
-        # Dynamic Parquet Database Matching
-        category_alias_map = {
-            "KTU Exam Trauma": "Academic Trauma",
-            "Political Poru & Hartal": "Political Satire",
-            "Nirvana (Thattukada & Vibe)": "Gastronomic Nirvana",
-            "Monday Work Shokam": "Corporate Nihilism"
-        }
-        actual_cat = category_alias_map.get(target_category, target_category)
-        matched_df = df[(df["scenario_category"] == target_category) | (df["scenario_category"] == actual_cat)]
-        if matched_df.empty:
-            matched_df = df
-
-        top_meme = matched_df.sample(n=1).iloc[0] if len(matched_df) > 0 else df.iloc[0]
-
-        # BULLETPROOF IMAGE RENDERER: Looks for generated assets or renders a clean fallback card
+    with col1:
+        st.markdown("### 📥 Local Meme Artifact")
         asset_dir = "assets/memes"
-        rendered_successfully = False
-
         if os.path.exists(asset_dir):
-            asset_files = [f for f in os.listdir(asset_dir) if f.endswith((".jpg", ".png"))]
-            if asset_files:
-                char_lower = str(top_meme.get("character", "")).lower()
-                matched_asset = next((f for f in asset_files if any(k in f.lower() for k in char_lower.split() if len(k) > 2)), None)
-                chosen_image_path = os.path.join(asset_dir, matched_asset if matched_asset else random.choice(asset_files))
+            category_map = {
+                "sad": "sad",
+                "fear": "sad",
+                "angry": "angry",
+                "disgust": "angry",
+                "happy": "happy",
+                "surprise": "happy",
+                "neutral": "neutral"
+            }
+            cat = category_map.get(selected_emotion, "neutral")
+            cat_dir = os.path.join(asset_dir, cat)
+            
+            # Look in category subfolder first
+            matched_files = []
+            if os.path.exists(cat_dir):
+                matched_files = [os.path.join(cat_dir, f) for f in os.listdir(cat_dir) if f.endswith((".jpg", ".png", ".jpeg"))]
+            
+            # Fallback to category-prefixed files in asset_dir
+            if not matched_files:
+                matched_files = [os.path.join(asset_dir, f) for f in os.listdir(asset_dir) if f.startswith(cat) and f.endswith((".jpg", ".png", ".jpeg"))]
+            
+            # General fallback to any file in asset_dir
+            if not matched_files:
+                matched_files = [os.path.join(asset_dir, f) for f in os.listdir(asset_dir) if os.path.isfile(os.path.join(asset_dir, f)) and f.endswith((".jpg", ".png", ".jpeg"))]
+
+            if matched_files:
+                chosen_img = random.choice(matched_files)
                 try:
-                    # Load using PIL to guarantee stream stability
-                    pil_img = Image.open(chosen_image_path)
+                    pil_img = Image.open(chosen_img)
                     st.image(pil_img, caption=f"Meme Archetype: {top_meme['character_archetype']}", width='stretch')
-                    rendered_successfully = True
                 except Exception:
-                    pass
+                    st.image(chosen_img, caption=f"Meme Archetype: {top_meme['character_archetype']}", width='stretch')
+            else:
+                st.warning("No images found in assets/memes/. Run download_curated_memes.py to fetch them!")
+        else:
+            st.error("Missing assets/memes folder.")
 
-        if not rendered_successfully:
-            # Fallback visual banner container using clean HTML if assets fail to load
-            st.markdown(f"""
-            <div style="background: linear-gradient(135deg, #2a1b3d, #1a1a2e); padding: 30px; border-radius: 12px; border: 2px dashed #00ffff; text-align: center; margin-bottom: 15px;">
-                <h4 style="color: #00ffff; margin: 0;">🌴 KERALA CULT CLASSIC ARTIFACT</h4>
-                <p style="color: #ffffff; font-size: 1.2rem; margin: 10px 0;">{top_meme['movie']}</p>
-                <span style="color: #ff4b4b; font-family: monospace;">[ VISUAL BUFFER LOADED ]</span>
-            </div>
-            """, unsafe_allow_html=True)
-
-        snippet_text = str(top_meme['dialogue_snippet']).strip('"').strip("'")
-
-        # High-Impact Cinematic Dialogue Card (Unified right frame)
-        st.markdown(f"""
-        <div style="background-color: #1e1e2f; padding: 20px; border-radius: 12px; border: 2px solid #ff4b4b;">
-            <h3 style="color: #ff4b4b; margin-top: 0;">🎭 {top_meme['character']} — <span style="color: #ffffff;">{top_meme['movie']}</span></h3>
-            <p style="font-size: 0.95rem; color: #a0a0c0;"><b>Scenario:</b> {top_meme['scenario_title']}</p>
-            <hr style="border-color: #444455;">
-            <p style="color: #00ffff; font-style: italic; font-size: 1.1rem; margin: 10px 0;">"{snippet_text}"</p>
-            <div style="display: flex; justify-content: space-between; margin-top: 15px;">
-                <span style="background-color: #ff4b4b; color: white; padding: 4px 12px; border-radius: 15px; font-weight: bold; font-size: 0.85rem;">KEW Score: {top_meme['kerala_existential_weight']}/10</span>
-                <span style="color: #8888aa; font-family: monospace; font-size: 0.8rem;">250k PARQUET LAKE</span>
-            </div>
-        </div>
-        """, unsafe_allow_html=True)
+    with col2:
+        st.markdown(f"### 🎭 {top_meme['character']} — {top_meme['movie']}")
+        st.markdown(f"**Scenario:** {top_meme['scenario_title']}")
+        dialogue_text = str(top_meme['dialogue_snippet']).strip('"').strip("'")
+        st.info(f"**Dialogue:**\n\n\"{dialogue_text}\"")
+        st.metric("Kerala Existential Weight (KEW)", f"{top_meme['kerala_existential_weight']}/10")
+        st.caption(f"Matched from 250,000-record Parquet Lake | CRI: {top_meme.get('cultural_relevance_index', 9.0):.1f} | HDM: {top_meme.get('humor_density_metric', 8.5):.1f}")
 
 with tabs[2]:
     st.subheader("Vernacular Meme Lake Explorer")
