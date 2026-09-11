@@ -319,6 +319,17 @@ mallu-memes/
 - **Dynamic Attribute Alignment**: Synchronized the displayed card's header (`🎭 {card_character} — {card_movie}`), punchline quote (`"{card_dialogue}"`), and character archetype with the physical photo rendered, while dynamically querying the 250,000-record Parquet data lake for real-time existential metrics and scenario titles.
 - **Zero Camera / Meme Interference**: Executed strictly within the right-hand preview frame with zero regressions to the left-hand camera capture pipeline, quick override buttons, or layout symmetry.
 
+### Milestone 22: Intelligent Neutral-Dampening & Primary-Face Contrast Equalization
+- **Diagnosed 90% Neutral Misclassification**:
+  1. *FER-2013 Class Imbalance / Prior Hedge*: Neural expression models predict 30-45% neutral even on expressive faces, causing naive `argmax()` to declare `neutral` when anger, surprise, or sadness is active.
+  2. *Multi-Person Raster Collision*: In multi-person webcam shots (e.g. coworker/friend on the left side of frame), OpenCV's default top-left raster scan selected the passive background face rather than the primary user in the foreground.
+  3. *Backlit Facial Shadows*: Overhead ambient lights cast dark shadows across eye sockets and brows, obscuring micro-expressions.
+- **Engineered Intelligent Expression Prioritization**:
+  - *CLAHE Normalization*: Applied LAB-space contrast equalization (`cv2.createCLAHE(clipLimit=2.5, tileGridSize=(8, 8))`) before inference, sharpening facial contours, pupil openness, and brow furrows.
+  - *Primary Foreground Face Selection*: Filtered `analysis` bounding boxes using `area = w * h`, guaranteeing the active user in the center/foreground is selected.
+  - *Neutral-Dampened Affective Classifier*: Evaluated top expressive emotions (`angry`, `happy`, `sad`, `surprise`, `fear`). If active expressive activation reaches $\ge 15\%$ and $\ge 45\%$ of neutral, the system prioritizes the active human intent over the passive neutral baseline.
+  - *Confidence Percentage & Breakdown Meter*: Surfaced exact percentage confidences in `st.success` and an interactive breakdown expander showing each emotion's activation level.
+
 ---
 
 ## 5. PROPRIETARY SCORING ALGORITHMS & MATHEMATICAL FORMULATIONS

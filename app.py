@@ -134,15 +134,18 @@ with tabs[1]:
             cam_image = st.camera_input("Capture expression", label_visibility="collapsed")
             if cam_image is not None:
                 try:
-                    import cv2
-                    import numpy as np
-                    
                     bytes_data = cam_image.getvalue()
                     np_arr = np.frombuffer(bytes_data, np.uint8)
                     img = cv2.imdecode(np_arr, cv2.IMREAD_COLOR)
 
+                    # Contrast-Limited Adaptive Histogram Equalization (CLAHE) for dim/backlit webcams
+                    lab = cv2.cvtColor(img, cv2.COLOR_BGR2LAB)
+                    l, a, b = cv2.split(lab)
+                    clahe = cv2.createCLAHE(clipLimit=2.5, tileGridSize=(8, 8))
+                    enhanced_img = cv2.cvtColor(cv2.merge((clahe.apply(l), a, b)), cv2.COLOR_LAB2BGR)
+
                     analysis = DeepFace.analyze(
-                        img, 
+                        enhanced_img, 
                         actions=['emotion'], 
                         detector_backend='opencv', 
                         enforce_detection=False, 
@@ -150,12 +153,43 @@ with tabs[1]:
                     )
                     
                     if isinstance(analysis, list) and len(analysis) > 0:
-                        detected_emotion = analysis[0].get('dominant_emotion', 'neutral')
-                    
-                    st.success(f"AI Vision Detected: **{detected_emotion.upper()}**")
-                except Exception:
+                        # Pick the primary/largest foreground face (area = w * h)
+                        primary_face = max(
+                            analysis, 
+                            key=lambda f: f.get('region', {}).get('w', 0) * f.get('region', {}).get('h', 0)
+                        )
+                        raw_emotions = primary_face.get('emotion', {})
+                        
+                        # Intelligent Neutral-Dampened Affective Detection:
+                        # Standard FER models heavily over-index on 'neutral' (often 30-40% even when expressing anger/sadness/joy).
+                        # If any expressive emotion has significant activation (>=15%), prioritize the active human expression!
+                        expressive = {k: float(v) for k, v in raw_emotions.items() if k != 'neutral'}
+                        if expressive:
+                            top_expressive_k = max(expressive, key=expressive.get)
+                            top_expressive_v = expressive[top_expressive_k]
+                            neutral_v = float(raw_emotions.get('neutral', 0))
+                            
+                            # Prioritize expressive emotion if it exceeds 15% and is at least 45% of neutral
+                            if top_expressive_v >= 15.0 and top_expressive_v >= (neutral_v * 0.45):
+                                detected_emotion = top_expressive_k
+                            else:
+                                detected_emotion = primary_face.get('dominant_emotion', 'neutral')
+                        else:
+                            detected_emotion = primary_face.get('dominant_emotion', 'neutral')
+                        
+                        top_conf = float(raw_emotions.get(detected_emotion, 50.0))
+                        st.success(f"AI Vision Detected: **{detected_emotion.upper()}** ({top_conf:.1f}% Confidence)")
+
+                        # Display mini emotion meter for full visibility
+                        with st.expander("📊 View Facial Micro-Expression Breakdown", expanded=False):
+                            sorted_emotions = sorted(raw_emotions.items(), key=lambda x: x[1], reverse=True)
+                            for em_name, em_val in sorted_emotions:
+                                st.progress(min(max(float(em_val) / 100.0, 0.0), 1.0), text=f"{em_name.capitalize()}: {float(em_val):.1f}%")
+                    else:
+                        detected_emotion = "neutral"
+                except Exception as e:
                     detected_emotion = "neutral"
-                    st.warning("Detection fallback engaged. Defaulting to Neutral.")
+                    st.warning(f"Detection fallback engaged: {e}")
             
             # Quick override buttons because CV models fail on smiles
             st.markdown("##### Quick Emotion Correction Override:")
