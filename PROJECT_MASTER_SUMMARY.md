@@ -459,8 +459,8 @@ Hugging Face recently recommended the Docker SDK for production Spaces using C++
   - Local URL: `http://localhost:8501`
   - Features:
     - **Tab 1**: Global Telemetry KMI Gauge & Emotion Volume
-    - **Tab 2**: Live WebRTC Continuous Biometric Scanner with HUD overlay, emotion routing, and snapshot/simulator fallbacks
-    - **Tab 3**: Lazy-Loaded Vernacular Feed with Automated WebP Compression & CDN Toggle
+    - **Tab 2**: Ocular Psyche Biometric Scanner (Dual-column split screen with snapshot capture, quick emotion correction override buttons, manual psychological override selector, resilient image artifact delivery, and cyberpunk dialogue card)
+    - **Tab 3**: Vernacular Meme Lake Explorer (Interactive 250,000-record Parquet data lake browser)
 
 ---
 
