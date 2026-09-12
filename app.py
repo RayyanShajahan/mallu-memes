@@ -136,13 +136,14 @@ def save_face_memory(memories):
         pass
 
 def memorize_face(face_vector, target_emotion):
-    """Memorizes a facial structure, harmonizing existing entries and purging contradictory neutral records."""
+    """Memorizes a facial structure, harmonizing existing entries and strictly purging contradictory neutral records."""
+    vec_list = face_vector if isinstance(face_vector, list) else face_vector.tolist()
     new_entry = {
-        "vector": face_vector,
+        "vector": vec_list,
         "label": target_emotion,
         "timestamp": datetime.datetime.now().strftime("%H:%M:%S")
     }
-    v_curr = np.array(face_vector, dtype=np.float32)
+    v_curr = np.array(vec_list, dtype=np.float32)
     norm_c = np.linalg.norm(v_curr)
     
     filtered = []
@@ -150,18 +151,21 @@ def memorize_face(face_vector, target_emotion):
     for m in st.session_state.calibrated_face_memory:
         try:
             v_m = np.array(m["vector"], dtype=np.float32)
-            sim_m = float(np.dot(v_curr, v_m) / (norm_c * np.linalg.norm(v_m) + 1e-7))
-            # Purge stale contradictory neutral memories if user is teaching an expressive state
-            if target_emotion.lower() != "neutral" and m["label"].lower() == "neutral" and sim_m >= 0.50:
+            norm_m = np.linalg.norm(v_m)
+            sim_m = float(np.dot(v_curr, v_m) / (norm_c * norm_m + 1e-7)) if norm_c > 0 and norm_m > 0 else 0.0
+            
+            # When teaching an expressive emotion (happy, angry, sad), immediately purge competing neutral records
+            if target_emotion.lower() != "neutral" and m["label"].lower() == "neutral":
                 continue
-            if sim_m >= 0.65:
+                
+            if sim_m >= 0.55:
                 m["label"] = target_emotion
                 m["timestamp"] = datetime.datetime.now().strftime("%H:%M:%S")
-                m["vector"] = face_vector
+                m["vector"] = vec_list
                 updated = True
             filtered.append(m)
         except Exception:
-            filtered.append(m)
+            pass
             
     if not updated:
         filtered.append(new_entry)
@@ -176,8 +180,8 @@ elif len(st.session_state.calibrated_face_memory) > 0 and not os.path.exists(FAC
     # Flush existing RAM memories to persistent disk storage
     save_face_memory(st.session_state.calibrated_face_memory)
 
-if "bio_match_threshold" not in st.session_state or st.session_state.bio_match_threshold > 0.45:
-    st.session_state.bio_match_threshold = 0.40
+if "bio_match_threshold" not in st.session_state or st.session_state.bio_match_threshold > 0.40:
+    st.session_state.bio_match_threshold = 0.35
 
 def extract_face_biometric_vector(face_bgr, raw_emotions=None):
     """
@@ -187,10 +191,20 @@ def extract_face_biometric_vector(face_bgr, raw_emotions=None):
     - 7-D Fixed zero pad (preserves 4,075-D tensor contract while immunizing from FER bias)
     """
     try:
-        gray = cv2.cvtColor(face_bgr, cv2.COLOR_BGR2GRAY)
+        if face_bgr is None or face_bgr.size == 0 or face_bgr.shape[0] < 10 or face_bgr.shape[1] < 10:
+            return np.zeros(4075, dtype=np.float32)
+
+        if len(face_bgr.shape) == 2:
+            gray = face_bgr
+        else:
+            gray = cv2.cvtColor(face_bgr, cv2.COLOR_BGR2GRAY)
+            
+        gray = np.clip(gray, 0, 255).astype(np.uint8)
+        gray = np.ascontiguousarray(gray)
         
         # 1. HOG Structural Gradient Orientation (64x64)
         resized_64 = cv2.resize(gray, (64, 64))
+        resized_64 = np.ascontiguousarray(resized_64)
         hog = cv2.HOGDescriptor((64, 64), (16, 16), (8, 8), (8, 8), 9)
         hog_feat = hog.compute(resized_64).flatten().astype(np.float32)
         hog_norm = hog_feat / (np.linalg.norm(hog_feat) + 1e-7)
@@ -656,15 +670,32 @@ with tabs[1]:
                         )
                         raw_emotions = primary_face.get('emotion', {})
                         
-                        # Extract primary face crop for biometric vector extraction
+                        # Extract primary face crop for biometric vector extraction with strict integer casting
+                        ih, iw = enhanced_img.shape[:2]
                         region = primary_face.get('region', {})
-                        rx, ry, rw, rh = region.get('x', 0), region.get('y', 0), region.get('w', 0), region.get('h', 0)
-                        rx = max(0, rx); ry = max(0, ry)
-                        rw = min(rw, enhanced_img.shape[1] - rx); rh = min(rh, enhanced_img.shape[0] - ry)
-                        face_crop = enhanced_img[ry:ry+rh, rx:rx+rw] if rw > 15 and rh > 15 else enhanced_img
+                        rx = int(region.get('x', 0) or 0)
+                        ry = int(region.get('y', 0) or 0)
+                        rw = int(region.get('w', 0) or 0)
+                        rh = int(region.get('h', 0) or 0)
+                        rx = max(0, min(rx, iw - 1))
+                        ry = max(0, min(ry, ih - 1))
+                        rw = max(0, min(rw, iw - rx))
+                        rh = max(0, min(rh, ih - ry))
 
-                        # Fallback Haar cascade detector if DeepFace returned full frame (e.g. skip backend)
-                        if rw >= enhanced_img.shape[1] - 5 and rh >= enhanced_img.shape[0] - 5:
+                        detected_face_crop = None
+
+                        # Check if DeepFace returned a valid sub-frame face bounding box
+                        if rw >= 30 and rh >= 30 and (rw < iw - 15 or rh < ih - 15):
+                            pad_x = int(rw * 0.12)
+                            pad_y = int(rh * 0.12)
+                            x1 = max(0, rx - pad_x)
+                            y1 = max(0, ry - pad_y)
+                            x2 = min(iw, rx + rw + pad_x)
+                            y2 = min(ih, ry + rh + pad_y)
+                            detected_face_crop = enhanced_img[y1:y2, x1:x2]
+
+                        # If DeepFace returned full frame (e.g. skip detector), try bundled Haar cascade
+                        if detected_face_crop is None:
                             try:
                                 gray_full = cv2.cvtColor(enhanced_img, cv2.COLOR_BGR2GRAY)
                                 cascade_candidates = [
@@ -674,12 +705,37 @@ with tabs[1]:
                                 cascade_path = next((p for p in cascade_candidates if p and os.path.exists(p)), None)
                                 if cascade_path:
                                     face_cc = cv2.CascadeClassifier(cascade_path)
-                                    detected_faces = face_cc.detectMultiScale(gray_full, scaleFactor=1.1, minNeighbors=4, minSize=(60, 60))
+                                    detected_faces = face_cc.detectMultiScale(gray_full, scaleFactor=1.1, minNeighbors=3, minSize=(50, 50))
                                     if len(detected_faces) > 0:
-                                        fx, fy, fw, fh = max(detected_faces, key=lambda b: b[2] * b[3])
-                                        face_crop = enhanced_img[fy:fy+fh, fx:fx+fw]
+                                        fx, fy, fw, fh = max(detected_faces, key=lambda b: int(b[2]) * int(b[3]))
+                                        pad_x = int(fw * 0.12)
+                                        pad_y = int(fh * 0.12)
+                                        x1 = max(0, int(fx) - pad_x)
+                                        y1 = max(0, int(fy) - pad_y)
+                                        x2 = min(iw, int(fx) + int(fw) + pad_x)
+                                        y2 = min(ih, int(fy) + int(fh) + pad_y)
+                                        detected_face_crop = enhanced_img[y1:y2, x1:x2]
                             except Exception:
                                 pass
+
+                        # High-Stability Upper-Torso/Head Anchor Crop Fallback:
+                        # Guarantees that even if OpenCV/DeepFace misses on a smile, the crop remains centered on the head
+                        # and never collapses similarity by jumping to the 640x480 room background!
+                        if detected_face_crop is None or detected_face_crop.size == 0:
+                            y1 = int(ih * 0.10)
+                            y2 = int(ih * 0.78)
+                            x1 = int(iw * 0.20)
+                            x2 = int(iw * 0.80)
+                            face_crop = enhanced_img[y1:y2, x1:x2]
+                        else:
+                            face_crop = detected_face_crop
+
+                        # Visual Biometric Target Thumbnail for User Verification
+                        try:
+                            thumb_rgb = cv2.cvtColor(cv2.resize(face_crop, (100, 100)), cv2.COLOR_BGR2RGB)
+                            st.image(thumb_rgb, width=80, caption="🎯 Scanned Biometric Target")
+                        except Exception:
+                            pass
 
                         # Extract 4,075-D multi-scale biometric vector (100% Structural Topography)
                         current_face_vector = extract_face_biometric_vector(face_crop)
@@ -718,7 +774,7 @@ with tabs[1]:
                         # Sort candidate matches by effective similarity
                         candidate_matches.sort(key=lambda x: x["effective_sim"], reverse=True)
 
-                        match_threshold = float(st.session_state.get("bio_match_threshold", 0.40))
+                        match_threshold = float(st.session_state.get("bio_match_threshold", 0.35))
 
                         # Expressive Memory Priority: Taught emotions (Happy, Angry, Sad, etc.)
                         # take strict precedence over older or competing Neutral calibrations
@@ -726,7 +782,7 @@ with tabs[1]:
                         top = None
                         if expressive_candidates and expressive_candidates[0]["effective_sim"] >= match_threshold:
                             top = expressive_candidates[0]
-                        elif candidate_matches and candidate_matches[0]["effective_sim"] >= match_threshold:
+                        elif candidate_matches and candidate_matches[0]["effective_sim"] >= match_threshold and candidate_matches[0]["mem"]["label"].lower() != "neutral":
                             top = candidate_matches[0]
 
                         if top is not None:
@@ -734,7 +790,7 @@ with tabs[1]:
                             raw_best_sim = top["sim"]
                             match_idx = top["idx"]
                             detected_emotion = memory_match["label"]
-                            st.success(f"🧠 **Personalized Biometric Memory Match:** **{detected_emotion.upper()}** ({raw_best_sim*100:.1f}% Structural Match with Memory #{match_idx})")
+                            st.success(f"🧠 **Personalized Biometric Memory Match:** **{detected_emotion.upper()}** ({raw_best_sim*100:.1f}% Match with Memory #{match_idx})")
                             st.caption(f"Recognized your calibrated facial topography (Memory #{match_idx}: {memory_match['label'].upper()} learned at {memory_match['timestamp']}).")
                         else:
                             closest_mem = candidate_matches[0]["mem"] if candidate_matches else None
@@ -822,9 +878,9 @@ with tabs[1]:
                                 
                                 st.session_state.bio_match_threshold = st.slider(
                                     "Biometric Match Sensitivity",
-                                    min_value=0.25,
+                                    min_value=0.20,
                                     max_value=0.85,
-                                    value=float(st.session_state.get("bio_match_threshold", 0.40)),
+                                    value=float(st.session_state.get("bio_match_threshold", 0.35)),
                                     step=0.01,
                                     help="Lower values increase tolerance to head tilts, distance from camera, and ambient daylight changes."
                                 )
@@ -844,7 +900,7 @@ with tabs[1]:
                         detected_emotion = "neutral"
                 except Exception as e:
                     detected_emotion = "neutral"
-                    st.info("ℹ️ Ambient facial posture resolved. Use quick overrides below or Teach AI to tune anytime.")
+                    st.warning(f"⚠️ Biometric Scan Diagnostic: {e}")
             
             # Quick override buttons because CV models fail on smiles
             st.markdown("##### Quick Emotion Correction Override:")
