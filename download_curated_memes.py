@@ -1,6 +1,7 @@
 import os
 import urllib.request
 import urllib.parse
+import ssl
 from PIL import Image
 
 # Curated, authentic Malayalam movie meme archive
@@ -36,12 +37,27 @@ MEME_CATALOG = {
     ]
 }
 
+ALLOWED_DOMAIN = 'raw.githubusercontent.com'
+ALLOWED_PREFIX = '/arunpt/malayalam-plain-memes-archive/main/malayalam/'
 BASE_URL = 'https://raw.githubusercontent.com/arunpt/malayalam-plain-memes-archive/main/malayalam'
 ASSET_BASE = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'assets', 'memes')
+
+def is_safe_url(url: str) -> bool:
+    """Strict SSRF URL validation enforcing HTTPS and domain allowlist."""
+    try:
+        parsed = urllib.parse.urlparse(url)
+        return (
+            parsed.scheme == 'https'
+            and parsed.netloc.lower() == ALLOWED_DOMAIN
+            and parsed.path.startswith(ALLOWED_PREFIX)
+        )
+    except Exception:
+        return False
 
 def download_memes():
     os.makedirs(ASSET_BASE, exist_ok=True)
     download_count = 0
+    ssl_context = ssl.create_default_context()
 
     for category, items in MEME_CATALOG.items():
         cat_dir = os.path.join(ASSET_BASE, category)
@@ -51,25 +67,23 @@ def download_memes():
             encoded_movie = urllib.parse.quote(movie)
             remote_url = f'{BASE_URL}/{encoded_movie}/{remote_fname}'
             
+            if not is_safe_url(remote_url):
+                print(f"Refusing unverified URL: {remote_url}")
+                continue
+
             subfolder_path = os.path.join(cat_dir, remote_fname)
-            root_path = os.path.join(ASSET_BASE, local_alias)
 
             try:
                 req = urllib.request.Request(remote_url, headers={'User-Agent': 'Mozilla/5.0'})
-                with urllib.request.urlopen(req) as resp:
+                with urllib.request.urlopen(req, context=ssl_context) as resp:
                     data = resp.read()
                     if len(data) > 1000:
-                        # Save in subfolder
                         with open(subfolder_path, 'wb') as f:
                             f.write(data)
-                        # Save also in root of assets/memes for flat searches
-                        with open(root_path, 'wb') as f:
-                            f.write(data)
                         
-                        # Validate with PIL
-                        with Image.open(root_path) as img:
+                        with Image.open(subfolder_path) as img:
                             w, h = img.size
-                        print(f"Downloaded [{category.upper()}]: {local_alias} ({len(data)} bytes, {w}x{h})")
+                        print(f"Downloaded [{category.upper()}]: {remote_fname} ({len(data)} bytes, {w}x{h})")
                         download_count += 1
                     else:
                         print(f"Skipping tiny file: {remote_fname}")
