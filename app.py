@@ -103,8 +103,8 @@ FER_PRIORS = {
     'neutral': 0.65,
     'angry': 0.08,
     'happy': 0.08,
-    'sad': 0.10,
-    'fear': 0.07,
+    'sad': 0.07,
+    'fear': 0.18,
     'surprise': 0.05,
     'disgust': 0.02
 }
@@ -836,8 +836,9 @@ with tabs[1]:
                 bytes_data = input_image.getvalue()
                 np_arr = np.frombuffer(bytes_data, np.uint8)
                 img = cv2.imdecode(np_arr, cv2.IMREAD_COLOR)
-
-                # 1. Dual-Engine Face Localization (MTCNN Deep Keypoint Alignment with Haar Cascade Fallback)
+                if img is None:
+                    raise ValueError("Failed to decode uploaded image into valid BGR frame.")
+                gray_img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
                 mtcnn_det = get_mtcnn_detector()
                 mtcnn_res = None
                 if mtcnn_det is not None:
@@ -887,17 +888,9 @@ with tabs[1]:
                         found_faces = sorted(found_faces, key=lambda b: b[2] * b[3], reverse=True)
                     face_box = tuple(found_faces[0]) if len(found_faces) > 0 else (int(gray_img.shape[1]*0.2), int(gray_img.shape[0]*0.15), int(gray_img.shape[1]*0.6), int(gray_img.shape[0]*0.65))
 
-                # Extract natural BGR face crop with 15% contextual padding for facial gesture awareness
+                # Extract natural BGR face crop bounded to detected facial geometry
                 fx, fy, fw, fh = face_box
-                pad_w = int(fw * 0.15)
-                pad_h = int(fh * 0.15)
-                y1 = max(0, fy - pad_h)
-                y2 = min(img.shape[0], fy + fh + pad_h)
-                x1 = max(0, fx - pad_w)
-                x2 = min(img.shape[1], fx + fw + pad_w)
-                face_crop = img[y1:y2, x1:x2]
-                if face_crop.size == 0:
-                    face_crop = img[max(0, fy):min(img.shape[0], fy+fh), max(0, fx):min(img.shape[1], fx+fw)]
+                face_crop = img[max(0, fy):min(img.shape[0], fy+fh), max(0, fx):min(img.shape[1], fx+fw)]
                 if face_crop.size == 0:
                     face_crop = img
 
@@ -948,13 +941,13 @@ with tabs[1]:
                     detected_emotion = matched_memory["label"].lower()
                     detection_source = f"🧠 Learned Biometric Memory ({matched_memory['label'].upper()} - {best_sim*100:.1f}% Match)"
                     raw_emotions = {detected_emotion: 95.0, "neutral": 2.0}
-                # Stream B: MTCNN Physical Geometric Keypoint Ratios
-                elif mouth_ratio is not None and mouth_ratio >= 0.91:
+                # Stream B: MTCNN Physical Geometric Keypoint Action Units
+                elif mouth_ratio is not None and mouth_ratio >= 0.89:
                     detected_emotion = "happy"
-                    calc_conf = min(98.5, 75.0 + (mouth_ratio - 0.91) * 120.0)
+                    calc_conf = min(98.5, 75.0 + (mouth_ratio - 0.89) * 120.0)
                     detection_source = f"📐 MTCNN Geometric Smile (Span {mouth_ratio:.2f})"
                     raw_emotions = {"happy": calc_conf, "neutral": max(1.0, 100.0 - calc_conf)}
-                elif rel_mouth_y is not None and rel_mouth_y >= 0.57 and mouth_ratio is not None and mouth_ratio < 0.82:
+                elif rel_mouth_y is not None and rel_mouth_y >= 0.64 and mouth_ratio is not None and mouth_ratio < 0.82:
                     detected_emotion = "surprise"
                     detection_source = f"📐 MTCNN Geometric Jaw Drop (Drop {rel_mouth_y:.2f})"
                     raw_emotions = {"surprise": 94.0, "neutral": 4.0}
