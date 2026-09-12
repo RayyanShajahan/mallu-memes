@@ -825,8 +825,12 @@ mallu-memes/
   - Exported clean, production-ready source code: `app.py`, `spark_processor.py`, `generate_v2_corpus.py`, and `requirements.txt`.
   - Bundled pre-cached neural weights (`assets/weights/facial_expression_model_weights.h5`, 5.97 MB), OpenCV cascades (`assets/cascades/`), and authentic film stills (`assets/memes/`).
   - Packaged the cloud-optimized 5,000-record Parquet lake (`biometric_memes.parquet`, 927 KB) covering all 55 characters and 29 scenario categories, completely bypassing GitHub's 100MB file ceiling while enabling judges to immediately launch `streamlit run app.py` out of the box with zero external configuration.
+- **Asset Deduplication & Clean Repository Hygiene**:
+  - Identified and removed 24 unorganized, redundant duplicate loose `.jpg` files directly in `assets/memes/` (~9.1 MB saved), preserving only the canonical, organized files in category subfolders (`assets/memes/happy/`, `sad/`, `angry/`, `neutral/`).
+  - Removed duplicate `biometric_memes_sample.parquet` from the submission fork (retaining single canonical `biometric_memes.parquet`) and purged legacy empty `index.html`.
+  - Added Debian system dependencies manifest (`packages.txt`) and `LICENSE` directly into the submission fork.
 - **Git Synchronization & Submission Verification**:
-  - Staged all files, committed under `a0f88fa` and updated under `d79303a` (*"docs: add direct repository, fork, and PR #160 links to README"*), pushing cleanly to `origin/main` on `https://github.com/RayyanShajahan/useless_project_temp`.
+  - Staged all files, committed under `a0f88fa`, updated under `d79303a`, and cleaned under `f3d6...`, pushing cleanly to `origin/main` on `https://github.com/RayyanShajahan/useless_project_temp`.
   - Automatically synchronized with official upstream Pull Request #160 (`tinkerhub:main` $\leftarrow$ `RayyanShajahan:main`).
 
 ---
