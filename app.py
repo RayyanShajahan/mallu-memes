@@ -89,6 +89,15 @@ def get_smile_cascade():
         pass
     return None
 
+@st.cache_resource
+def get_mtcnn_detector():
+    """Initializes and caches MTCNN deep facial detector in memory."""
+    try:
+        from mtcnn import MTCNN
+        return MTCNN()
+    except Exception:
+        return None
+
 # Calibrated Empirical Bayesian Priors for FER-2013 Dataset
 FER_PRIORS = {
     'neutral': 0.65,
@@ -828,22 +837,55 @@ with tabs[1]:
                 np_arr = np.frombuffer(bytes_data, np.uint8)
                 img = cv2.imdecode(np_arr, cv2.IMREAD_COLOR)
 
-                # Natural grayscale for face localization
-                gray_img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-
-                # High-speed Haar face detector with multi-scale fallback
-                f_cas = get_face_cascade()
-                found_faces = []
-                if f_cas is not None:
+                # 1. Dual-Engine Face Localization (MTCNN Deep Keypoint Alignment with Haar Cascade Fallback)
+                mtcnn_det = get_mtcnn_detector()
+                mtcnn_res = None
+                if mtcnn_det is not None:
                     try:
-                        found_faces = f_cas.detectMultiScale(gray_img, 1.1, 4, minSize=(40, 40))
-                        if len(found_faces) == 0:
-                            found_faces = f_cas.detectMultiScale(gray_img, 1.1, 2, minSize=(30, 30))
+                        rgb_img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+                        mtcnn_res = mtcnn_det.detect_faces(rgb_img)
                     except Exception:
-                        found_faces = []
-                if len(found_faces) > 0:
-                    found_faces = sorted(found_faces, key=lambda b: b[2] * b[3], reverse=True)
-                face_box = tuple(found_faces[0]) if len(found_faces) > 0 else (int(gray_img.shape[1]*0.2), int(gray_img.shape[0]*0.15), int(gray_img.shape[1]*0.6), int(gray_img.shape[0]*0.65))
+                        mtcnn_res = None
+
+                face_box = None
+                mtcnn_kp = None
+                mouth_ratio = None
+                rel_mouth_y = None
+
+                if mtcnn_res and len(mtcnn_res) > 0:
+                    best_f = max(mtcnn_res, key=lambda f: f['box'][2] * f['box'][3])
+                    bx, by, bw, bh = best_f['box']
+                    face_box = (max(0, bx), max(0, by), bw, bh)
+                    mtcnn_kp = best_f.get('keypoints', {})
+                    if mtcnn_kp:
+                        le = np.array(mtcnn_kp['left_eye'], dtype=float)
+                        re = np.array(mtcnn_kp['right_eye'], dtype=float)
+                        nose = np.array(mtcnn_kp['nose'], dtype=float)
+                        ml = np.array(mtcnn_kp['mouth_left'], dtype=float)
+                        mr = np.array(mtcnn_kp['mouth_right'], dtype=float)
+                        
+                        eye_dist = np.linalg.norm(re - le)
+                        mouth_width = np.linalg.norm(mr - ml)
+                        mouth_ratio = float(mouth_width / (eye_dist + 1e-5))
+                        
+                        mouth_center = (ml + mr) / 2.0
+                        mouth_drop = mouth_center[1] - nose[1]
+                        rel_mouth_y = float(mouth_drop / (eye_dist + 1e-5))
+
+                if face_box is None:
+                    # Fallback to high-speed Haar face detector with multi-scale fallback
+                    f_cas = get_face_cascade()
+                    found_faces = []
+                    if f_cas is not None:
+                        try:
+                            found_faces = f_cas.detectMultiScale(gray_img, 1.1, 4, minSize=(40, 40))
+                            if len(found_faces) == 0:
+                                found_faces = f_cas.detectMultiScale(gray_img, 1.1, 2, minSize=(30, 30))
+                        except Exception:
+                            found_faces = []
+                    if len(found_faces) > 0:
+                        found_faces = sorted(found_faces, key=lambda b: b[2] * b[3], reverse=True)
+                    face_box = tuple(found_faces[0]) if len(found_faces) > 0 else (int(gray_img.shape[1]*0.2), int(gray_img.shape[0]*0.15), int(gray_img.shape[1]*0.6), int(gray_img.shape[0]*0.65))
 
                 # Extract natural BGR face crop with 15% contextual padding for facial gesture awareness
                 fx, fy, fw, fh = face_box
@@ -861,10 +903,10 @@ with tabs[1]:
 
                 current_face_vector = extract_face_biometric_vector(face_crop)
 
-                # 1. Micro-Smile Physical Geometry Analysis
+                # 2. Micro-Smile Physical Geometry Analysis
                 has_smile, smile_conf, _, _ = detect_micro_smile(gray_img, face_box) if face_box else (False, 0.0, 0, None)
 
-                # 2. Check Teach AI Personalized Biometric Memories
+                # 3. Check Teach AI Personalized Biometric Memories
                 matched_memory = None
                 best_sim = 0.0
                 all_sims = {}
@@ -900,16 +942,27 @@ with tabs[1]:
                             if best_sim >= max(threshold, 0.65):
                                 matched_memory = best_candidate
 
-                # 3. Emotion Resolution Hierarchy
+                # 4. Multi-Stream Fused Emotion Resolution Hierarchy
+                # Stream A: Learned Biometric Memory Prototype
                 if matched_memory is not None:
                     detected_emotion = matched_memory["label"].lower()
                     detection_source = f"🧠 Learned Biometric Memory ({matched_memory['label'].upper()} - {best_sim*100:.1f}% Match)"
                     raw_emotions = {detected_emotion: 95.0, "neutral": 2.0}
+                # Stream B: MTCNN Physical Geometric Keypoint Ratios
+                elif mouth_ratio is not None and mouth_ratio >= 0.91:
+                    detected_emotion = "happy"
+                    calc_conf = min(98.5, 75.0 + (mouth_ratio - 0.91) * 120.0)
+                    detection_source = f"📐 MTCNN Geometric Smile (Span {mouth_ratio:.2f})"
+                    raw_emotions = {"happy": calc_conf, "neutral": max(1.0, 100.0 - calc_conf)}
+                elif rel_mouth_y is not None and rel_mouth_y >= 0.57 and mouth_ratio is not None and mouth_ratio < 0.82:
+                    detected_emotion = "surprise"
+                    detection_source = f"📐 MTCNN Geometric Jaw Drop (Drop {rel_mouth_y:.2f})"
+                    raw_emotions = {"surprise": 94.0, "neutral": 4.0}
+                # Stream C: DeepFace with MTCNN-Aligned BGR Frame & Bayesian Prior Normalization
                 else:
-                    # Priority 3: DeepFace with Bayesian Prior Normalization on natural BGR frame
                     try:
                         analysis = None
-                        for backend in ['opencv', 'skip']:
+                        for backend in ['skip', 'opencv']:
                             try:
                                 analysis = DeepFace.analyze(
                                     face_crop if backend == 'skip' else img, 
@@ -935,7 +988,7 @@ with tabs[1]:
                         detection_source = "Standard Baseline (Neutral)"
                         raw_emotions = {"neutral": 90.0, "happy": 2.0, "sad": 2.0, "angry": 2.0}
 
-                # Physical micro-smile override booster:
+                # Stream D: Physical Micro-Smile Haar Cascade Safety Net
                 if has_smile and detected_emotion == "neutral":
                     detected_emotion = "happy"
                     detection_source = f"Micro-Smile Geometry Override (Smile Conf {smile_conf:.1f}%)"
