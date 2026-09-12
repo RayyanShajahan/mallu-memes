@@ -639,6 +639,21 @@ mallu-memes/
     - `Actor Angry Man (Chacko Mash Scowl)` $\to$ **ANGRY (100.0%)** [PASS]
   - **Final Benchmark Accuracy: 15/15 (100.0% Pass Rate)** with zero regressions.
 
+### Milestone 41: Resolution of Streamlit Community Cloud Container Build Crash (September 2026)
+- **Root Cause Forensic Discovery**:
+  - Live deployment to Streamlit Community Cloud failed with the generic platform crash modal: *"Oh no. Error running app. If this keeps happening, please contact support."*
+  - Detailed environment analysis traced the crash to `packages.txt`:
+    1. During container image provisioning, Streamlit Cloud executes `xargs apt-get install -y < packages.txt`.
+    2. Packages `libtbb2` and `libtbbmalloc2` were removed in Debian 11/12 (Bullseye/Bookworm), raising `E: Unable to locate package libtbb2`. This triggered an apt non-zero exit code (100), aborting the container build before Python could launch.
+    3. Concurrently, `deepface` specifies a hard requirement on `opencv-python`. Listing `opencv-python-headless` in `requirements.txt` alongside `deepface` triggered duplicate package installation conflicts into `site-packages/cv2/`.
+- **Engineered Resolution**:
+  1. *Clean Debian Bookworm Runtime in `packages.txt`*:
+     - Removed obsolete packages `libtbb2`, `libtbbmalloc2`, and `libxrender-dev`.
+     - Standardized on verified runtime shared objects: `libgl1`, `libglib2.0-0`, `libgomp1`, `libsm6`, `libxext6`, `libxrender1`.
+  2. *Unified `opencv-python` Dependency in `requirements.txt`*:
+     - Aligned `requirements.txt` to specify `opencv-python` directly, eliminating pip conflicts with `deepface`.
+  3. *Validation*: Verified successful local import and clean syntax compilation.
+
 ---
 
 ## 5. PROPRIETARY SCORING ALGORITHMS & MATHEMATICAL FORMULATIONS

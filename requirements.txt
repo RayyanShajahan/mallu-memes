@@ -1,6 +1,6 @@
 streamlit
 deepface
-opencv-python-headless
+opencv-python
 pandas
 pyarrow
 fastparquet
