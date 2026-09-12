@@ -217,7 +217,7 @@ df = load_data()
 FACE_MEMORY_FILE = os.path.join(BASE_DIR, "assets", "calibrated_face_memory.json")
 
 def load_face_memory():
-    """Loads personalized biometric memories from disk, cleansing legacy FER dimensions."""
+    """Loads personalized biometric memories from disk."""
     if os.path.exists(FACE_MEMORY_FILE):
         try:
             with open(FACE_MEMORY_FILE, "r", encoding="utf-8") as f:
@@ -225,13 +225,10 @@ def load_face_memory():
                 memories = []
                 for item in data:
                     vec = np.array(item["vector"], dtype=np.float32)
-                    # Cleanse legacy vectors: zero out last 7 FER dimensions & renormalize
-                    if len(vec) == 4075:
-                        vec[-7:] = 0.0
-                        vec = vec / (np.linalg.norm(vec) + 1e-7)
                     memories.append({
                         "vector": vec,
-                        "label": item["label"],
+                        "label": item["label"].lower(),
+                        "raw_emotions": item.get("raw_emotions", {}),
                         "timestamp": item.get("timestamp", "Saved")
                     })
                 return memories
@@ -249,7 +246,8 @@ def save_face_memory(memories):
                 vec = vec.tolist()
             data.append({
                 "vector": vec,
-                "label": m["label"],
+                "label": m["label"].lower(),
+                "raw_emotions": m.get("raw_emotions", {}),
                 "timestamp": m.get("timestamp", "")
             })
         os.makedirs(os.path.dirname(FACE_MEMORY_FILE), exist_ok=True)
@@ -258,63 +256,56 @@ def save_face_memory(memories):
     except Exception:
         pass
 
-def memorize_face(face_vector, target_emotion):
-    """Memorizes a facial structure, harmonizing existing entries and strictly purging contradictory neutral records."""
+def memorize_face(face_vector, target_emotion, raw_emotions=None):
+    """
+    Memorizes a personalized facial expression prototype.
+    Supports storing multiple distinct emotional prototypes simultaneously (Happy, Neutral, Sad, Angry).
+    Updates existing memory for the same emotion, or appends a new emotion prototype.
+    """
     vec_list = face_vector if isinstance(face_vector, list) else face_vector.tolist()
+    target_emotion = target_emotion.lower().strip()
     new_entry = {
-        "vector": vec_list,
         "label": target_emotion,
+        "vector": vec_list,
+        "raw_emotions": raw_emotions if isinstance(raw_emotions, dict) else {},
         "timestamp": datetime.datetime.now().strftime("%H:%M:%S")
     }
-    v_curr = np.array(vec_list, dtype=np.float32)
-    norm_c = np.linalg.norm(v_curr)
     
-    filtered = []
+    # Check if a memory for this specific emotion label already exists
+    memories = list(st.session_state.get("calibrated_face_memory", []))
     updated = False
-    for m in st.session_state.calibrated_face_memory:
-        try:
-            v_m = np.array(m["vector"], dtype=np.float32)
-            norm_m = np.linalg.norm(v_m)
-            sim_m = float(np.dot(v_curr, v_m) / (norm_c * norm_m + 1e-7)) if norm_c > 0 and norm_m > 0 else 0.0
-            
-            # When teaching an expressive emotion (happy, angry, sad), immediately purge competing neutral records
-            if target_emotion.lower() != "neutral" and m["label"].lower() == "neutral":
-                continue
-                
-            if sim_m >= 0.55:
-                m["label"] = target_emotion
-                m["timestamp"] = datetime.datetime.now().strftime("%H:%M:%S")
-                m["vector"] = vec_list
-                updated = True
-            filtered.append(m)
-        except Exception:
-            pass
+    for idx, m in enumerate(memories):
+        if m["label"].lower() == target_emotion:
+            memories[idx] = new_entry
+            updated = True
+            break
             
     if not updated:
-        filtered.append(new_entry)
+        memories.append(new_entry)
         
-    st.session_state.calibrated_face_memory = filtered
-    save_face_memory(st.session_state.calibrated_face_memory)
+    st.session_state.calibrated_face_memory = memories
+    save_face_memory(memories)
 
 # Initialize Session State for Personalized Biometric Face Memory (Hydrated from Disk)
 if "calibrated_face_memory" not in st.session_state:
     st.session_state.calibrated_face_memory = load_face_memory()
 elif len(st.session_state.calibrated_face_memory) > 0 and not os.path.exists(FACE_MEMORY_FILE):
-    # Flush existing RAM memories to persistent disk storage
     save_face_memory(st.session_state.calibrated_face_memory)
 
-if "bio_match_threshold" not in st.session_state or st.session_state.bio_match_threshold > 0.40:
-    st.session_state.bio_match_threshold = 0.35
+if "bio_match_threshold" not in st.session_state:
+    st.session_state.bio_match_threshold = 0.65
 
 if "forced_emotion" not in st.session_state:
     st.session_state.forced_emotion = None
 
 def extract_face_biometric_vector(face_bgr, raw_emotions=None):
     """
-    Extracts a 4,075-D multi-scale facial topographic descriptor:
-    - 1,764-D HOG structural gradient orientation (eyebrow angle, scowl lines, lip tightness)
-    - 2,304-D Dense grayscale topography (spatial brightness distribution)
-    - 7-D Fixed zero pad (preserves 4,075-D tensor contract while immunizing from FER bias)
+    Extracts a discriminative, zero-centered multi-scale facial expression descriptor:
+    - Z-score normalized gradient orientation & magnitude
+    - Gaussian-filtered Laplacian expression contours (mouth smile curvature & brow furrowing)
+    - Regional action unit partitions: Brow/Forehead (anger/frowns), Eyes/Mid-face, and Mouth/Nasolabial (smiles)
+    - Normalized neural emotion distribution anchor
+    Immune to ambient room lighting and skin-tone DC offsets.
     """
     try:
         if face_bgr is None or face_bgr.size == 0 or face_bgr.shape[0] < 10 or face_bgr.shape[1] < 10:
@@ -325,36 +316,61 @@ def extract_face_biometric_vector(face_bgr, raw_emotions=None):
         else:
             gray = cv2.cvtColor(face_bgr, cv2.COLOR_BGR2GRAY)
             
-        gray = np.clip(gray, 0, 255).astype(np.uint8)
-        gray = np.ascontiguousarray(gray)
+        gray = cv2.resize(gray, (64, 64)).astype(np.float32)
+        # Local Z-score normalization eliminates ambient lighting DC bias
+        gray_norm = (gray - np.mean(gray)) / (np.std(gray) + 1e-7)
         
-        # 1. HOG Structural Gradient Orientation (64x64)
-        resized_64 = cv2.resize(gray, (64, 64))
-        resized_64 = np.ascontiguousarray(resized_64)
-        hog_feat = None
-        if hasattr(cv2, 'HOGDescriptor'):
-            try:
-                hog = cv2.HOGDescriptor((64, 64), (16, 16), (8, 8), (8, 8), 9)
-                hog_feat = hog.compute(resized_64).flatten().astype(np.float32)
-            except Exception:
-                hog_feat = None
-        if hog_feat is None or len(hog_feat) != 1764:
-            gy, gx = np.gradient(resized_64.astype(np.float32))
-            mag = np.sqrt(gx**2 + gy**2)
-            mag_resized = cv2.resize(mag, (42, 42)).flatten().astype(np.float32)
-            hog_feat = mag_resized
-        hog_norm = hog_feat / (np.linalg.norm(hog_feat) + 1e-7)
+        # 1. Structural Gradient Features
+        gy, gx = np.gradient(gray_norm)
+        mag = np.sqrt(gx**2 + gy**2)
+        mag_norm = (mag - np.mean(mag)) / (np.std(mag) + 1e-7)
+        mag_flat = cv2.resize(mag_norm, (16, 16)).flatten()  # 256 dims
         
-        # 2. Dense Topography (48x48)
-        resized_48 = cv2.resize(gray, (48, 48)).flatten().astype(np.float32)
-        topo_norm = resized_48 / (np.linalg.norm(resized_48) + 1e-7)
+        # 2. Laplacian high-frequency expression contours (mouth & brow)
+        mouth_roi = gray_norm[34:, :]
+        mouth_lap = cv2.Laplacian(mouth_roi, cv2.CV_32F)
+        mouth_lap = cv2.GaussianBlur(mouth_lap, (3, 3), 0)
+        mouth_lap = (mouth_lap - np.mean(mouth_lap)) / (np.std(mouth_lap) + 1e-7)
+        mouth_lap_flat = cv2.resize(mouth_lap, (16, 16)).flatten()  # 256 dims
         
-        # 3. Fixed 7-D zero pad (100% pure structural biometrics, 0% DeepFace neural noise)
-        fer_zero = np.zeros(7, dtype=np.float32)
+        brow_roi = gray_norm[:24, :]
+        brow_lap = cv2.Laplacian(brow_roi, cv2.CV_32F)
+        brow_lap = cv2.GaussianBlur(brow_lap, (3, 3), 0)
+        brow_lap = (brow_lap - np.mean(brow_lap)) / (np.std(brow_lap) + 1e-7)
+        brow_lap_flat = cv2.resize(brow_lap, (16, 16)).flatten()  # 256 dims
         
-        # Multi-scale concatenated vector: 60% HOG + 40% Dense Topography
-        # Eliminates neural FER neutral bias from corrupting personalized calibrations
-        combined = np.concatenate([hog_norm * 0.60, topo_norm * 0.40, fer_zero])
+        # 3. Regional Facial Action Partitions
+        mouth_int = cv2.resize(gray_norm[34:, :], (16, 16)).flatten()  # 256 dims
+        brow_int = cv2.resize(gray_norm[:24, :], (16, 16)).flatten()    # 256 dims
+        eyes_int = cv2.resize(gray_norm[18:38, :], (16, 16)).flatten()  # 256 dims
+        dense = cv2.resize(gray_norm, (20, 20)).flatten()               # 400 dims
+        
+        # 4. Neural Emotion Vector if available (or zeros)
+        fer_vec = np.zeros(7, dtype=np.float32)
+        if raw_emotions and isinstance(raw_emotions, dict):
+            fer_list = [float(raw_emotions.get(k, 0.0)) for k in ['happy', 'sad', 'angry', 'neutral', 'fear', 'surprise', 'disgust']]
+            s = sum(fer_list)
+            if s > 0:
+                fer_vec = np.array([x / s for x in fer_list], dtype=np.float32)
+                
+        # Concatenate with expression-prioritized weights
+        combined = np.concatenate([
+            mouth_lap_flat * 2.0,
+            brow_lap_flat * 1.6,
+            mouth_int * 1.5,
+            brow_int * 1.2,
+            eyes_int * 0.8,
+            mag_flat * 0.8,
+            dense * 0.4,
+            fer_vec * 2.0
+        ])
+        
+        # Pad to exactly 4075 to preserve any downstream contracts
+        if len(combined) < 4075:
+            combined = np.pad(combined, (0, 4075 - len(combined)))
+        else:
+            combined = combined[:4075]
+            
         return combined / (np.linalg.norm(combined) + 1e-7)
     except Exception:
         return np.zeros(4075, dtype=np.float32)
@@ -821,6 +837,8 @@ with tabs[1]:
                             found_faces = f_cas.detectMultiScale(gray_img, 1.1, 2, minSize=(30, 30))
                     except Exception:
                         found_faces = []
+                if len(found_faces) > 0:
+                    found_faces = sorted(found_faces, key=lambda b: b[2] * b[3], reverse=True)
                 face_box = tuple(found_faces[0]) if len(found_faces) > 0 else (int(gray_img.shape[1]*0.2), int(gray_img.shape[0]*0.15), int(gray_img.shape[1]*0.6), int(gray_img.shape[0]*0.65))
 
                 # Extract natural BGR face crop (no CLAHE darkening artifacts!)
@@ -834,20 +852,40 @@ with tabs[1]:
                 # 2. Check Teach AI Personalized Biometric Memories
                 matched_memory = None
                 best_sim = 0.0
+                all_sims = {}
+                best_candidate = None
                 if len(st.session_state.calibrated_face_memory) > 0 and current_face_vector is not None:
                     norm_curr = np.linalg.norm(current_face_vector)
-                    for idx, mem in enumerate(st.session_state.calibrated_face_memory):
-                        try:
-                            v_mem = np.array(mem["vector"], dtype=np.float32)
-                            norm_m = np.linalg.norm(v_mem)
-                            sim = float(np.dot(current_face_vector, v_mem) / (norm_m * norm_curr)) if (norm_m > 0 and norm_curr > 0) else 0.0
-                        except Exception:
-                            sim = 0.0
-                        mem["_live_sim"] = sim
-                        if sim > best_sim:
-                            best_sim = sim
-                            if sim >= float(st.session_state.get("bio_match_threshold", 0.35)):
-                                matched_memory = mem
+                    if norm_curr > 0:
+                        for idx, mem in enumerate(st.session_state.calibrated_face_memory):
+                            try:
+                                v_mem = np.array(mem["vector"], dtype=np.float32)
+                                norm_m = np.linalg.norm(v_mem)
+                                sim = float(np.dot(current_face_vector, v_mem) / (norm_m * norm_curr + 1e-7)) if norm_m > 0 else 0.0
+                            except Exception:
+                                sim = 0.0
+                            mem["_live_sim"] = sim
+                            all_sims[mem["label"].lower()] = sim
+                            if sim > best_sim:
+                                best_sim = sim
+                                best_candidate = mem
+
+                        threshold = float(st.session_state.get("bio_match_threshold", 0.65))
+
+                        # Scenario A: Multiple memories saved (e.g. Happy and Neutral)
+                        if len(st.session_state.calibrated_face_memory) > 1:
+                            sorted_sims = sorted(all_sims.items(), key=lambda x: x[1], reverse=True)
+                            top_label, top_score = sorted_sims[0]
+                            second_label, second_score = sorted_sims[1]
+                            margin = top_score - second_score
+                            # If the top expression is a clear match with separation from competitors
+                            if top_score >= threshold and margin >= 0.04:
+                                matched_memory = best_candidate
+                        # Scenario B: Single memory saved (e.g. only Happy)
+                        else:
+                            # Requires similarity threshold to prevent false triggers on resting/different faces
+                            if best_sim >= max(threshold, 0.65):
+                                matched_memory = best_candidate
 
                 # 3. Emotion Resolution Hierarchy
                 if matched_memory is not None:
@@ -902,19 +940,23 @@ with tabs[1]:
         # Teach AI UI (Available whenever a camera frame is ready or manually)
         if current_face_vector is not None:
             st.markdown("##### 🧠 1-Click Teach AI (Register Face Topology):")
-            st.caption("Lock in this exact facial posture into persistent biometric memory:")
-            q_c1, q_c2, q_c3 = st.columns(3)
-            if q_c1.button("🧠 Memorize as HAPPY", use_container_width=True):
-                memorize_face(current_face_vector, "happy")
+            st.caption("Lock in your unique facial expression prototype into persistent biometric memory:")
+            q_c1, q_c2, q_c3, q_c4 = st.columns(4)
+            if q_c1.button("😃 Memorize HAPPY", use_container_width=True):
+                memorize_face(current_face_vector, "happy", raw_emotions)
                 st.toast("✅ Learned! Facial posture memorized as HAPPY!")
                 st.rerun()
-            if q_c2.button("🧠 Memorize as ANGRY", use_container_width=True):
-                memorize_face(current_face_vector, "angry")
-                st.toast("✅ Learned! Facial posture memorized as ANGRY!")
+            if q_c2.button("😐 Memorize NEUTRAL", use_container_width=True):
+                memorize_face(current_face_vector, "neutral", raw_emotions)
+                st.toast("✅ Learned! Facial posture memorized as NEUTRAL!")
                 st.rerun()
-            if q_c3.button("🧠 Memorize as SAD", use_container_width=True):
-                memorize_face(current_face_vector, "sad")
+            if q_c3.button("😢 Memorize SAD", use_container_width=True):
+                memorize_face(current_face_vector, "sad", raw_emotions)
                 st.toast("✅ Learned! Facial posture memorized as SAD!")
+                st.rerun()
+            if q_c4.button("😡 Memorize ANGRY", use_container_width=True):
+                memorize_face(current_face_vector, "angry", raw_emotions)
+                st.toast("✅ Learned! Facial posture memorized as ANGRY!")
                 st.rerun()
 
         if st.session_state.calibrated_face_memory:
@@ -925,11 +967,11 @@ with tabs[1]:
                     st.rerun()
                 st.session_state.bio_match_threshold = st.slider(
                     "Biometric Match Sensitivity",
-                    min_value=0.20,
-                    max_value=0.85,
-                    value=float(st.session_state.get("bio_match_threshold", 0.35)),
+                    min_value=0.40,
+                    max_value=0.95,
+                    value=float(st.session_state.get("bio_match_threshold", 0.65)),
                     step=0.01,
-                    help="Lower values increase tolerance to head tilts, distance from camera, and ambient daylight changes."
+                    help="Cosine similarity threshold required for biometric prototype activation (Default: 0.65)."
                 )
                 for i, m in enumerate(st.session_state.calibrated_face_memory):
                     mem_c1, mem_c2 = st.columns([4, 1])
