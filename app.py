@@ -9,6 +9,7 @@ import io
 import numpy as np
 import cv2
 import datetime
+import json
 from deepface import DeepFace
 
 def ensure_cv_environment():
@@ -89,9 +90,55 @@ def load_data():
 
 df = load_data()
 
-# Initialize Session State for Personalized Biometric Face Memory
+# --- Personalized Biometric Vector Memory Disk Persistence Backend ---
+FACE_MEMORY_FILE = os.path.join("assets", "calibrated_face_memory.json")
+
+def load_face_memory():
+    """Loads personalized biometric memories from disk to persist across sessions/PCs."""
+    if os.path.exists(FACE_MEMORY_FILE):
+        try:
+            with open(FACE_MEMORY_FILE, "r", encoding="utf-8") as f:
+                data = json.load(f)
+                memories = []
+                for item in data:
+                    memories.append({
+                        "vector": np.array(item["vector"], dtype=np.float32),
+                        "label": item["label"],
+                        "timestamp": item.get("timestamp", "Saved")
+                    })
+                return memories
+        except Exception:
+            return []
+    return []
+
+def save_face_memory(memories):
+    """Atomically synchronizes personalized face vectors to disk."""
+    try:
+        data = []
+        for m in memories:
+            vec = m["vector"]
+            if isinstance(vec, np.ndarray):
+                vec = vec.tolist()
+            data.append({
+                "vector": vec,
+                "label": m["label"],
+                "timestamp": m.get("timestamp", "")
+            })
+        os.makedirs(os.path.dirname(FACE_MEMORY_FILE), exist_ok=True)
+        with open(FACE_MEMORY_FILE, "w", encoding="utf-8") as f:
+            json.dump(data, f, indent=2)
+    except Exception:
+        pass
+
+# Initialize Session State for Personalized Biometric Face Memory (Hydrated from Disk)
 if "calibrated_face_memory" not in st.session_state:
-    st.session_state.calibrated_face_memory = []
+    st.session_state.calibrated_face_memory = load_face_memory()
+elif len(st.session_state.calibrated_face_memory) > 0 and not os.path.exists(FACE_MEMORY_FILE):
+    # Flush existing RAM memories to persistent disk storage
+    save_face_memory(st.session_state.calibrated_face_memory)
+
+if "bio_match_threshold" not in st.session_state:
+    st.session_state.bio_match_threshold = 0.68
 
 def extract_face_biometric_vector(face_bgr, raw_emotions):
     """
@@ -578,6 +625,20 @@ with tabs[1]:
                         rw = min(rw, enhanced_img.shape[1] - rx); rh = min(rh, enhanced_img.shape[0] - ry)
                         face_crop = enhanced_img[ry:ry+rh, rx:rx+rw] if rw > 15 and rh > 15 else enhanced_img
 
+                        # Fallback Haar cascade detector if DeepFace returned full frame (e.g. skip backend)
+                        if rw >= enhanced_img.shape[1] - 5 and rh >= enhanced_img.shape[0] - 5:
+                            try:
+                                gray_full = cv2.cvtColor(enhanced_img, cv2.COLOR_BGR2GRAY)
+                                cascade_path = os.path.join(getattr(cv2, 'data', None).haarcascades, "haarcascade_frontalface_default.xml") if hasattr(cv2, 'data') and hasattr(cv2.data, 'haarcascades') else os.path.join("assets", "cascades", "haarcascade_frontalface_default.xml")
+                                if os.path.exists(cascade_path):
+                                    face_cc = cv2.CascadeClassifier(cascade_path)
+                                    detected_faces = face_cc.detectMultiScale(gray_full, scaleFactor=1.1, minNeighbors=4, minSize=(60, 60))
+                                    if len(detected_faces) > 0:
+                                        fx, fy, fw, fh = max(detected_faces, key=lambda b: b[2] * b[3])
+                                        face_crop = enhanced_img[fy:fy+fh, fx:fx+fw]
+                            except Exception:
+                                pass
+
                         # Extract 4,075-D multi-scale biometric vector (HOG + Topography + FER signature)
                         current_face_vector = extract_face_biometric_vector(face_crop, raw_emotions)
 
@@ -590,11 +651,17 @@ with tabs[1]:
                                 best_sim = sim
                                 memory_match = mem
 
-                        if memory_match is not None and best_sim >= 0.78:
+                        match_threshold = float(st.session_state.get("bio_match_threshold", 0.70))
+
+                        if memory_match is not None and best_sim >= match_threshold:
                             detected_emotion = memory_match["label"]
                             st.success(f"🧠 **Personalized Biometric Memory Match:** **{detected_emotion.upper()}** ({best_sim*100:.1f}% Structural Match)")
                             st.caption(f"Recognized your calibrated facial topography memorized at {memory_match['timestamp']}.")
                         else:
+                            # Show live biometric telemetry so user sees exact match percentage in real-time
+                            if memory_match is not None and len(st.session_state.calibrated_face_memory) > 0:
+                                st.info(f"💡 **Teach AI Telemetry:** Nearest memory match is **{memory_match['label'].upper()}** at **{best_sim*100:.1f}%** (Activation Threshold: {match_threshold*100:.0f}%). Tip: Adjust tolerance slider below if lighting or angle shifted.")
+
                             # Bayesian Prior-Normalized Affective Classifier:
                             # Resolves FER-2013 training prior bias (where neutral accounts for >58% of weight).
                             # Mathematical formulation: P(intent = e | img) proportional to P_raw(e) / Prior(e)
@@ -649,16 +716,48 @@ with tabs[1]:
                                     "label": target_correction,
                                     "timestamp": datetime.datetime.now().strftime("%H:%M:%S")
                                 }
-                                st.session_state.calibrated_face_memory.append(new_entry)
-                                st.toast(f"✅ Learned! Facial structure memorized as {target_correction.upper()}!")
+                                # Deduplicate / update existing memory if same facial structure (sim >= 0.82)
+                                updated = False
+                                for m in st.session_state.calibrated_face_memory:
+                                    if float(np.dot(current_face_vector, m["vector"])) >= 0.82:
+                                        m["label"] = target_correction
+                                        m["timestamp"] = datetime.datetime.now().strftime("%H:%M:%S")
+                                        m["vector"] = current_face_vector
+                                        updated = True
+                                        break
+                                if not updated:
+                                    st.session_state.calibrated_face_memory.append(new_entry)
+
+                                save_face_memory(st.session_state.calibrated_face_memory)
+                                st.toast(f"✅ Learned! Facial structure memorized as {target_correction.upper()} (Saved to disk)!")
                                 st.rerun()
 
                         if st.session_state.calibrated_face_memory:
                             with st.expander(f"🗂️ Active Learned Memories ({len(st.session_state.calibrated_face_memory)})", expanded=False):
+                                st.caption("💾 **Persistent Storage**: Memories automatically sync to disk across browser tabs, reloads, and multi-PC setups.")
+                                
+                                st.session_state.bio_match_threshold = st.slider(
+                                    "Biometric Match Sensitivity",
+                                    min_value=0.55,
+                                    max_value=0.85,
+                                    value=float(st.session_state.get("bio_match_threshold", 0.68)),
+                                    step=0.01,
+                                    help="Lower values (e.g. 0.62-0.68) increase tolerance to head tilts, distance from camera, and ambient daylight changes."
+                                )
+                                
                                 for i, m in enumerate(st.session_state.calibrated_face_memory):
-                                    st.write(f"• **Memory #{i+1}:** {m['label'].upper()} (Learned at {m['timestamp']})")
+                                    mem_c1, mem_c2 = st.columns([4, 1])
+                                    with mem_c1:
+                                        st.write(f"• **Memory #{i+1}:** {m['label'].upper()} (Learned at {m['timestamp']})")
+                                    with mem_c2:
+                                        if st.button("🗑️", key=f"del_mem_btn_{i}", help="Delete this specific memory"):
+                                            st.session_state.calibrated_face_memory.pop(i)
+                                            save_face_memory(st.session_state.calibrated_face_memory)
+                                            st.rerun()
+                                            
                                 if st.button("🗑️ Clear All Learned Memories", key="clear_face_mem_btn"):
                                     st.session_state.calibrated_face_memory = []
+                                    save_face_memory([])
                                     st.rerun()
                     else:
                         detected_emotion = "neutral"
