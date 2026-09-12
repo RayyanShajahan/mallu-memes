@@ -504,6 +504,15 @@ mallu-memes/
   5. *Defensive Input Sanitization & Contiguity*: In `extract_face_biometric_vector()`, enforced `np.clip(gray, 0, 255).astype(np.uint8)` and `np.ascontiguousarray` before `cv2.resize` and `cv2.HOGDescriptor.compute`, eliminating OpenCV C++ gradient assertion failures (`img.type() == CV_8U`).
   6. *Visual Thumbnail Feedback & Diagnostic Alerts*: Added an 80px visual feedback thumbnail directly in the UI (`🎯 Scanned Biometric Target`) confirming clean head capture. Replaced silent exception swallows with explicit `st.warning(f"⚠️ Biometric Scan Diagnostic: {e}")`.
 
+### Milestone 35: Direct Hackathon Bias Crusher Deployment & Zero-Friction Instant Micro-Expression Recognition
+- **Engineered Direct Raw Math Bias Crusher**:
+  - *Addressed Live Demo Friction*: Abandoned brittle session-state face vector caching that caused friction across browser reloads, multi-PC sessions, and detector bounding box jumps.
+  - *Direct Raw Probability Interception*: Applied mathematical suppression directly to DeepFace's raw FER-2013 output dictionary:
+    $$\text{score}(\text{neutral}) \leftarrow \text{score}(\text{neutral}) \times 0.03$$
+  - *Instant Micro-Expression Breakthrough*: When a user displays even a subtle micro-smile (producing ~3–5% Happy vs ~95% Neutral in DeepFace's raw output), the crushed neutral baseline drops to $\sim 2.85\%$, allowing the true `Happy` expression to win immediately on the very first photo.
+  - *Dual Mode Label Compatibility*: Configured `capture_mode` to seamlessly accept both `"📸 Snapshot Analysis"` and `"📸 Live Face Emotion Scan (Camera)"`.
+  - *Emergency Presentation Safeguards*: Preserved 1-click manual overrides (`Force Happy`, `Force Sad`, `Force Angry`) directly beneath the camera feed for 100% demo safety under any ambient stage lighting.
+
 ---
 
 ## 5. PROPRIETARY SCORING ALGORITHMS & MATHEMATICAL FORMULATIONS

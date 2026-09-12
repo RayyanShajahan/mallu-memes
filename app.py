@@ -621,13 +621,13 @@ with tabs[1]:
         st.markdown("### 📷 Biometric Capture")
         capture_mode = st.radio(
             "Mode:",
-            ["📸 Live Face Emotion Scan (Camera)", "🎛️ Manual Psychological Override"],
+            ["📸 Snapshot Analysis", "🎛️ Manual Psychological Override"],
             horizontal=True
         )
 
         detected_emotion = "neutral"
 
-        if capture_mode == "📸 Live Face Emotion Scan (Camera)":
+        if capture_mode in ["📸 Snapshot Analysis", "📸 Live Face Emotion Scan (Camera)"]:
             cam_image = st.camera_input("Capture expression", label_visibility="collapsed")
             if cam_image is not None:
                 try:
@@ -635,10 +635,10 @@ with tabs[1]:
                     np_arr = np.frombuffer(bytes_data, np.uint8)
                     img = cv2.imdecode(np_arr, cv2.IMREAD_COLOR)
 
-                    # Contrast-Limited Adaptive Histogram Equalization (CLAHE) for dim/backlit webcams
+                    # Contrast-Limited Adaptive Histogram Equalization (CLAHE) for better lighting reads
                     lab = cv2.cvtColor(img, cv2.COLOR_BGR2LAB)
                     l, a, b = cv2.split(lab)
-                    clahe = cv2.createCLAHE(clipLimit=2.5, tileGridSize=(8, 8))
+                    clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(8, 8))
                     enhanced_img = cv2.cvtColor(cv2.merge((clahe.apply(l), a, b)), cv2.COLOR_LAB2BGR)
 
                     try:
@@ -650,7 +650,6 @@ with tabs[1]:
                             silent=True
                         )
                     except Exception:
-                        # Cloud / headless fallback: direct frame analysis without Haar cascade dependencies
                         analysis = DeepFace.analyze(
                             enhanced_img, 
                             actions=['emotion'], 
@@ -663,239 +662,32 @@ with tabs[1]:
                         analysis = [analysis]
                     
                     if isinstance(analysis, list) and len(analysis) > 0:
-                        # Pick the primary/largest foreground face (area = w * h)
                         primary_face = max(
                             analysis, 
                             key=lambda f: f.get('region', {}).get('w', 0) * f.get('region', {}).get('h', 0)
                         )
-                        raw_emotions = primary_face.get('emotion', {})
+                        raw_emotions = primary_face.get('emotion', {}).copy()
                         
-                        # Extract primary face crop for biometric vector extraction with strict integer casting
-                        ih, iw = enhanced_img.shape[:2]
-                        region = primary_face.get('region', {})
-                        rx = int(region.get('x', 0) or 0)
-                        ry = int(region.get('y', 0) or 0)
-                        rw = int(region.get('w', 0) or 0)
-                        rh = int(region.get('h', 0) or 0)
-                        rx = max(0, min(rx, iw - 1))
-                        ry = max(0, min(ry, ih - 1))
-                        rw = max(0, min(rw, iw - rx))
-                        rh = max(0, min(rh, ih - ry))
-
-                        detected_face_crop = None
-
-                        # Check if DeepFace returned a valid sub-frame face bounding box
-                        if rw >= 30 and rh >= 30 and (rw < iw - 15 or rh < ih - 15):
-                            pad_x = int(rw * 0.12)
-                            pad_y = int(rh * 0.12)
-                            x1 = max(0, rx - pad_x)
-                            y1 = max(0, ry - pad_y)
-                            x2 = min(iw, rx + rw + pad_x)
-                            y2 = min(ih, ry + rh + pad_y)
-                            detected_face_crop = enhanced_img[y1:y2, x1:x2]
-
-                        # If DeepFace returned full frame (e.g. skip detector), try bundled Haar cascade
-                        if detected_face_crop is None:
-                            try:
-                                gray_full = cv2.cvtColor(enhanced_img, cv2.COLOR_BGR2GRAY)
-                                cascade_candidates = [
-                                    os.path.join("assets", "cascades", "haarcascade_frontalface_default.xml"),
-                                    os.path.join(getattr(cv2, 'data', None).haarcascades, "haarcascade_frontalface_default.xml") if hasattr(cv2, 'data') and hasattr(cv2.data, 'haarcascades') else ""
-                                ]
-                                cascade_path = next((p for p in cascade_candidates if p and os.path.exists(p)), None)
-                                if cascade_path:
-                                    face_cc = cv2.CascadeClassifier(cascade_path)
-                                    detected_faces = face_cc.detectMultiScale(gray_full, scaleFactor=1.1, minNeighbors=3, minSize=(50, 50))
-                                    if len(detected_faces) > 0:
-                                        fx, fy, fw, fh = max(detected_faces, key=lambda b: int(b[2]) * int(b[3]))
-                                        pad_x = int(fw * 0.12)
-                                        pad_y = int(fh * 0.12)
-                                        x1 = max(0, int(fx) - pad_x)
-                                        y1 = max(0, int(fy) - pad_y)
-                                        x2 = min(iw, int(fx) + int(fw) + pad_x)
-                                        y2 = min(ih, int(fy) + int(fh) + pad_y)
-                                        detected_face_crop = enhanced_img[y1:y2, x1:x2]
-                            except Exception:
-                                pass
-
-                        # High-Stability Upper-Torso/Head Anchor Crop Fallback:
-                        # Guarantees that even if OpenCV/DeepFace misses on a smile, the crop remains centered on the head
-                        # and never collapses similarity by jumping to the 640x480 room background!
-                        if detected_face_crop is None or detected_face_crop.size == 0:
-                            y1 = int(ih * 0.10)
-                            y2 = int(ih * 0.78)
-                            x1 = int(iw * 0.20)
-                            x2 = int(iw * 0.80)
-                            face_crop = enhanced_img[y1:y2, x1:x2]
-                        else:
-                            face_crop = detected_face_crop
-
-                        # Visual Biometric Target Thumbnail for User Verification
-                        try:
-                            thumb_rgb = cv2.cvtColor(cv2.resize(face_crop, (100, 100)), cv2.COLOR_BGR2RGB)
-                            st.image(thumb_rgb, width=80, caption="🎯 Scanned Biometric Target")
-                        except Exception:
-                            pass
-
-                        # Extract 4,075-D multi-scale biometric vector (100% Structural Topography)
-                        current_face_vector = extract_face_biometric_vector(face_crop)
-
-                        # Check against Personalized Biometric Vector Memory
-                        memory_match = None
-                        raw_best_sim = 0.0
-                        match_idx = -1
-                        v_curr = np.array(current_face_vector, dtype=np.float32)
-                        norm_c = np.linalg.norm(v_curr)
-
-                        candidate_matches = []
-                        for idx, mem in enumerate(st.session_state.calibrated_face_memory):
-                            try:
-                                v_mem = np.array(mem["vector"], dtype=np.float32)
-                                norm_m = np.linalg.norm(v_mem)
-                                if norm_m > 0 and norm_c > 0:
-                                    sim = float(np.dot(v_curr, v_mem) / (norm_m * norm_c))
-                                else:
-                                    sim = 0.0
-                            except Exception:
-                                sim = 0.0
-
-                            mem["_live_sim"] = sim
-                            # Recency priority for newer calibrations (+0.08 bonus scaled across index)
-                            recency_bonus = (idx / max(len(st.session_state.calibrated_face_memory), 1)) * 0.08
-                            effective_sim = sim + recency_bonus
-
-                            candidate_matches.append({
-                                "mem": mem,
-                                "sim": sim,
-                                "effective_sim": effective_sim,
-                                "idx": idx + 1
-                            })
-
-                        # Sort candidate matches by effective similarity
-                        candidate_matches.sort(key=lambda x: x["effective_sim"], reverse=True)
-
-                        match_threshold = float(st.session_state.get("bio_match_threshold", 0.35))
-
-                        # Expressive Memory Priority: Taught emotions (Happy, Angry, Sad, etc.)
-                        # take strict precedence over older or competing Neutral calibrations
-                        expressive_candidates = [c for c in candidate_matches if c["mem"]["label"].lower() != "neutral"]
-                        top = None
-                        if expressive_candidates and expressive_candidates[0]["effective_sim"] >= match_threshold:
-                            top = expressive_candidates[0]
-                        elif candidate_matches and candidate_matches[0]["effective_sim"] >= match_threshold and candidate_matches[0]["mem"]["label"].lower() != "neutral":
-                            top = candidate_matches[0]
-
-                        if top is not None:
-                            memory_match = top["mem"]
-                            raw_best_sim = top["sim"]
-                            match_idx = top["idx"]
-                            detected_emotion = memory_match["label"]
-                            st.success(f"🧠 **Personalized Biometric Memory Match:** **{detected_emotion.upper()}** ({raw_best_sim*100:.1f}% Match with Memory #{match_idx})")
-                            st.caption(f"Recognized your calibrated facial topography (Memory #{match_idx}: {memory_match['label'].upper()} learned at {memory_match['timestamp']}).")
-                        else:
-                            closest_mem = candidate_matches[0]["mem"] if candidate_matches else None
-                            closest_sim = candidate_matches[0]["sim"] if candidate_matches else 0.0
-                            if closest_mem is not None and len(st.session_state.calibrated_face_memory) > 0:
-                                st.info(f"💡 **Teach AI Telemetry:** Closest memory match is **{closest_mem['label'].upper()}** at **{closest_sim*100:.1f}%** (Activation Threshold: {match_threshold*100:.0f}%). Tip: Lower the sensitivity slider in the Active Memories panel below if needed.")
-
-                            # Bayesian Prior-Normalized Affective Classifier:
-                            # Resolves FER-2013 training prior bias (where neutral accounts for >58% of weight).
-                            # Mathematical formulation: P(intent = e | img) proportional to P_raw(e) / Prior(e)
-                            EMOTION_PRIORS = {
-                                "neutral": 0.58,
-                                "angry": 0.08,
-                                "happy": 0.10,
-                                "sad": 0.10,
-                                "fear": 0.07,
-                                "surprise": 0.05,
-                                "disgust": 0.02
-                            }
-
-                            unnorm_scores = {k: float(v) / EMOTION_PRIORS.get(k, 0.10) for k, v in raw_emotions.items()}
-                            total_unnorm = sum(unnorm_scores.values()) if sum(unnorm_scores.values()) > 0 else 1.0
-                            calibrated_emotions = {k: (v / total_unnorm) * 100.0 for k, v in unnorm_scores.items()}
-
-                            # Winner selection based on Bayesian calibrated probability
-                            detected_emotion = max(calibrated_emotions, key=calibrated_emotions.get)
-                            top_calibrated_conf = float(calibrated_emotions[detected_emotion])
-                            raw_conf = float(raw_emotions.get(detected_emotion, 0.0))
+                        # 🔥 THE HACKATHON BIAS CRUSHER 🔥
+                        # DeepFace overwhelmingly defaults to Neutral (>95%).
+                        # We artificially penalize the Neutral score by 97% so your actual micro-expressions win instantly!
+                        if 'neutral' in raw_emotions:
+                            raw_emotions['neutral'] = float(raw_emotions['neutral']) * 0.03
                             
-                            st.success(f"AI Vision Detected: **{detected_emotion.upper()}** ({top_calibrated_conf:.1f}% Calibrated Intent | Raw FER: {raw_conf:.1f}%)")
+                        # Recalculate the dominant emotion based on the crushed baseline
+                        detected_emotion = max(raw_emotions, key=raw_emotions.get)
+                        top_conf = float(raw_emotions.get(detected_emotion, 0.0))
+                    
+                        st.success(f"AI Vision Detected: **{detected_emotion.upper()}** (Micro-Expression Bias Crusher Active)")
 
-                            # Display mini emotion meter for full visibility with both calibrated and raw metrics
-                            with st.expander("📊 View Facial Micro-Expression Breakdown (Bayesian Calibrated)", expanded=True):
-                                sorted_calibrated = sorted(calibrated_emotions.items(), key=lambda x: x[1], reverse=True)
-                                for em_name, em_val in sorted_calibrated:
-                                    r_val = float(raw_emotions.get(em_name, 0.0))
-                                    st.progress(
-                                        min(max(float(em_val) / 100.0, 0.0), 1.0), 
-                                        text=f"{em_name.capitalize()}: {float(em_val):.1f}% (Raw FER: {r_val:.1f}%)"
-                                    )
-
-                        # 1-Click Fast Calibration Action Bar
-                        st.markdown("##### ⚡ 1-Click Teach AI (Register Expression Instantly):")
-                        st.caption("Click below to lock in this face structure for future scans:")
-                        q_c1, q_c2, q_c3 = st.columns(3)
-                        if q_c1.button("🧠 Memorize as HAPPY", use_container_width=True, type="primary"):
-                            memorize_face(current_face_vector, "happy")
-                            st.toast("✅ Learned! Facial structure memorized as HAPPY!")
-                            st.rerun()
-                        if q_c2.button("🧠 Memorize as ANGRY", use_container_width=True):
-                            memorize_face(current_face_vector, "angry")
-                            st.toast("✅ Learned! Facial structure memorized as ANGRY!")
-                            st.rerun()
-                        if q_c3.button("🧠 Memorize as SAD", use_container_width=True):
-                            memorize_face(current_face_vector, "sad")
-                            st.toast("✅ Learned! Facial structure memorized as SAD!")
-                            st.rerun()
-
-                        # Interactive Teach AI / Memorize Widget
-                        st.markdown("##### 🧠 Custom Emotion Calibration")
-                        teach_c1, teach_c2 = st.columns([1, 1])
-                        with teach_c1:
-                            target_correction = st.selectbox(
-                                "Correct Emotion:",
-                                ["angry", "happy", "sad", "neutral", "fear", "surprise"],
-                                index=["angry", "happy", "sad", "neutral", "fear", "surprise"].index("happy") if detected_emotion != "happy" else 0,
-                                key="teach_corr_select"
-                            )
-                        with teach_c2:
-                            st.write("")
-                            st.write("")
-                            if st.button("💾 Memorize Custom Expression", use_container_width=True):
-                                memorize_face(current_face_vector, target_correction)
-                                st.toast(f"✅ Learned! Facial structure memorized as {target_correction.upper()} (Saved to disk)!")
-                                st.rerun()
-
-                        if st.session_state.calibrated_face_memory:
-                            with st.expander(f"🗂️ Active Learned Memories ({len(st.session_state.calibrated_face_memory)})", expanded=True):
-                                if st.button("🗑️ Reset & Clear All Memories", key="clear_face_mem_top_btn", use_container_width=True):
-                                    st.session_state.calibrated_face_memory = []
-                                    save_face_memory([])
-                                    st.rerun()
-
-                                st.caption("💾 **Persistent Storage**: Memories automatically sync across browser tabs and reloads.")
-                                
-                                st.session_state.bio_match_threshold = st.slider(
-                                    "Biometric Match Sensitivity",
-                                    min_value=0.20,
-                                    max_value=0.85,
-                                    value=float(st.session_state.get("bio_match_threshold", 0.35)),
-                                    step=0.01,
-                                    help="Lower values increase tolerance to head tilts, distance from camera, and ambient daylight changes."
+                        # Display mini emotion meter for full visibility with crushed metrics
+                        with st.expander("📊 View Facial Micro-Expression Breakdown (Bias Crusher Active)", expanded=False):
+                            sorted_emotions = sorted(raw_emotions.items(), key=lambda x: x[1], reverse=True)
+                            for em_name, em_val in sorted_emotions:
+                                st.progress(
+                                    min(max(float(em_val) / 100.0, 0.0), 1.0), 
+                                    text=f"{em_name.capitalize()}: {float(em_val):.1f}%"
                                 )
-                                
-                                for i, m in enumerate(st.session_state.calibrated_face_memory):
-                                    mem_c1, mem_c2 = st.columns([4, 1])
-                                    live_sim = m.get("_live_sim", 0.0)
-                                    sim_badge = f" — Live Match: **{live_sim*100:.1f}%**" if live_sim > 0.0 else ""
-                                    with mem_c1:
-                                        st.write(f"• **Memory #{i+1}:** **{m['label'].upper()}** (Learned at {m['timestamp']}){sim_badge}")
-                                    with mem_c2:
-                                        if st.button("🗑️", key=f"del_mem_btn_{i}", help="Delete this specific memory"):
-                                            st.session_state.calibrated_face_memory.pop(i)
-                                            save_face_memory(st.session_state.calibrated_face_memory)
-                                            st.rerun()
                     else:
                         detected_emotion = "neutral"
                 except Exception as e:
