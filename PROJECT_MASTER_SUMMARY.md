@@ -48,10 +48,11 @@ By combining an enterprise **150MB+ (250,000 records) raw Parquet corpus**, **Py
      - `cultural_relevance_index` $\in [0.0, 10.0]$
      - `humor_density_metric` $\in [0.0, 10.0]$
      - `kerala_existential_weight` $\in [0.0, 10.0]$
-4. **Live Continuous Biometric Engine (WebRTC + DeepFace)**:
-   - Continuous video frames are captured via `streamlit-webrtc` over Google STUN (`stun:stun.l.google.com:19302`).
-   - `BiometricEmotionProcessor` throttles inference to every 4th frame for smooth 30+ FPS video while running DeepFace OpenCV emotion analysis.
-   - The detected emotional state is burned directly onto the video feed HUD using `cv2.putText`.
+4. **Live Continuous Biometric Engine (DeepFace FER-2013 + OpenCV Haar Facial Biometrics)**:
+   - Facial emotion recognition uses standard, world-renowned facial expression datasets (Kaggle FER-2013 with 35,887 benchmark human face crops) and standard OpenCV physiological Haar geometry.
+   - **ZERO Facial Training on Memes**: The meme archive and Parquet data lake (`biometric_memes.parquet`) are strictly an analytical output lookup repository for Malayalam cinema dialogues and KEW scores; they are NEVER used to train or calculate facial emotion recognition, ensuring complete architectural isolation.
+   - Continuous video frames are captured via `streamlit-webrtc` over Google STUN or via `st.camera_input`.
+   - The detected emotional state maps directly into regional vernacular taxonomies without neural cross-contamination.
 5. **Categorical Emotion Routing Matrix**:
    - Live micro-expressions map directly into regional vernacular taxonomies:
      - `sad` / `fear` $\to$ **KTU Exam Trauma**
