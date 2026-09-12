@@ -10,8 +10,6 @@ import numpy as np
 import cv2
 import datetime
 import json
-import base64
-import requests
 from deepface import DeepFace
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -89,166 +87,6 @@ def get_smile_cascade():
                     return cas
     except Exception:
         pass
-    return None
-
-def get_neural_vision_api_key():
-    """Resolves API key silently from session state, environment, secrets, or .env file."""
-    # 1. Session state
-    if hasattr(st, "session_state") and st.session_state.get("gemini_api_key"):
-        return str(st.session_state["gemini_api_key"]).strip()
-    
-    # 2. Environment variables
-    for env_var in ["GEMINI_API_KEY", "GOOGLE_API_KEY", "VISION_API_KEY"]:
-        val = os.environ.get(env_var)
-        if val:
-            return val.strip()
-            
-    # 3. Streamlit secrets
-    try:
-        if hasattr(st, "secrets"):
-            for sec_key in ["GEMINI_API_KEY", "GOOGLE_API_KEY"]:
-                if sec_key in st.secrets:
-                    return str(st.secrets[sec_key]).strip()
-    except Exception:
-        pass
-        
-    # 4. Project root .env file
-    env_file = os.path.join(BASE_DIR, ".env")
-    if os.path.exists(env_file):
-        try:
-            with open(env_file, "r", encoding="utf-8") as f:
-                for line in f:
-                    line = line.strip()
-                    if line and not line.startswith("#") and "=" in line:
-                        k, v = line.split("=", 1)
-                        if k.strip() in ["GEMINI_API_KEY", "GOOGLE_API_KEY"]:
-                            return v.strip().strip('"').strip("'")
-        except Exception:
-            pass
-            
-    return None
-
-def set_neural_vision_api_key(api_key):
-    """Persists API key to session state and project root .env file."""
-    api_key = api_key.strip() if api_key else ""
-    if hasattr(st, "session_state"):
-        st.session_state["gemini_api_key"] = api_key
-    env_file = os.path.join(BASE_DIR, ".env")
-    try:
-        lines = []
-        if os.path.exists(env_file):
-            with open(env_file, "r", encoding="utf-8") as f:
-                lines = [l for l in f.readlines() if not l.strip().startswith("GEMINI_API_KEY=") and not l.strip().startswith("GOOGLE_API_KEY=")]
-        if api_key:
-            lines.append(f"GEMINI_API_KEY={api_key}\n")
-        with open(env_file, "w", encoding="utf-8") as f:
-            f.writelines(lines)
-    except Exception:
-        pass
-
-def analyze_face_with_online_llm(face_bgr, api_key=None, timeout_secs=4.0):
-    """
-    Classifies facial expression using Google Gemini Flash Vision API.
-    Provides human-level affective computing accuracy while maintaining zero UI disruption.
-    Returns: (detected_emotion: str, confidence: float, raw_emotions: dict, source: str) or None
-    """
-    if not api_key:
-        return None
-    
-    try:
-        if face_bgr is None or face_bgr.size == 0 or face_bgr.shape[0] < 10 or face_bgr.shape[1] < 10:
-            return None
-
-        # Resize to max 512px for lightning-fast network transfer
-        h, w = face_bgr.shape[:2]
-        max_dim = max(h, w)
-        if max_dim > 512:
-            scale = 512.0 / max_dim
-            face_proc = cv2.resize(face_bgr, (int(w * scale), int(h * scale)), interpolation=cv2.INTER_AREA)
-        else:
-            face_proc = face_bgr
-
-        # Encode to JPEG in memory
-        success, buffer = cv2.imencode('.jpg', face_proc, [cv2.IMWRITE_JPEG_QUALITY, 85])
-        if not success:
-            return None
-        b64_data = base64.b64encode(buffer).decode('utf-8')
-
-        prompt = (
-            "Analyze the facial expression of the person in this image.\n"
-            "Classify their emotional expression into exactly one of: happy, sad, angry, surprise, fear, neutral.\n"
-            "Notice subtle cues:\n"
-            "- Raised lip corners, smile, or crinkled smiling eyes -> happy\n"
-            "- Furrowed brows, scowl, glaring, tense mouth -> angry\n"
-            "- Drooping mouth corners, downturned lips, mournful eyes -> sad\n"
-            "- Arched eyebrows, wide eyes, open mouth -> surprise\n"
-            "- Wide apprehensive eyes, tense jaw -> fear\n"
-            "- Neutral, relaxed, resting face -> neutral\n\n"
-            "Respond ONLY with a valid JSON object matching this schema:\n"
-            "{\n"
-            '  "emotion": "happy" | "sad" | "angry" | "surprise" | "fear" | "neutral",\n'
-            '  "confidence": <float between 60.0 and 99.0>,\n'
-            '  "scores": {\n'
-            '    "happy": <float 0-100>,\n'
-            '    "sad": <float 0-100>,\n'
-            '    "angry": <float 0-100>,\n'
-            '    "surprise": <float 0-100>,\n'
-            '    "fear": <float 0-100>,\n'
-            '    "neutral": <float 0-100>\n'
-            '  }\n'
-            "}"
-        )
-
-        payload = {
-            "contents": [
-                {
-                    "parts": [
-                        {"text": prompt},
-                        {
-                            "inline_data": {
-                                "mime_type": "image/jpeg",
-                                "data": b64_data
-                            }
-                        }
-                    ]
-                }
-            ],
-            "generationConfig": {
-                "response_mime_type": "application/json",
-                "temperature": 0.1
-            }
-        }
-
-        # Try gemini-2.0-flash, fallback to gemini-1.5-flash
-        models = ["gemini-2.0-flash", "gemini-1.5-flash"]
-        for model in models:
-            try:
-                url = f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent?key={api_key}"
-                resp = requests.post(url, json=payload, headers={"Content-Type": "application/json"}, timeout=timeout_secs)
-                if resp.status_code == 200:
-                    data = resp.json()
-                    candidates = data.get("candidates", [])
-                    if candidates:
-                        raw_txt = candidates[0].get("content", {}).get("parts", [{}])[0].get("text", "").strip()
-                        if raw_txt.startswith("```"):
-                            raw_txt = raw_txt.strip("`")
-                            if raw_txt.startswith("json"):
-                                raw_txt = raw_txt[4:].strip()
-                        parsed = json.loads(raw_txt)
-                        em = parsed.get("emotion", "neutral").lower().strip()
-                        conf = float(parsed.get("confidence", 92.0))
-                        scores = parsed.get("scores", {})
-                        
-                        standard_keys = ["happy", "sad", "angry", "surprise", "fear", "neutral"]
-                        clean_scores = {k: float(scores.get(k, 1.0)) for k in standard_keys}
-                        clean_scores[em] = max(clean_scores.get(em, conf), conf)
-                        return em, conf, clean_scores, f"High-Precision Neural Vision ({em.upper()} - {conf:.1f}%)"
-            except Exception:
-                continue
-
-    except Exception:
-        return None
-
     return None
 
 # Calibrated Empirical Bayesian Priors for FER-2013 Dataset
@@ -677,27 +515,6 @@ st.markdown(f"""
 """, unsafe_allow_html=True)
 st.divider()
 
-# --- Discreet Sidebar Configuration (Zero Clutter in Main Scanner View) ---
-with st.sidebar:
-    st.markdown("### 🎛️ AI Engine Control")
-    active_key = get_neural_vision_api_key()
-    if active_key:
-        st.success("⚡ **High-Precision Neural Vision:** CONNECTED")
-        masked = f"{active_key[:6]}...{active_key[-4:]}" if len(active_key) > 10 else "••••••••"
-        st.caption(f"Active Key: `{masked}`")
-        if st.button("Disconnect Key", use_container_width=True, key="disconnect_llm_btn"):
-            set_neural_vision_api_key("")
-            st.rerun()
-    else:
-        st.info("⚡ **Neural Vision:** Local Biometric Mode")
-        st.caption("Optional: Enter a free Google AI Studio Key (from aistudio.google.com) for 99.9% human-grade facial emotion classification. Zero credit card needed.")
-        key_input = st.text_input("AI Studio API Key", type="password", placeholder="AIzaSy...", label_visibility="collapsed")
-        if st.button("Connect High-Precision Engine", use_container_width=True, key="connect_llm_btn"):
-            if key_input.strip():
-                set_neural_vision_api_key(key_input.strip())
-                st.success("High-Precision Engine Connected!")
-                st.rerun()
-
 tabs = st.tabs(["📊 Global Telemetry", "📸 Ocular Psyche Scanner", "🗄️ Vernacular Meme Vault"])
 
 
@@ -1084,15 +901,7 @@ with tabs[1]:
                                 matched_memory = best_candidate
 
                 # 3. Emotion Resolution Hierarchy
-                # Priority 1: High-Precision Neural Vision LLM (if API key available)
-                llm_res = None
-                api_key = get_neural_vision_api_key()
-                if api_key:
-                    llm_res = analyze_face_with_online_llm(face_crop, api_key=api_key)
-
-                if llm_res is not None:
-                    detected_emotion, conf, raw_emotions, detection_source = llm_res
-                elif matched_memory is not None:
+                if matched_memory is not None:
                     detected_emotion = matched_memory["label"].lower()
                     detection_source = f"🧠 Learned Biometric Memory ({matched_memory['label'].upper()} - {best_sim*100:.1f}% Match)"
                     raw_emotions = {detected_emotion: 95.0, "neutral": 2.0}
