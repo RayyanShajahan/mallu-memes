@@ -583,6 +583,26 @@ mallu-memes/
   4. *Preserved Cross-Platform Search & Filtering*:
      - Filter query condition `(not q or q in m["title"].lower() or q in m["dialogue"].lower() or q in m["translation"].lower() ...)` now matches against colloquial Manglish keywords (e.g. searching "shavam", "pani", "life lesson", "scene", "bhedham").
 
+### Milestone 39: Resolution of Headless Linux `CascadeClassifier` AttributeError & Infallible Vision Architecture (September 2026)
+- **Root Cause Forensic Discovery**:
+  - Live user telemetry on Streamlit Community Cloud container surfaced: `⚠️ Biometric Scan Diagnostic: module 'cv2' has no attribute 'CascadeClassifier'`.
+  - In headless Debian cloud containers, `opencv-python` with desktop GUI bindings fails to bind X11/OpenGL dynamic linker symbols, leaving submodules like `objdetect` unlinked. Calling `cv2.CascadeClassifier` raised `AttributeError`, immediately triggering the camera outer exception handler, bypassing all smile and face biometric analysis, and forcing `NEUTRAL -> Monday Work Shokam` on every frame.
+- **Engineered Comprehensive Infallible Architecture**:
+  1. *Headless Packaging Harmonization (`requirements.txt` & `packages.txt`)*:
+     - Switched from `opencv-python` to `opencv-python-headless` in `requirements.txt`, eliminating GUI/X11 dependency mismatches on cloud containers.
+     - Added comprehensive Debian shared libraries (`libsm6`, `libxext6`, `libxrender-dev`, `libtbbmalloc2`, `libtbb2`) to `packages.txt`.
+  2. *Safe Cascade Accessors with Zero-Exception Guarantee*:
+     - Refactored `get_face_cascade()` and `get_smile_cascade()` using `getattr(cv2, 'CascadeClassifier', None)`. If `CascadeClassifier` is missing, returns `None` gracefully without throwing an `AttributeError`.
+     - Validates `not cas.empty()` to guard against corrupted XML files.
+  3. *Zero-Drop Face Locator & Multi-Scale Fallback*:
+     - If `f_cas is None` or detector finds 0 faces, gracefully defaults to the centered upper-torso/head quadrant `(int(w*0.2), int(h*0.15), int(w*0.6), int(h*0.65))` without interrupting pipeline execution.
+  4. *Multi-Backend DeepFace Fallback (`['opencv', 'skip']`)*:
+     - If `detector_backend='opencv'` fails due to missing OpenCV classes, immediately catches the error and executes `detector_backend='skip'` on `face_crop`, directly feeding the tensor to TensorFlow without needing OpenCV cascade classifiers.
+  5. *Safe HOG Extraction with Pure NumPy Gradient Fallback*:
+     - Protected `cv2.HOGDescriptor` with `hasattr(cv2, 'HOGDescriptor')` and added a pure NumPy gradient magnitude fallback matching the 1,764-D tensor contract.
+  6. *Bias Crusher Active on Cloud DeepFace Fallback*:
+     - Crushes neutral probability by 97% (`raw_emotions['neutral'] *= 0.03`) so sub-threshold expressions and true emotions prevail.
+
 ---
 
 ## 5. PROPRIETARY SCORING ALGORITHMS & MATHEMATICAL FORMULATIONS

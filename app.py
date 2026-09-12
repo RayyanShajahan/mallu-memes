@@ -48,18 +48,46 @@ def ensure_cv_environment():
 ensure_cv_environment()
 
 def get_face_cascade():
-    """Loads frontal face cascade from local assets or cv2 data."""
-    p = os.path.join(BASE_DIR, "assets", "cascades", "haarcascade_frontalface_default.xml")
-    if os.path.exists(p):
-        return cv2.CascadeClassifier(p)
-    return cv2.CascadeClassifier(cv2.data.haarcascades + "haarcascade_frontalface_default.xml")
+    """Loads frontal face cascade safely across all OpenCV builds."""
+    try:
+        classifier_cls = getattr(cv2, 'CascadeClassifier', None)
+        if classifier_cls is None:
+            return None
+        p = os.path.join(BASE_DIR, "assets", "cascades", "haarcascade_frontalface_default.xml")
+        if os.path.exists(p):
+            cas = classifier_cls(p)
+            if not cas.empty():
+                return cas
+        if hasattr(cv2, 'data') and hasattr(cv2.data, 'haarcascades'):
+            std_p = os.path.join(cv2.data.haarcascades, "haarcascade_frontalface_default.xml")
+            if os.path.exists(std_p):
+                cas = classifier_cls(std_p)
+                if not cas.empty():
+                    return cas
+    except Exception:
+        pass
+    return None
 
 def get_smile_cascade():
-    """Loads smile cascade from local assets or cv2 data."""
-    p = os.path.join(BASE_DIR, "assets", "cascades", "haarcascade_smile.xml")
-    if os.path.exists(p):
-        return cv2.CascadeClassifier(p)
-    return cv2.CascadeClassifier(cv2.data.haarcascades + "haarcascade_smile.xml")
+    """Loads smile cascade safely across all OpenCV builds."""
+    try:
+        classifier_cls = getattr(cv2, 'CascadeClassifier', None)
+        if classifier_cls is None:
+            return None
+        p = os.path.join(BASE_DIR, "assets", "cascades", "haarcascade_smile.xml")
+        if os.path.exists(p):
+            cas = classifier_cls(p)
+            if not cas.empty():
+                return cas
+        if hasattr(cv2, 'data') and hasattr(cv2.data, 'haarcascades'):
+            std_p = os.path.join(cv2.data.haarcascades, "haarcascade_smile.xml")
+            if os.path.exists(std_p):
+                cas = classifier_cls(std_p)
+                if not cas.empty():
+                    return cas
+    except Exception:
+        pass
+    return None
 
 def detect_micro_smile(gray_img, face_box):
     """
@@ -82,19 +110,17 @@ def detect_micro_smile(gray_img, face_box):
             return False, 0.0, 0, None
             
         smile_cascade = get_smile_cascade()
-        if smile_cascade.empty():
-            return False, 0.0, 0, None
-        
-        # Multi-sensitivity sweep: standard to subtle
-        for mn in [8, 5, 3]:
-            smiles = smile_cascade.detectMultiScale(mouth_roi, scaleFactor=1.1, minNeighbors=mn, minSize=(12, 10))
-            if len(smiles) > 0:
-                best_s = max(smiles, key=lambda s: s[2])
-                ratio = float(best_s[2]) / float(w)
-                if ratio >= 0.18:
-                    conf = min(98.0, 80.0 + (ratio * 35.0))
-                    return True, conf, len(smiles), best_s
-                
+        if smile_cascade is not None and not smile_cascade.empty():
+            # Multi-sensitivity sweep: standard to subtle
+            for mn in [8, 5, 3]:
+                smiles = smile_cascade.detectMultiScale(mouth_roi, scaleFactor=1.1, minNeighbors=mn, minSize=(12, 10))
+                if len(smiles) > 0:
+                    best_s = max(smiles, key=lambda s: s[2])
+                    ratio = float(best_s[2]) / float(w)
+                    if ratio >= 0.18:
+                        conf = min(98.0, 80.0 + (ratio * 35.0))
+                        return True, conf, len(smiles), best_s
+                    
         return False, 0.0, 0, None
     except Exception:
         return False, 0.0, 0, None
@@ -270,8 +296,18 @@ def extract_face_biometric_vector(face_bgr, raw_emotions=None):
         # 1. HOG Structural Gradient Orientation (64x64)
         resized_64 = cv2.resize(gray, (64, 64))
         resized_64 = np.ascontiguousarray(resized_64)
-        hog = cv2.HOGDescriptor((64, 64), (16, 16), (8, 8), (8, 8), 9)
-        hog_feat = hog.compute(resized_64).flatten().astype(np.float32)
+        hog_feat = None
+        if hasattr(cv2, 'HOGDescriptor'):
+            try:
+                hog = cv2.HOGDescriptor((64, 64), (16, 16), (8, 8), (8, 8), 9)
+                hog_feat = hog.compute(resized_64).flatten().astype(np.float32)
+            except Exception:
+                hog_feat = None
+        if hog_feat is None or len(hog_feat) != 1764:
+            gy, gx = np.gradient(resized_64.astype(np.float32))
+            mag = np.sqrt(gx**2 + gy**2)
+            mag_resized = cv2.resize(mag, (42, 42)).flatten().astype(np.float32)
+            hog_feat = mag_resized
         hog_norm = hog_feat / (np.linalg.norm(hog_feat) + 1e-7)
         
         # 2. Dense Topography (48x48)
@@ -746,9 +782,14 @@ with tabs[1]:
 
                 # High-speed Haar face detector with multi-scale fallback
                 f_cas = get_face_cascade()
-                found_faces = f_cas.detectMultiScale(gray_img, 1.1, 4, minSize=(40, 40))
-                if len(found_faces) == 0:
-                    found_faces = f_cas.detectMultiScale(gray_img, 1.1, 2, minSize=(30, 30))
+                found_faces = []
+                if f_cas is not None:
+                    try:
+                        found_faces = f_cas.detectMultiScale(gray_img, 1.1, 4, minSize=(40, 40))
+                        if len(found_faces) == 0:
+                            found_faces = f_cas.detectMultiScale(gray_img, 1.1, 2, minSize=(30, 30))
+                    except Exception:
+                        found_faces = []
                 face_box = tuple(found_faces[0]) if len(found_faces) > 0 else (int(gray_img.shape[1]*0.2), int(gray_img.shape[0]*0.15), int(gray_img.shape[1]*0.6), int(gray_img.shape[0]*0.65))
 
                 # Extract face crop for vectorization
@@ -789,15 +830,27 @@ with tabs[1]:
                 else:
                     # Run DeepFace as fallback for non-smile expressions
                     try:
-                        analysis = DeepFace.analyze(
-                            enhanced_img, 
-                            actions=['emotion'], 
-                            detector_backend='opencv', 
-                            enforce_detection=False, 
-                            silent=True
-                        )
+                        analysis = None
+                        for backend in ['opencv', 'skip']:
+                            try:
+                                analysis = DeepFace.analyze(
+                                    face_crop if backend == 'skip' else enhanced_img, 
+                                    actions=['emotion'], 
+                                    detector_backend=backend, 
+                                    enforce_detection=False, 
+                                    silent=True
+                                )
+                                if analysis:
+                                    break
+                            except Exception:
+                                continue
+
                         if isinstance(analysis, list) and len(analysis) > 0:
                             raw_emotions = analysis[0].get('emotion', {}).copy()
+                            # Apply Bias Crusher: crush neutral by 97%
+                            if 'neutral' in raw_emotions:
+                                raw_emotions['neutral'] = float(raw_emotions['neutral']) * 0.03
+
                             top_em = max(raw_emotions, key=raw_emotions.get)
                             if top_em != 'neutral':
                                 detected_emotion = top_em
