@@ -941,22 +941,32 @@ with tabs[1]:
         if current_face_vector is not None:
             st.markdown("##### 🧠 1-Click Teach AI (Register Face Topology):")
             st.caption("Lock in your unique facial expression prototype into persistent biometric memory:")
-            q_c1, q_c2, q_c3, q_c4 = st.columns(4)
-            if q_c1.button("😃 Memorize HAPPY", use_container_width=True):
+            r1_1, r1_2, r1_3 = st.columns(3)
+            if r1_1.button("😃 Memorize HAPPY", use_container_width=True):
                 memorize_face(current_face_vector, "happy", raw_emotions)
                 st.toast("✅ Learned! Facial posture memorized as HAPPY!")
                 st.rerun()
-            if q_c2.button("😐 Memorize NEUTRAL", use_container_width=True):
+            if r1_2.button("😐 Memorize NEUTRAL", use_container_width=True):
                 memorize_face(current_face_vector, "neutral", raw_emotions)
                 st.toast("✅ Learned! Facial posture memorized as NEUTRAL!")
                 st.rerun()
-            if q_c3.button("😢 Memorize SAD", use_container_width=True):
+            if r1_3.button("😢 Memorize SAD", use_container_width=True):
                 memorize_face(current_face_vector, "sad", raw_emotions)
                 st.toast("✅ Learned! Facial posture memorized as SAD!")
                 st.rerun()
-            if q_c4.button("😡 Memorize ANGRY", use_container_width=True):
+
+            r2_1, r2_2, r2_3 = st.columns(3)
+            if r2_1.button("😡 Memorize ANGRY", use_container_width=True):
                 memorize_face(current_face_vector, "angry", raw_emotions)
                 st.toast("✅ Learned! Facial posture memorized as ANGRY!")
+                st.rerun()
+            if r2_2.button("😲 Memorize SURPRISED", use_container_width=True):
+                memorize_face(current_face_vector, "surprise", raw_emotions)
+                st.toast("✅ Learned! Facial posture memorized as SURPRISED!")
+                st.rerun()
+            if r2_3.button("😨 Memorize SCARED", use_container_width=True):
+                memorize_face(current_face_vector, "fear", raw_emotions)
+                st.toast("✅ Learned! Facial posture memorized as SCARED!")
                 st.rerun()
 
         if st.session_state.calibrated_face_memory:
