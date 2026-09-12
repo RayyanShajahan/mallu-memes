@@ -25,6 +25,10 @@ def ensure_cv_environment():
             target_xml = os.path.join(dest_dir, "haarcascade_frontalface_default.xml")
             if not os.path.exists(target_xml) and os.path.exists(local_src):
                 shutil.copy(local_src, target_xml)
+            local_smile = os.path.join("assets", "cascades", "haarcascade_smile.xml")
+            target_smile = os.path.join(dest_dir, "haarcascade_smile.xml")
+            if not os.path.exists(target_smile) and os.path.exists(local_smile):
+                shutil.copy(local_smile, target_smile)
     except Exception:
         pass
 
@@ -40,6 +44,63 @@ def ensure_cv_environment():
         pass
 
 ensure_cv_environment()
+
+def get_face_cascade():
+    """Loads frontal face cascade from local assets or cv2 data."""
+    p = os.path.join("assets", "cascades", "haarcascade_frontalface_default.xml")
+    if os.path.exists(p):
+        return cv2.CascadeClassifier(p)
+    return cv2.CascadeClassifier(cv2.data.haarcascades + "haarcascade_frontalface_default.xml")
+
+def get_smile_cascade():
+    """Loads smile cascade from local assets or cv2 data."""
+    p = os.path.join("assets", "cascades", "haarcascade_smile.xml")
+    if os.path.exists(p):
+        return cv2.CascadeClassifier(p)
+    return cv2.CascadeClassifier(cv2.data.haarcascades + "haarcascade_smile.xml")
+
+def detect_micro_smile(gray_img, face_box):
+    """
+    Scans the lower anatomical mouth region of the face box for micro-smiles.
+    Returns (has_smile: bool, confidence: float, num_detections: int, smile_box: tuple)
+    """
+    try:
+        x, y, w, h = face_box
+        if w < 20 or h < 20:
+            return False, 0.0, 0, None
+        
+        # Anatomical mouth region: lower 52% of face, bounded horizontally to avoid ear shadows
+        mouth_y1 = max(0, y + int(h * 0.48))
+        mouth_y2 = min(gray_img.shape[0], y + h)
+        mouth_x1 = max(0, x + int(w * 0.10))
+        mouth_x2 = min(gray_img.shape[1], x + int(w * 0.90))
+        
+        mouth_roi = gray_img[mouth_y1:mouth_y2, mouth_x1:mouth_x2]
+        if mouth_roi.size == 0 or mouth_roi.shape[0] < 10 or mouth_roi.shape[1] < 10:
+            return False, 0.0, 0, None
+            
+        smile_cascade = get_smile_cascade()
+        
+        # Pass 1: Standard confidence smile detector
+        smiles_std = smile_cascade.detectMultiScale(mouth_roi, scaleFactor=1.1, minNeighbors=8, minSize=(15, 12))
+        if len(smiles_std) > 0:
+            best_s = max(smiles_std, key=lambda s: s[2])
+            ratio = float(best_s[2]) / float(w)
+            conf = min(98.0, 85.0 + (ratio * 25.0))
+            return True, conf, len(smiles_std), best_s
+            
+        # Pass 2: Subtle / closed-lip micro-smile detector
+        smiles_subtle = smile_cascade.detectMultiScale(mouth_roi, scaleFactor=1.1, minNeighbors=5, minSize=(12, 10))
+        if len(smiles_subtle) > 0:
+            best_s = max(smiles_subtle, key=lambda s: s[2])
+            ratio = float(best_s[2]) / float(w)
+            if ratio >= 0.20:
+                conf = min(94.0, 78.0 + (ratio * 20.0))
+                return True, conf, len(smiles_subtle), best_s
+                
+        return False, 0.0, 0, None
+    except Exception:
+        return False, 0.0, 0, None
 
 def crop_to_aspect_ratio(pil_img, target_ratio=16/10, output_size=(600, 375)):
     """Center-crops and scales any image to a crisp, uniform 16:10 cinematic aspect ratio."""
@@ -182,6 +243,9 @@ elif len(st.session_state.calibrated_face_memory) > 0 and not os.path.exists(FAC
 
 if "bio_match_threshold" not in st.session_state or st.session_state.bio_match_threshold > 0.40:
     st.session_state.bio_match_threshold = 0.35
+
+if "forced_emotion" not in st.session_state:
+    st.session_state.forced_emotion = None
 
 def extract_face_biometric_vector(face_bgr, raw_emotions=None):
     """
@@ -629,17 +693,19 @@ with tabs[1]:
 
         if capture_mode in ["📸 Snapshot Analysis", "📸 Live Face Emotion Scan (Camera)"]:
             cam_image = st.camera_input("Capture expression", label_visibility="collapsed")
+            current_face_vector = None
             if cam_image is not None:
                 try:
                     bytes_data = cam_image.getvalue()
                     np_arr = np.frombuffer(bytes_data, np.uint8)
                     img = cv2.imdecode(np_arr, cv2.IMREAD_COLOR)
 
-                    # Contrast-Limited Adaptive Histogram Equalization (CLAHE) for better lighting reads
+                    # Contrast-Limited Adaptive Histogram Equalization (CLAHE) for illumination normalization
                     lab = cv2.cvtColor(img, cv2.COLOR_BGR2LAB)
                     l, a, b = cv2.split(lab)
                     clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(8, 8))
                     enhanced_img = cv2.cvtColor(cv2.merge((clahe.apply(l), a, b)), cv2.COLOR_LAB2BGR)
+                    gray_img = cv2.cvtColor(enhanced_img, cv2.COLOR_BGR2GRAY)
 
                     try:
                         analysis = DeepFace.analyze(
@@ -661,48 +727,187 @@ with tabs[1]:
                     if isinstance(analysis, dict):
                         analysis = [analysis]
                     
+                    primary_face = None
                     if isinstance(analysis, list) and len(analysis) > 0:
                         primary_face = max(
                             analysis, 
                             key=lambda f: f.get('region', {}).get('w', 0) * f.get('region', {}).get('h', 0)
                         )
                         raw_emotions = primary_face.get('emotion', {}).copy()
-                        
-                        # 🔥 THE HACKATHON BIAS CRUSHER 🔥
-                        # DeepFace overwhelmingly defaults to Neutral (>95%).
-                        # We artificially penalize the Neutral score by 97% so your actual micro-expressions win instantly!
-                        if 'neutral' in raw_emotions:
-                            raw_emotions['neutral'] = float(raw_emotions['neutral']) * 0.03
-                            
-                        # Recalculate the dominant emotion based on the crushed baseline
-                        detected_emotion = max(raw_emotions, key=raw_emotions.get)
-                        top_conf = float(raw_emotions.get(detected_emotion, 0.0))
-                    
-                        st.success(f"AI Vision Detected: **{detected_emotion.upper()}** (Micro-Expression Bias Crusher Active)")
-
-                        # Display mini emotion meter for full visibility with crushed metrics
-                        with st.expander("📊 View Facial Micro-Expression Breakdown (Bias Crusher Active)", expanded=False):
-                            sorted_emotions = sorted(raw_emotions.items(), key=lambda x: x[1], reverse=True)
-                            for em_name, em_val in sorted_emotions:
-                                st.progress(
-                                    min(max(float(em_val) / 100.0, 0.0), 1.0), 
-                                    text=f"{em_name.capitalize()}: {float(em_val):.1f}%"
-                                )
                     else:
-                        detected_emotion = "neutral"
+                        raw_emotions = {"neutral": 90.0, "happy": 2.0, "sad": 2.0, "angry": 2.0, "surprise": 2.0, "fear": 2.0}
+
+                    # Determine face bounding box
+                    face_box = None
+                    if primary_face:
+                        reg = primary_face.get('region', {})
+                        rx, ry, rw, rh = int(reg.get('x', 0) or 0), int(reg.get('y', 0) or 0), int(reg.get('w', 0) or 0), int(reg.get('h', 0) or 0)
+                        if rw >= 30 and rh >= 30:
+                            face_box = (rx, ry, rw, rh)
+
+                    if face_box is None:
+                        f_cas = get_face_cascade()
+                        found_faces = f_cas.detectMultiScale(gray_img, 1.1, 5, minSize=(50, 50))
+                        if len(found_faces) > 0:
+                            face_box = tuple(found_faces[0])
+
+                    # Extract face vector for Teach AI memory matching
+                    if face_box:
+                        fx, fy, fw, fh = face_box
+                        face_crop = enhanced_img[max(0, fy):min(enhanced_img.shape[0], fy+fh), max(0, fx):min(enhanced_img.shape[1], fx+fw)]
+                    else:
+                        face_crop = enhanced_img
+                    current_face_vector = extract_face_biometric_vector(face_crop)
+
+                    # 1. Check Teach AI Personalized Biometric Memories
+                    matched_memory = None
+                    best_sim = 0.0
+                    if len(st.session_state.calibrated_face_memory) > 0 and current_face_vector is not None:
+                        norm_curr = np.linalg.norm(current_face_vector)
+                        for idx, mem in enumerate(st.session_state.calibrated_face_memory):
+                            try:
+                                v_mem = np.array(mem["vector"], dtype=np.float32)
+                                norm_m = np.linalg.norm(v_mem)
+                                sim = float(np.dot(current_face_vector, v_mem) / (norm_m * norm_curr)) if (norm_m > 0 and norm_curr > 0) else 0.0
+                            except Exception:
+                                sim = 0.0
+                            mem["_live_sim"] = sim
+                            if sim > best_sim:
+                                best_sim = sim
+                                if sim >= float(st.session_state.get("bio_match_threshold", 0.35)):
+                                    matched_memory = mem
+
+                    # 2. Check Physical Micro-Smile Arc via Haar Smile Detector
+                    has_smile, smile_conf, _, _ = detect_micro_smile(gray_img, face_box) if face_box else (False, 0.0, 0, None)
+
+                    # 3. Emotion Resolution Hierarchy
+                    if matched_memory is not None:
+                        detected_emotion = matched_memory["label"].lower()
+                        detection_source = f"🧠 Learned Memory ({matched_memory['label'].upper()} - {best_sim*100:.1f}% Similarity)"
+                        raw_emotions[detected_emotion] = 95.0
+                    elif has_smile:
+                        detected_emotion = "happy"
+                        detection_source = f"😃 Micro-Smile Neural Biometrics ({smile_conf:.1f}% Smile Arc)"
+                        raw_emotions['happy'] = max(float(raw_emotions.get('happy', 0.0)), smile_conf)
+                        raw_emotions['neutral'] = float(raw_emotions.get('neutral', 0.0)) * 0.01
+                        raw_emotions['sad'] = float(raw_emotions.get('sad', 0.0)) * 0.05
+                    else:
+                        # Bias Crusher: if non-neutral emotion has real signal, let it beat neutral
+                        if any(float(raw_emotions.get(k, 0)) > 10.0 for k in ['angry', 'sad', 'surprise', 'fear', 'happy']):
+                            raw_emotions['neutral'] = float(raw_emotions.get('neutral', 0.0)) * 0.05
+                        detected_emotion = max(raw_emotions, key=raw_emotions.get)
+                        detection_source = f"AI Vision FER ({detected_emotion.upper()})"
+
+                    # 4. Check Persistent Manual Override
+                    if st.session_state.forced_emotion:
+                        detected_emotion = st.session_state.forced_emotion
+                        detection_source = f"⚡ Locked Manual Override ({detected_emotion.upper()})"
+
+                    # UI Feedback Banner
+                    if st.session_state.forced_emotion:
+                        st.warning(f"⚡ **Manual Override Active:** Locked to **{detected_emotion.upper()}** (Click 'Auto-Scan' below to resume AI camera scan)")
+                    else:
+                        st.success(f"AI Vision Detected: **{detected_emotion.upper()}** ({detection_source})")
+
+                    # Micro-Expression Breakdown Expander
+                    with st.expander("📊 View Facial Micro-Expression Breakdown", expanded=False):
+                        sorted_emotions = sorted(raw_emotions.items(), key=lambda x: x[1], reverse=True)
+                        for em_name, em_val in sorted_emotions:
+                            st.progress(
+                                min(max(float(em_val) / 100.0, 0.0), 1.0), 
+                                text=f"{em_name.capitalize()}: {float(em_val):.1f}%"
+                            )
+
+                    # Quick Emotion Correction Override Buttons (Stateful & Highlighted)
+                    st.markdown("##### ⚡ Quick Emotion Override (Instant Presentation Control):")
+                    c_ov1, c_ov2, c_ov3, c_ov4 = st.columns(4)
+                    with c_ov1:
+                        if st.button("😊 Happy", use_container_width=True, type="primary" if st.session_state.forced_emotion == "happy" else "secondary"):
+                            st.session_state.forced_emotion = "happy"
+                            st.rerun()
+                    with c_ov2:
+                        if st.button("😢 Sad", use_container_width=True, type="primary" if st.session_state.forced_emotion == "sad" else "secondary"):
+                            st.session_state.forced_emotion = "sad"
+                            st.rerun()
+                    with c_ov3:
+                        if st.button("😡 Angry", use_container_width=True, type="primary" if st.session_state.forced_emotion == "angry" else "secondary"):
+                            st.session_state.forced_emotion = "angry"
+                            st.rerun()
+                    with c_ov4:
+                        if st.button("🔄 Auto-Scan", use_container_width=True, help="Reset to automatic AI camera scan"):
+                            st.session_state.forced_emotion = None
+                            st.rerun()
+
+                    # 1-Click Fast Teach AI Buttons
+                    if current_face_vector is not None:
+                        st.markdown("##### 🧠 1-Click Teach AI (Register Face Topology):")
+                        st.caption("Lock in this exact facial posture into persistent biometric memory:")
+                        q_c1, q_c2, q_c3 = st.columns(3)
+                        if q_c1.button("🧠 Memorize as HAPPY", use_container_width=True):
+                            memorize_face(current_face_vector, "happy")
+                            st.toast("✅ Learned! Facial posture memorized as HAPPY!")
+                            st.rerun()
+                        if q_c2.button("🧠 Memorize as ANGRY", use_container_width=True):
+                            memorize_face(current_face_vector, "angry")
+                            st.toast("✅ Learned! Facial posture memorized as ANGRY!")
+                            st.rerun()
+                        if q_c3.button("🧠 Memorize as SAD", use_container_width=True):
+                            memorize_face(current_face_vector, "sad")
+                            st.toast("✅ Learned! Facial posture memorized as SAD!")
+                            st.rerun()
+
+                    if st.session_state.calibrated_face_memory:
+                        with st.expander(f"🗂️ Active Learned Memories ({len(st.session_state.calibrated_face_memory)})", expanded=False):
+                            if st.button("🗑️ Reset & Clear All Memories", key="clear_face_mem_top_btn", use_container_width=True):
+                                st.session_state.calibrated_face_memory = []
+                                save_face_memory([])
+                                st.rerun()
+                            st.session_state.bio_match_threshold = st.slider(
+                                "Biometric Match Sensitivity",
+                                min_value=0.20,
+                                max_value=0.85,
+                                value=float(st.session_state.get("bio_match_threshold", 0.35)),
+                                step=0.01,
+                                help="Lower values increase tolerance to head tilts, distance from camera, and ambient daylight changes."
+                            )
+                            for i, m in enumerate(st.session_state.calibrated_face_memory):
+                                mem_c1, mem_c2 = st.columns([4, 1])
+                                live_sim = m.get("_live_sim", 0.0)
+                                sim_badge = f" — Live Match: **{live_sim*100:.1f}%**" if live_sim > 0.0 else ""
+                                with mem_c1:
+                                    st.write(f"• **Memory #{i+1}:** **{m['label'].upper()}** (Learned at {m.get('timestamp', 'N/A')}){sim_badge}")
+                                with mem_c2:
+                                    if st.button("🗑️", key=f"del_mem_btn_{i}", help="Delete this specific memory"):
+                                        st.session_state.calibrated_face_memory.pop(i)
+                                        save_face_memory(st.session_state.calibrated_face_memory)
+                                        st.rerun()
+
                 except Exception as e:
                     detected_emotion = "neutral"
                     st.warning(f"⚠️ Biometric Scan Diagnostic: {e}")
-            
-            # Quick override buttons because CV models fail on smiles
-            st.markdown("##### Quick Emotion Correction Override:")
-            cols_override = st.columns(3)
-            if cols_override[0].button("Force Happy"):
-                detected_emotion = "happy"
-            if cols_override[1].button("Force Sad"):
-                detected_emotion = "sad"
-            if cols_override[2].button("Force Angry"):
-                detected_emotion = "angry"
+            else:
+                if st.session_state.forced_emotion:
+                    detected_emotion = st.session_state.forced_emotion
+                    st.warning(f"⚡ **Manual Override Active:** Locked to **{detected_emotion.upper()}** (Click 'Auto-Scan' below to resume AI camera scan)")
+
+                st.markdown("##### ⚡ Quick Emotion Override (Instant Presentation Control):")
+                c_ov1, c_ov2, c_ov3, c_ov4 = st.columns(4)
+                with c_ov1:
+                    if st.button("😊 Happy", use_container_width=True, type="primary" if st.session_state.forced_emotion == "happy" else "secondary"):
+                        st.session_state.forced_emotion = "happy"
+                        st.rerun()
+                with c_ov2:
+                    if st.button("😢 Sad", use_container_width=True, type="primary" if st.session_state.forced_emotion == "sad" else "secondary"):
+                        st.session_state.forced_emotion = "sad"
+                        st.rerun()
+                with c_ov3:
+                    if st.button("😡 Angry", use_container_width=True, type="primary" if st.session_state.forced_emotion == "angry" else "secondary"):
+                        st.session_state.forced_emotion = "angry"
+                        st.rerun()
+                with c_ov4:
+                    if st.button("🔄 Auto-Scan", use_container_width=True, help="Reset to automatic AI camera scan"):
+                        st.session_state.forced_emotion = None
+                        st.rerun()
 
         else:
             detected_emotion = st.selectbox(
