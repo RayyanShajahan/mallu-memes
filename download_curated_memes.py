@@ -58,6 +58,7 @@ def download_memes():
     os.makedirs(ASSET_BASE, exist_ok=True)
     download_count = 0
     ssl_context = ssl.create_default_context()
+    ssl_context.minimum_version = ssl.TLSVersion.TLSv1_2
 
     for category, items in MEME_CATALOG.items():
         cat_dir = os.path.join(ASSET_BASE, category)

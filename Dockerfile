@@ -31,8 +31,8 @@ WORKDIR /home/user/app
 
 # Copy requirements and install dependencies into user environment
 COPY --chown=user:user requirements.txt .
-RUN pip install --no-cache-dir --upgrade pip && \
-    pip install --no-cache-dir -r requirements.txt
+RUN pip install --no-cache-dir --upgrade --only-binary=:all: pip && \
+    pip install --no-cache-dir --only-binary=:all: -r requirements.txt
 
 # Pre-seed weights directly from local bundled assets (zero build-time network downloads)
 RUN mkdir -p /home/user/.deepface/weights

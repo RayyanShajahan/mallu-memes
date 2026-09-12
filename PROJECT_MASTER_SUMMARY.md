@@ -833,10 +833,11 @@ mallu-memes/
   - Replicated all core developer tools, container manifests, and architecture documentation from `mallu-memes` to `useless_project_temp`: `Dockerfile`, `.dockerignore`, `EXPLANATION.md`, `PROJECT_MASTER_SUMMARY.md`, `verify_environment.py`, `download_curated_memes.py`, and `create_sample_assets.py` (commit `cf81c97`).
   - Synchronized official hackathon media directories (`demo/` walkthrough video, `screenshots/`) back into `mallu-memes`.
 - **SonarCloud Security Hardening & Remediation (Both Repositories)**:
-  - Addressed SonarCloud Docker analysis warnings in `Dockerfile`: replaced recursive `COPY . .` with explicit whitelist copies to prevent sensitive data leakage (`docker:S6507`), eliminated build-time unverified `urllib` network calls by pre-seeding from local `assets/`, and configured environment variables for port exposure without binding `0.0.0.0`.
-  - Hardened `download_curated_memes.py` with strict HTTPS domain allowlisting (`raw.githubusercontent.com`) and standard `ssl.create_default_context()` to eliminate SSRF flags (`python:S5144`).
+  - Addressed SonarCloud Docker analysis warnings in `Dockerfile`: replaced recursive `COPY . .` with explicit whitelist copies to prevent sensitive data leakage (`docker:S6507`), eliminated build-time unverified `urllib` network calls by pre-seeding from local `assets/`, configured environment variables for port exposure without binding `0.0.0.0`, and enforced `--only-binary=:all:` (`docker:S6586`).
+  - Hardened `download_curated_memes.py` with strict HTTPS domain allowlisting (`raw.githubusercontent.com`), standard `ssl.create_default_context()`, and explicit protocol version pinning `ssl_context.minimum_version = ssl.TLSVersion.TLSv1_2` to eliminate SSRF (`python:S5144`) and weak SSL (`python:S4423`) flags.
+  - Pinned exact dependency versions across `requirements.txt` in both repositories (`streamlit==1.63.0`, `deepface==0.0.100`, `opencv-python==4.14.0.94`, `tensorflow==2.21.0`, etc.) to eliminate unresolved version security warnings.
 - **Git Synchronization & Submission Verification**:
-  - Staged all files, committed under `a0f88fa`, updated under `d79303a`, deduplicated under `0a66f08`, synced under `cf81c97`, and hardened under `6401dab`, pushing cleanly to `origin/main` on `https://github.com/RayyanShajahan/useless_project_temp`.
+  - Staged all files, committed under `a0f88fa`, updated under `d79303a`, deduplicated under `0a66f08`, synced under `cf81c97`, hardened under `6401dab`, and pinned under `f9e4673`, pushing cleanly to `origin/main` on `https://github.com/RayyanShajahan/useless_project_temp`.
   - Automatically synchronized with official upstream Pull Request #160 (`tinkerhub:main` $\leftarrow$ `RayyanShajahan:main`).
 
 ---
