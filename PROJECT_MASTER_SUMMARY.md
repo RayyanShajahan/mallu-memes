@@ -479,6 +479,18 @@ mallu-memes/
   4. *Legacy Vector Cleansing on Hydration*: `load_face_memory()` sanitizes older disk records by zeroing out the trailing 7 FER dimensions and re-normalizing to unit length.
   5. *Live Match UI Telemetry Badges*: Active Learned Memories expander displays live match percentage badges (`— Live Match: XX.X%`) next to each memory alongside 1-click individual and global purge buttons.
 
+### Milestone 33: Expressive Priority Resolution, 1-Click Fast Calibration & 0.40 Threshold Hardening
+- **Diagnosed Static Neutral Reversion on Successive Captures**:
+  - *Root Cause 1 (Neutral Memory Competition)*: When multiple memories existed, any lingering Neutral calibration on the user's face matched at $\sim 90\%$ due to invariant skeletal geometry, preventing newly trained expressions from dominating.
+  - *Root Cause 2 (Overly Strict 0.50 Baseline)*: Variable webcam auto-exposure and bounding box jitter on laptops occasionally registered $\sim 0.45\text{--}0.49$ effective similarity, dropping through to raw DeepFace vision which defaults to Neutral $>95\%$ of the time.
+  - *Root Cause 3 (UI Friction in Calibration Flow)*: Users expecting instant learning took photos without scrolling down to locate and submit the dropdown form.
+- **Engineered Comprehensive Hardening**:
+  1. *Expressive Memory Priority*: Filtered candidate matches to prioritize non-neutral emotions (`happy`, `angry`, `sad`, etc.) over `neutral`. If any taught expressive calibration meets the threshold, it strictly wins over competing neutral records on the user's face.
+  2. *1-Click Fast Calibration Action Bar*: Added immediate action buttons (`🧠 Memorize as HAPPY`, `🧠 Memorize as ANGRY`, `🧠 Memorize as SAD`) directly below the camera frame, allowing instant calibration without scrolling or dropdown navigation.
+  3. *Automatic Contradictory Neutral Purge*: Dedicated `memorize_face()` helper automatically purges any stale Neutral calibrations matching the user's face ($\ge 0.50$) whenever an expressive emotion is calibrated.
+  4. *0.40 Calibrated Match Threshold*: Lowered baseline threshold to `0.40` (slider range 0.25–0.85) to absorb natural ambient light and micro-posture variations while strictly rejecting foreign faces ($\le 0.35$).
+  5. *Cascade Candidate Path Robustness*: Bundled `assets/cascades/haarcascade_smile.xml` and patched cascade candidate resolution to ensure local assets are checked first.
+
 ---
 
 ## 5. PROPRIETARY SCORING ALGORITHMS & MATHEMATICAL FORMULATIONS
