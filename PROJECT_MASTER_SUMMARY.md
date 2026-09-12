@@ -826,7 +826,8 @@ mallu-memes/
   - Bundled pre-cached neural weights (`assets/weights/facial_expression_model_weights.h5`, 5.97 MB), OpenCV cascades (`assets/cascades/`), and authentic film stills (`assets/memes/`).
   - Packaged the cloud-optimized 5,000-record Parquet lake (`biometric_memes.parquet`, 927 KB) covering all 55 characters and 29 scenario categories, completely bypassing GitHub's 100MB file ceiling while enabling judges to immediately launch `streamlit run app.py` out of the box with zero external configuration.
 - **Git Synchronization & Submission Verification**:
-  - Staged all files, committed under `a0f88fa` (*"feat: complete Useless Projects hackathon submission for Team Pulga with biometric scanner, meme lake, screenshots, and demo video"*), and pushed cleanly to `origin/main` on `https://github.com/RayyanShajahan/useless_project_temp`.
+  - Staged all files, committed under `a0f88fa` and updated under `d79303a` (*"docs: add direct repository, fork, and PR #160 links to README"*), pushing cleanly to `origin/main` on `https://github.com/RayyanShajahan/useless_project_temp`.
+  - Automatically synchronized with official upstream Pull Request #160 (`tinkerhub:main` $\leftarrow$ `RayyanShajahan:main`).
 
 ---
 
