@@ -288,56 +288,56 @@ def extract_face_biometric_vector(face_bgr, raw_emotions=None):
     except Exception:
         return np.zeros(4075, dtype=np.float32)
 
-# Definitive Authentic Malayalam Meme Asset Identity Map (with English translations and signal classes from Lovable)
+# Definitive Authentic Malayalam Meme Asset Identity Map (with authentic Manglish descriptions and signal classes)
 IMAGE_METADATA = {
-    'bus_existential': ('Dasan & Vijayan', 'Nadodikkattu', 'Ellathinum athintethaya samayam undu, Dasa.', 'Everything has its appointed time, Dasan.', 'Hopeful delusion / contagious'),
-    'bus-existential': ('Dasan & Vijayan', 'Nadodikkattu', 'Ellathinum athintethaya samayam undu, Dasa.', 'Everything has its appointed time, Dasan.', 'Hopeful delusion / contagious'),
-    'chacko_resolve': ('Chacko Mash', 'Spadikam', 'Ormayundo ee mukham? Marakkan pattilla.', 'Do you remember this face? The psyche never forgets.', 'Authoritative fury / stable'),
-    'chacko-resolve': ('Chacko Mash', 'Spadikam', 'Ormayundo ee mukham? Marakkan pattilla.', 'Do you remember this face? The psyche never forgets.', 'Authoritative fury / stable'),
-    'chacko': ('Chacko Mash', 'Spadikam', 'Ormayundo ee mukham? Marakkan pattilla.', 'Do you remember this face? The psyche never forgets.', 'Authoritative fury / stable'),
-    'ktu_trauma': ('George', 'Premam', 'Enthokkeyo pratheekshichu… enthokkeyo aayi.', 'Expected everything. Received character development.', 'Academic despair / resilient'),
-    'ktu-trauma': ('George', 'Premam', 'Enthokkeyo pratheekshichu… enthokkeyo aayi.', 'Expected everything. Received character development.', 'Academic despair / resilient'),
-    'actually_modern': ('Pyari', 'Kalyanaraman', 'Actually njaan modern aanu!', 'Actually, I am modern!', 'Self-delusion / high social optimism'),
-    'actually-njaan-modern': ('Pyari', 'Kalyanaraman', 'Actually njaan modern aanu!', 'Actually, I am modern!', 'Self-delusion / high social optimism'),
-    'pyari': ('Pyari', 'Kalyanaraman', 'Actually njaan modern aanu!', 'Actually, I am modern!', 'Self-delusion / high social optimism'),
-    'salim_kumar_crying': ('Ponjikkara', 'Kalyanaraman', 'Achuvettaa... I love you!', 'Achuvetta... I love you!', 'Unreciprocated grief / absolute melodrama'),
-    'achuvettaa': ('Ponjikkara', 'Kalyanaraman', 'Achuvettaa... I love you!', 'Achuvetta... I love you!', 'Unreciprocated grief / absolute melodrama'),
-    'collector': ('Ponjikkara', 'Kalyanaraman', 'Alla... Ernakulam jilla collector mindaathe kutthi kayattedo!', 'Hey, let the Ernakulam District Collector enter quietly!', 'Bureaucratic delirium'),
-    'dasan_kattappara': ('Vijayan', 'Nadodikkattu', 'Achan paranju ithilum bhedham kattapparayum eduth kakkaan irangunnathaanennu!', 'Father said it is better to take a crowbar and steal than work this job!', 'Youth unemployment angst'),
-    'kattappara': ('Vijayan', 'Nadodikkattu', 'Achan paranju ithilum bhedham kattapparayum eduth kakkaan irangunnathaanennu!', 'Father said it is better to take a crowbar and steal than work this job!', 'Youth unemployment angst'),
-    'dasan_resignation': ('Dasan', 'Nadodikkattu', 'Allenkilum ee thallipoli companiyile joli njangalkk prashnamalla!', 'Anyway, losing this useless company job means nothing to us!', 'Defiant corporate pride'),
-    'thallipoli': ('Dasan', 'Nadodikkattu', 'Allenkilum ee thallipoli companiyile joli njangalkk prashnamalla!', 'Anyway, losing this useless company job means nothing to us!', 'Defiant corporate pride'),
-    'moosa_shavam': ('CID Moosa', 'CID Moosa', 'Athinekkaal nallath ente shavam edukkunnathalle!', 'Better to carry out my corpse than do that!', 'Nihilistic defeatism'),
-    'shavam': ('CID Moosa', 'CID Moosa', 'Athinekkaal nallath ente shavam edukkunnathalle!', 'Better to carry out my corpse than do that!', 'Nihilistic defeatism'),
-    'cid_moosa': ('CID Moosa', 'CID Moosa', 'Moosa... CID Moosa!', 'Moosa... CID Moosa!', 'Heroic swagger / high energy'),
-    'dharidryam': ('Thorappan Kochunni', 'CID Moosa', 'Athonnum illenkilum dharidryathinu kuravonnum illallo!', 'Even if we lack everything else, there is no shortage of poverty!', 'Pure existential resignation'),
-    'dharidryathinu': ('Thorappan Kochunni', 'CID Moosa', 'Athonnum illenkilum dharidryathinu kuravonnum illallo!', 'Even if we lack everything else, there is no shortage of poverty!', 'Pure existential resignation'),
-    'appukkuttan': ('Appukkuttan', 'In Harihar Nagar', 'Appukkutta... ninte oru kaaryam!', 'Appukkutta... you are unbelievable!', 'Social anxiety / awkward panic'),
-    'appukuttan': ('Appukkuttan', 'In Harihar Nagar', 'Appukkutta... ninte oru kaaryam!', 'Appukkutta... you are unbelievable!', 'Social anxiety / awkward panic'),
-    'bhraanth': ('Mahadevan', 'In Harihar Nagar', 'Aarkkadaa bhraanth?!', 'Who the hell is crazy?!', 'Explosive fury / group chaos'),
-    'ramanathan': ('Ramanathan', 'In Harihar Nagar', 'Thomaskutty vittoda!', 'Thomaskutty, run for your life!', 'Survival instinct / panic'),
-    'karnnore': ('Unnithan', 'Manichitrathazhu', 'Adukkaruth karnnore, entaduth maathram adukkaruth!', 'Stay away, elder! Just do not approach me!', 'Paranoid superstition'),
-    'kuttikkadan': ('Kuttikkadan', 'Spadikam', 'Nee aaraada kooduthal chodikkan?', 'Who are you to ask too many questions?!', 'Authoritative aggression'),
-    'anjooran': ('Anjooran', 'Godfather', 'Aanede chevittil maathramalla, ninte ammede chevittilum vekkeda panji!', 'Put cotton not just in the elephant ear, put it in your mother ear too!', 'Patriarchal rage'),
-    'panji': ('Anjooran', 'Godfather', 'Aanede chevittil maathramalla, ninte ammede chevittilum vekkeda panji!', 'Put cotton not just in the elephant ear, put it in your mother ear too!', 'Patriarchal rage'),
-    'krishnan_nair': ('Krishnan Nair', 'Akkare Akkare Akkare', 'Shooting begins!', 'Shooting begins!', 'Hyper-optimistic incompetence'),
-    'krishnan-nair': ('Krishnan Nair', 'Akkare Akkare Akkare', 'Shooting begins!', 'Shooting begins!', 'Hyper-optimistic incompetence'),
-    'paul_barber': ('Paul Barber', 'Akkare Akkare Akkare', 'Ninte achanaada Paul Barber!', 'Your father is Paul Barber!', 'Identity crisis rage'),
-    'paul-barber': ('Paul Barber', 'Akkare Akkare Akkare', 'Ninte achanaada Paul Barber!', 'Your father is Paul Barber!', 'Identity crisis rage'),
-    'sadhanam': ('Dasan & Vijayan', 'Akkare Akkare Akkare', 'Sadhanam kayyilundo?', 'Do you have the stuff in hand?', 'Subtle clandestine tension'),
-    'ramanan_biriyani': ('Ramanan', 'Punjabi House', 'Annu undaakkiya biriyaani okke enth cheytho aavo!', 'Wonder what happened to all the biryani made that day!', 'Culinary yearning / starvation'),
-    'biriyaani': ('Ramanan', 'Punjabi House', 'Annu undaakkiya biriyaani okke enth cheytho aavo!', 'Wonder what happened to all the biryani made that day!', 'Culinary yearning / starvation'),
-    'gangadharan': ('Gangadharan Muthalali', 'Punjabi House', 'Akathu poyi Punjabikalod para, Gangadharan Muthalaaliyum Ramananum vannirikkunnu ennu!', 'Go inside and tell the Punjabis: Proprietor Gangadharan and Ramanan have arrived!', 'Delusional landlord pride'),
-    'alakkum': ('Ramanan', 'Punjabi House', 'Ariyaan paadillanjittu chodikkukaya, randu varshamaayi ivide alakkum nanayum onnumille?', 'Just asking out of ignorance, has there been no laundry here for two years?', 'Domestic exhaustion'),
-    'pavanayi': ('Ananthan Nambiar', 'Nadodikkattu', 'Angane Pavanayi shavamaayi!', 'And so Pavanayi turned into a corpse!', 'Professional failure / fatalism'),
-    'ranga_annan': ('Ranga Annan', 'Aavesham', 'Eda mone! All the best da!', 'Hey brother! All the best da!', 'Hyper-energetic brotherhood / chaos'),
-    'all-the-best': ('Ranga Annan', 'Aavesham', 'Eda mone! All the best da!', 'Hey brother! All the best da!', 'Hyper-energetic brotherhood / chaos'),
-    'jagathy_aha': ('Nischal', 'Kilukkam', 'Aha... anganayanalle!', 'Aha... so that is how it is!', 'Cynical realization'),
-    'anganayanalle': ('Nischal', 'Kilukkam', 'Aha... anganayanalle!', 'Aha... so that is how it is!', 'Cynical realization'),
-    'gafoor': ('Gafoor Ka Dhosth', 'Nadodikkattu', 'Savari giri giri!', 'Smooth ride, all is well!', 'Optimistic travel hustle'),
-    'damu': ('Dashamoolam Damu', 'Chattambinadu', 'Njaan aaraannu ariyilla le?', 'You do not know who I am, do you?', 'Underestimated street rage'),
-    'manavalan': ('Manavalan', 'Pulival Kalyanam', 'Njan aara mon! Dubai Manavalan!', 'Who do you think I am, kid! Dubai Manavalan!', 'Expatriate swagger'),
-    'pappu': ('Kuthiravattam Pappu', 'Vellanakalude Nadu', 'Ippo shariyaakki tharaam!', 'I will fix it right now!', 'Chronic overpromise')
+    'bus_existential': ('Dasan & Vijayan', 'Nadodikkattu', 'Ellathinum athintethaya samayam undu, Dasa.', 'Ellathinum athintethaaya samayam undu Dasa... ippo scene illa, samayam aavumbol ellam sheriyaavum!', 'Hopeful delusion / contagious'),
+    'bus-existential': ('Dasan & Vijayan', 'Nadodikkattu', 'Ellathinum athintethaya samayam undu, Dasa.', 'Ellathinum athintethaaya samayam undu Dasa... ippo scene illa, samayam aavumbol ellam sheriyaavum!', 'Hopeful delusion / contagious'),
+    'chacko_resolve': ('Chacko Mash', 'Spadikam', 'Ormayundo ee mukham? Marakkan pattilla.', 'Ee mukham ormayundo? Thomasinte achan Chacko mashinte adi aarum marakkilla!', 'Authoritative fury / stable'),
+    'chacko-resolve': ('Chacko Mash', 'Spadikam', 'Ormayundo ee mukham? Marakkan pattilla.', 'Ee mukham ormayundo? Thomasinte achan Chacko mashinte adi aarum marakkilla!', 'Authoritative fury / stable'),
+    'chacko': ('Chacko Mash', 'Spadikam', 'Ormayundo ee mukham? Marakkan pattilla.', 'Ee mukham ormayundo? Thomasinte achan Chacko mashinte adi aarum marakkilla!', 'Authoritative fury / stable'),
+    'ktu_trauma': ('George', 'Premam', 'Enthokkeyo pratheekshichu… enthokkeyo aayi.', 'Ellaam set aavum ennu vichaarichu... odukkathe character development kitti pani paali!', 'Academic despair / resilient'),
+    'ktu-trauma': ('George', 'Premam', 'Enthokkeyo pratheekshichu… enthokkeyo aayi.', 'Ellaam set aavum ennu vichaarichu... odukkathe character development kitti pani paali!', 'Academic despair / resilient'),
+    'actually_modern': ('Pyari', 'Kalyanaraman', 'Actually njaan modern aanu!', 'Actually njaan full modern aanu chetta... naattukaarude vichaaram vere aanenne ullu!', 'Self-delusion / high social optimism'),
+    'actually-njaan-modern': ('Pyari', 'Kalyanaraman', 'Actually njaan modern aanu!', 'Actually njaan full modern aanu chetta... naattukaarude vichaaram vere aanenne ullu!', 'Self-delusion / high social optimism'),
+    'pyari': ('Pyari', 'Kalyanaraman', 'Actually njaan modern aanu!', 'Actually njaan full modern aanu chetta... naattukaarude vichaaram vere aanenne ullu!', 'Self-delusion / high social optimism'),
+    'salim_kumar_crying': ('Ponjikkara', 'Kalyanaraman', 'Achuvettaa... I love you!', 'Achuvettaa... njaan sathyamaayittum karanju parayuva, I love you!', 'Unreciprocated grief / absolute melodrama'),
+    'achuvettaa': ('Ponjikkara', 'Kalyanaraman', 'Achuvettaa... I love you!', 'Achuvettaa... njaan sathyamaayittum karanju parayuva, I love you!', 'Unreciprocated grief / absolute melodrama'),
+    'collector': ('Ponjikkara', 'Kalyanaraman', 'Alla... Ernakulam jilla collector mindaathe kutthi kayattedo!', 'Alla... mindaathe kutthi kayattedo Ernakulam jilla collectorine!', 'Bureaucratic delirium'),
+    'dasan_kattappara': ('Vijayan', 'Nadodikkattu', 'Achan paranju ithilum bhedham kattapparayum eduth kakkaan irangunnathaanennu!', 'Ithilum bhedham kattapparayum eduthu kakkaan irangunnathaannu achan paranje!', 'Youth unemployment angst'),
+    'kattappara': ('Vijayan', 'Nadodikkattu', 'Achan paranju ithilum bhedham kattapparayum eduth kakkaan irangunnathaanennu!', 'Ithilum bhedham kattapparayum eduthu kakkaan irangunnathaannu achan paranje!', 'Youth unemployment angst'),
+    'dasan_resignation': ('Dasan', 'Nadodikkattu', 'Allenkilum ee thallipoli companiyile joli njangalkk prashnamalla!', 'Ee thallipoli companiyile pani poyaal enikku oru koppum illa... pinne alla!', 'Defiant corporate pride'),
+    'thallipoli': ('Dasan', 'Nadodikkattu', 'Allenkilum ee thallipoli companiyile joli njangalkk prashnamalla!', 'Ee thallipoli companiyile pani poyaal enikku oru koppum illa... pinne alla!', 'Defiant corporate pride'),
+    'moosa_shavam': ('CID Moosa', 'CID Moosa', 'Athinekkaal nallath ente shavam edukkunnathalle!', 'Ithu cheyyunnathinekkaal bhedham ente shavam edukkunnathaanu mwone!', 'Nihilistic defeatism'),
+    'shavam': ('CID Moosa', 'CID Moosa', 'Athinekkaal nallath ente shavam edukkunnathalle!', 'Ithu cheyyunnathinekkaal bhedham ente shavam edukkunnathaanu mwone!', 'Nihilistic defeatism'),
+    'cid_moosa': ('CID Moosa', 'CID Moosa', 'Moosa... CID Moosa!', 'Moosa... Private Detective CID Moosa on duty, full power swag!', 'Heroic swagger / high energy'),
+    'dharidryam': ('Thorappan Kochunni', 'CID Moosa', 'Athonnum illenkilum dharidryathinu kuravonnum illallo!', 'Veronnum illenkilum namukku dharidryathinu oru kuravum illa ketto!', 'Pure existential resignation'),
+    'dharidryathinu': ('Thorappan Kochunni', 'CID Moosa', 'Athonnum illenkilum dharidryathinu kuravonnum illallo!', 'Veronnum illenkilum namukku dharidryathinu oru kuravum illa ketto!', 'Pure existential resignation'),
+    'appukkuttan': ('Appukkuttan', 'In Harihar Nagar', 'Appukkutta... ninte oru kaaryam!', 'Appukkutta... ninte oru kaaryam, life full scene aaki olarthi!', 'Social anxiety / awkward panic'),
+    'appukuttan': ('Appukkuttan', 'In Harihar Nagar', 'Appukkutta... ninte oru kaaryam!', 'Appukkutta... ninte oru kaaryam, life full scene aaki olarthi!', 'Social anxiety / awkward panic'),
+    'bhraanth': ('Mahadevan', 'In Harihar Nagar', 'Aarkkadaa bhraanth?!', 'Aarkkadaa ivide bhraanth?! Hostalil thallumaala thudangi mwone!', 'Explosive fury / group chaos'),
+    'ramanathan': ('Ramanathan', 'In Harihar Nagar', 'Thomaskutty vittoda!', 'Thomaskutty vittoda! Ivide ninnu odukkathe thallu kittum!', 'Survival instinct / panic'),
+    'karnnore': ('Unnithan', 'Manichitrathazhu', 'Adukkaruth karnnore, entaduth maathram adukkaruth!', 'Adukkaruth karnnore! Ente aduthu maathram vannu pedippikkaruth!', 'Paranoid superstition'),
+    'kuttikkadan': ('Kuttikkadan', 'Spadikam', 'Nee aaraada kooduthal chodikkan?', 'Nee aaraada kooduthal chodikkan? Spadikam George-nod kali venda!', 'Authoritative aggression'),
+    'anjooran': ('Anjooran', 'Godfather', 'Aanede chevittil maathramalla, ninte ammede chevittilum vekkeda panji!', 'Aanede chevittil maathramalla, ammede chevittilum vekkeda panji... Anjooran mass!', 'Patriarchal rage'),
+    'panji': ('Anjooran', 'Godfather', 'Aanede chevittil maathramalla, ninte ammede chevittilum vekkeda panji!', 'Aanede chevittil maathramalla, ammede chevittilum vekkeda panji... Anjooran mass!', 'Patriarchal rage'),
+    'krishnan_nair': ('Krishnan Nair', 'Akkare Akkare Akkare', 'Shooting begins!', 'Shooting thudangi mwone... full on, full power, scene contra!', 'Hyper-optimistic incompetence'),
+    'krishnan-nair': ('Krishnan Nair', 'Akkare Akkare Akkare', 'Shooting begins!', 'Shooting thudangi mwone... full on, full power, scene contra!', 'Hyper-optimistic incompetence'),
+    'paul_barber': ('Paul Barber', 'Akkare Akkare Akkare', 'Ninte achanaada Paul Barber!', 'Ninte achan Paul Barber alla da... per maatti vilikkaruth!', 'Identity crisis rage'),
+    'paul-barber': ('Paul Barber', 'Akkare Akkare Akkare', 'Ninte achanaada Paul Barber!', 'Ninte achan Paul Barber alla da... per maatti vilikkaruth!', 'Identity crisis rage'),
+    'sadhanam': ('Dasan & Vijayan', 'Akkare Akkare Akkare', 'Sadhanam kayyilundo?', 'Sadhanam kayyilundo? Rahasyamaayi delivery cheythaal mathi!', 'Subtle clandestine tension'),
+    'ramanan_biriyani': ('Ramanan', 'Punjabi House', 'Annu undaakkiya biriyaani okke enth cheytho aavo!', 'Annu undaakkiya biriyaani okke aaru thinnu theertho aavo... vishannu chath!', 'Culinary yearning / starvation'),
+    'biriyaani': ('Ramanan', 'Punjabi House', 'Annu undaakkiya biriyaani okke enth cheytho aavo!', 'Annu undaakkiya biriyaani okke aaru thinnu theertho aavo... vishannu chath!', 'Culinary yearning / starvation'),
+    'gangadharan': ('Gangadharan Muthalali', 'Punjabi House', 'Akathu poyi Punjabikalod para, Gangadharan Muthalaaliyum Ramananum vannirikkunnu ennu!', 'Akathu poyi para, Gangadharan Muthalaaliyum Ramananum vannu ennu... mass entry!', 'Delusional landlord pride'),
+    'alakkum': ('Ramanan', 'Punjabi House', 'Ariyaan paadillanjittu chodikkukaya, randu varshamaayi ivide alakkum nanayum onnumille?', 'Ariyaan paadillanjittu chodikkukaya... randu varshamaayi ivide alakkum nanayum onnum nadannille?', 'Domestic exhaustion'),
+    'pavanayi': ('Ananthan Nambiar', 'Nadodikkattu', 'Angane Pavanayi shavamaayi!', 'Angane aadyathe assignment-il thanne nammude Pavanayi finish aayi!', 'Professional failure / fatalism'),
+    'ranga_annan': ('Ranga Annan', 'Aavesham', 'Eda mone! All the best da!', 'Eda mone! Kidu aayi, scene illa, full support... all the best da!', 'Hyper-energetic brotherhood / chaos'),
+    'all-the-best': ('Ranga Annan', 'Aavesham', 'Eda mone! All the best da!', 'Eda mone! Kidu aayi, scene illa, full support... all the best da!', 'Hyper-energetic brotherhood / chaos'),
+    'jagathy_aha': ('Nischal', 'Kilukkam', 'Aha... anganayanalle!', 'Aha... anganayanalle karyangalude pokku... ippozhaanu karyam pidikittiyathu!', 'Cynical realization'),
+    'anganayanalle': ('Nischal', 'Kilukkam', 'Aha... anganayanalle!', 'Aha... anganayanalle karyangalude pokku... ippozhaanu karyam pidikittiyathu!', 'Cynical realization'),
+    'gafoor': ('Gafoor Ka Dhosth', 'Nadodikkattu', 'Savari giri giri!', 'Savari giri giri... smooth ride, tension illa, Dubai alla Madras beach!', 'Optimistic travel hustle'),
+    'damu': ('Dashamoolam Damu', 'Chattambinadu', 'Njaan aaraannu ariyilla le?', 'Njaan aaraannu ariyilla le? Dashamoolam Damu quotation team aaneda!', 'Underestimated street rage'),
+    'manavalan': ('Manavalan', 'Pulival Kalyanam', 'Njan aara mon! Dubai Manavalan!', 'Njan aara mon! Gulf return Dubai Manavalan and Sons MD!', 'Expatriate swagger'),
+    'pappu': ('Kuthiravattam Pappu', 'Vellanakalude Nadu', 'Ippo shariyaakki tharaam!', 'Ippo shariyaakki tharaam... road roller-inte task force ippo ready aavum!', 'Chronic overpromise')
 }
 
 # Cyberpunk Glassmorphic Theme Injection
@@ -945,13 +945,13 @@ with tabs[1]:
                     card_character = meta_match[0]
                     card_movie = meta_match[1]
                     card_dialogue = meta_match[2]
-                    card_translation = meta_match[3] if len(meta_match) > 3 else "Kerala vernacular existential expression."
+                    card_translation = meta_match[3] if len(meta_match) > 3 else "Nammude swantham Kerala existential expression mwone!"
                     card_signal_class = meta_match[4] if len(meta_match) > 4 else "Vernacular Affective Core"
                 else:
                     card_character = top_meme['character']
                     card_movie = top_meme['movie']
                     card_dialogue = str(top_meme['dialogue_snippet']).strip('"').strip("'")
-                    card_translation = "Kerala vernacular existential expression."
+                    card_translation = "Nammude swantham Kerala existential expression mwone!"
                     card_signal_class = "Parquet Lake Vector Match"
 
                 # Fetch matching archetype & scenario from Parquet if available
@@ -979,7 +979,7 @@ with tabs[1]:
             card_character = top_meme['character']
             card_movie = top_meme['movie']
             card_dialogue = str(top_meme['dialogue_snippet']).strip('"').strip("'")
-            card_translation = "Kerala vernacular existential expression."
+            card_translation = "Nammude swantham Kerala existential expression mwone!"
             card_signal_class = "Parquet Lake Vector Match"
             scenario_title = top_meme['scenario_title']
             kew_score = top_meme['kerala_existential_weight']
@@ -1043,7 +1043,7 @@ with tabs[2]:
             "id": 1,
             "title": "KTU Internal Marks: The Reckoning",
             "dialogue": "Enthokkeyo pratheekshichu… enthokkeyo aayi.",
-            "translation": "Expected everything. Received character development.",
+            "translation": "Ellaam set aavum ennu vichaarichu, pakshe kittiye odukkathe life lesson!",
             "movie": "Premam (2015)",
             "character": "George",
             "archetype": "Academic Martyr",
@@ -1055,7 +1055,7 @@ with tabs[2]:
             "id": 2,
             "title": "The Chacko Ultimatum",
             "dialogue": "Ormayundo ee mukham? Marakkan pattilla.",
-            "translation": "Do you remember this face? The psyche never forgets.",
+            "translation": "Ee mukham ormayundo? Thomasinte achan Chacko mashinte adi aarum marakkilla!",
             "movie": "Spadikam (1995)",
             "character": "Chacko Mash",
             "archetype": "Unforgiving Patriarch",
@@ -1067,7 +1067,7 @@ with tabs[2]:
             "id": 3,
             "title": "KSRTC Serotonin Event",
             "dialogue": "Ellathinum athintethaya samayam undu, Dasa.",
-            "translation": "Everything has its appointed time, Dasan.",
+            "translation": "Ellathinum athintethaaya samayam undu Dasa... tension venda, ellam sheriyaavum!",
             "movie": "Nadodikkattu (1987)",
             "character": "Dasan & Vijayan",
             "archetype": "Delusional Optimist",
@@ -1079,7 +1079,7 @@ with tabs[2]:
             "id": 4,
             "title": "Salary Day + 1 Existential Void",
             "dialogue": "Angane Pavanayi shavamaayi!",
-            "translation": "And so Pavanayi turned into a corpse!",
+            "translation": "Angane aadyathe assignment-il thanne nammude Pavanayi finish aayi!",
             "movie": "Nadodikkattu (1987)",
             "character": "Ananthan Nambiar",
             "archetype": "Professional Casualty",
@@ -1091,7 +1091,7 @@ with tabs[2]:
             "id": 5,
             "title": "Late-Night Hostel Energy Catalyst",
             "dialogue": "Eda mone! All the best da!",
-            "translation": "Hey brother! All the best da!",
+            "translation": "Eda mone! Full scene aakki polikk, scene illa... all the best da!",
             "movie": "Aavesham (2024)",
             "character": "Ranga Annan",
             "archetype": "Uninhibited Godfather",
@@ -1103,7 +1103,7 @@ with tabs[2]:
             "id": 6,
             "title": "Starvation & Biryani Yearning",
             "dialogue": "Annu undaakkiya biriyaani okke enth cheytho aavo!",
-            "translation": "Wonder what happened to all that biryani made that day!",
+            "translation": "Annu vecha biriyaani muzhuvan aaru thinnu theertho aavo... odukkathe vishappu!",
             "movie": "Punjabi House (1998)",
             "character": "Ramanan",
             "archetype": "Culinary Martyr",
@@ -1115,7 +1115,7 @@ with tabs[2]:
             "id": 7,
             "title": "Unreciprocated Melodramatic Grief",
             "dialogue": "Achuvettaa... I love you!",
-            "translation": "Achuvetta... I love you!",
+            "translation": "Achuvettaa... njaan karanju parayuva, enikku ningalodu sathyamaayittum premamaanu!",
             "movie": "Kalyanaraman (2002)",
             "character": "Ponjikkara",
             "archetype": "Tragicomic Romantic",
@@ -1127,7 +1127,7 @@ with tabs[2]:
             "id": 8,
             "title": "Modernity Assertion Protocol",
             "dialogue": "Actually njaan modern aanu!",
-            "translation": "Actually, I am modern!",
+            "translation": "Actually njaan full modern aanu ketto... aarum thettidharikkaruth chetta!",
             "movie": "Kalyanaraman (2002)",
             "character": "Pyari",
             "archetype": "Eccentric Sidekick",
@@ -1139,7 +1139,7 @@ with tabs[2]:
             "id": 9,
             "title": "Corporate Resignation Defiance",
             "dialogue": "Allenkilum ee thallipoli companiyile joli njangalkk prashnamalla!",
-            "translation": "Anyway, losing this useless company job is not a big deal for us!",
+            "translation": "Ee thallipoli companiyile joli poyaal njangalkku oru koppum illa... vere pani nokkum!",
             "movie": "Nadodikkattu (1987)",
             "character": "Vijayan & Dasan",
             "archetype": "Defiant Underdogs",
@@ -1151,7 +1151,7 @@ with tabs[2]:
             "id": 10,
             "title": "Nihilistic Task Defeatism",
             "dialogue": "Athinekkaal nallath ente shavam edukkunnathalle!",
-            "translation": "Better to carry out my corpse than do that!",
+            "translation": "Ithu cheyyunnathinekkaal bhedham ente shavam edukkunnathaannu Moosa parayunne!",
             "movie": "CID Moosa (2003)",
             "character": "CID Moosa",
             "archetype": "Exasperated Detective",
@@ -1163,7 +1163,7 @@ with tabs[2]:
             "id": 11,
             "title": "Explosive Group Chaos",
             "dialogue": "Aarkkadaa bhraanth?!",
-            "translation": "Who the hell is crazy?!",
+            "translation": "Aarkkadaa ivide bhraanth?! Hostalil odukkathe adi thudangi mwone!",
             "movie": "In Harihar Nagar (1990)",
             "character": "Mahadevan",
             "archetype": "Hostel Instigator",
@@ -1175,7 +1175,7 @@ with tabs[2]:
             "id": 12,
             "title": "Patriarchal Cotton Rule",
             "dialogue": "Aanede chevittil maathramalla, ninte ammede chevittilum vekkeda panji!",
-            "translation": "Put cotton not just in the elephant ear, put it in your mother's ear too!",
+            "translation": "Aanede chevittil maathramalla, ninte ammede chevittilum vekkeda panji... Godfather mass!",
             "movie": "Godfather (1991)",
             "character": "Anjooran",
             "archetype": "Unforgiving Patriarch",

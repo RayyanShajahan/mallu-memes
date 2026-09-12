@@ -558,6 +558,31 @@ mallu-memes/
   6. *BASE_DIR Absolute Path Anchoring*:
      - Anchored all filesystem paths to `BASE_DIR = os.path.dirname(os.path.abspath(__file__))` across Haar cascades, model weights, `biometric_memes.parquet`, `calibrated_face_memory.json`, and `assets/memes/`.
 
+### Milestone 38: Vernacular Manglish Localization of Meme Vault & Visual Match Artifact Descriptions (September 2026)
+- **User Intent & Localization Requirement**:
+  - Replaced all static English meme dialogue translations/descriptions across both Tab 2 (Cinematic Face Match Card) and Tab 3 (Vernacular Meme Vault & Parquet Lake Explorer) with authentic, culturally resonant, highly engaging Manglish.
+- **Architectural Implementation Details**:
+  1. *Tab 2 Image Metadata Identity Map (`IMAGE_METADATA` in `app.py`)*:
+     - Converted all 48 meme entries' 4th tuple element (`translation`) from clinical English (e.g., `"Expected everything. Received character development."`, `"Do you remember this face? The psyche never forgets."`) to rich, authentic, vernacular Manglish (e.g., `"Ellaam set aavum ennu vichaarichu, pakshe kittiye odukkathe life lesson!"`, `"Ee mukham ormayundo? Thomasinte achan Chacko mashinte adi aarum marakkilla!"`, `"Eda mone! Kidu aayi, scene illa, full support... all the best da!"`, `"Thomaskutty vittoda! Ivide ninnu odukkathe thallu kittum!"`, etc.).
+  2. *Tab 3 Curated Meme Vault (`VAULT_MEMES` in `app.py`)*:
+     - Converted all 12 curated high-resolution cinema frame entries' `"translation"` keys into vernacular Manglish:
+       - George (*Premam*): `"Ellaam set aavum ennu vichaarichu, pakshe kittiye odukkathe life lesson!"`
+       - Chacko Mash (*Spadikam*): `"Ee mukham ormayundo? Thomasinte achan Chacko mashinte adi aarum marakkilla!"`
+       - Dasan & Vijayan (*Nadodikkattu*): `"Ellathinum athintethaaya samayam undu Dasa... tension venda, ellam sheriyaavum!"`
+       - Ananthan Nambiar (*Nadodikkattu*): `"Angane aadyathe assignment-il thanne nammude Pavanayi finish aayi!"`
+       - Ranga Annan (*Aavesham*): `"Eda mone! Full scene aakki polikk, scene illa... all the best da!"`
+       - Ramanan (*Punjabi House*): `"Annu vecha biriyaani muzhuvan aaru thinnu theertho aavo... odukkathe vishappu!"`
+       - Ponjikkara (*Kalyanaraman*): `"Achuvettaa... njaan karanju parayuva, enikku ningalodu sathyamaayittum premamaanu!"`
+       - Pyari (*Kalyanaraman*): `"Actually njaan full modern aanu ketto... aarum thettidharikkaruth chetta!"`
+       - Vijayan & Dasan (*Nadodikkattu*): `"Ee thallipoli companiyile joli poyaal njangalkku oru koppum illa... vere pani nokkum!"`
+       - CID Moosa (*CID Moosa*): `"Ithu cheyyunnathinekkaal bhedham ente shavam edukkunnathaannu Moosa parayunne!"`
+       - Mahadevan (*In Harihar Nagar*): `"Aarkkadaa ivide bhraanth?! Hostalil odukkathe adi thudangi mwone!"`
+       - Anjooran (*Godfather*): `"Aanede chevittil maathramalla, ninte ammede chevittilum vekkeda panji... Godfather mass!"`
+  3. *Zero-English Fallback Localization*:
+     - Replaced the generic fallback card translation `"Kerala vernacular existential expression."` across all branches with `"Nammude swantham Kerala existential expression mwone!"`.
+  4. *Preserved Cross-Platform Search & Filtering*:
+     - Filter query condition `(not q or q in m["title"].lower() or q in m["dialogue"].lower() or q in m["translation"].lower() ...)` now matches against colloquial Manglish keywords (e.g. searching "shavam", "pani", "life lesson", "scene", "bhedham").
+
 ---
 
 ## 5. PROPRIETARY SCORING ALGORITHMS & MATHEMATICAL FORMULATIONS
